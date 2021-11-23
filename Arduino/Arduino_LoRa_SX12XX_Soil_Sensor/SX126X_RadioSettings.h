@@ -6,6 +6,8 @@
 //#define HELTEC_LORA
 // uncomment if you are sure you have an ESP8266 board and that it is not detected
 //#define ESP8266
+// uncomment if you are sure you have CUBECELL board and that it is not detected
+//#define CUBECELL
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*******************************************************************************************************
@@ -14,12 +16,21 @@
 
 //*******  Setup hardware pin definitions here ! ***************
 
+#if defined ARDUINO_ARCH_ASR650X || defined CUBECELL
+//for the Heltech CubeCell such as HTCC-AB01
+//https://github.com/HelTecAutomation/CubeCell-Arduino/blob/master/PinoutDiagram/HTCC-AB01.pdf
+#define NSS P4_3                                  //select pin on LoRa device
+#define NRESET P5_7                                //reset pin on LoRa device
+#define RFBUSY P4_7                                //busy pin on LoRa device
+#else
 #define NSS 10                                  //select pin on LoRa device
 #define NRESET 4                                //reset pin on LoRa device
 //we do not connect RFBUSY
 //if you have a NiceRF SX1262 which has almost the same pinout than the RFM95 then
 //you can use our ProMini LoRa PCB for RFM95 where RFBUSY (marked DIO2 on the RFM95 PCB) can be connected to D5
 #define RFBUSY 5                                //busy pin on LoRa device 
+#endif
+
 //we do not connect DIO1 as we use polling method
 //if you have a NiceRF SX1262 which has almost the same pinout than the RFM95 then
 //you can use our ProMini LoRa PCB for RFM95 where DIO1 can be connected to D3

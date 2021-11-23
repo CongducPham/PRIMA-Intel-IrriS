@@ -1,8 +1,8 @@
 /*
- *  temperature sensor on analog A0 to test the LoRa gateway
+ *  INTEL_IRRIS soil humidity sensor platform
  *  extended version with AES and custom Carrier Sense features
  *  
- *  Copyright (C) 2016-2019 Congduc Pham, University of Pau, France
+ *  Copyright (C) 2016-2021 Congduc Pham, University of Pau, France
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,14 +18,12 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: November 12th, 2020 by C. Pham
+ * last update: November 17th, 2021 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
  * to support SX126X, SX127X and SX128X chips (SX128X is LoRa in 2.4GHz band)
  *  
- * This version uses the same structure than the Arduino_LoRa_Demo_Sensor where
- * the sensor-related code is in a separate file
  */
 
 #include <SPI.h>
@@ -48,8 +46,31 @@
 #include <SX128XLT.h>                                          
 #include "SX128X_RadioSettings.h"
 #endif       
-                                 
-#include "my_soil_sensor_code.h"
+
+//#define WAZISENSE
+//#define SI7021_SENSOR
+
+#define OLED
+//various predefined connection setups for OLED
+// GND, VCC, SCL, SDA
+//#define OLED_GND234
+//#define OLED_9GND876 //9 as GND
+//#define OLED_7GND654 //7 as GND
+//#define OLED_GND13_12_11
+//For WaziSense
+#define OLED_GND579
+
+#define NSAMPLE 2
+
+// Include sensors
+#include "Sensor.h"
+#include "rawAnalog.h"
+#ifdef SI7021_SENSOR
+#include <Wire.h>
+#include "i2c_SI7021.h"
+#include "si7021_Temperature.h"
+#include "si7021_Humidity.h"
+#endif
 
 /********************************************************************
  _____              __ _                       _   _             
@@ -87,20 +108,17 @@
 //#define STRING_LIB
 ////////////////////////////
 #define LOW_POWER
-#define LOW_POWER_HIBERNATE
-#define SHOW_LOW_POWER_CYCLE
+//#define LOW_POWER_HIBERNATE
+//#define SHOW_LOW_POWER_CYCLE
 ////////////////////////////
 //Use LoRaWAN AES-like encryption
 //#define WITH_AES
-////////////////////////////
-//Use our Lightweight Stream Cipher (LSC) algorithm
-//#define WITH_LSC
 ////////////////////////////
 //If you want to upload to LoRaWAN cloud without pure LoRaWAN format you have to provide a 4 bytes DevAddr and uncomment #define EXTDEVADDR
 //#define EXTDEVADDR
 ////////////////////////////
 //this will enable a receive window after every transmission, uncomment it to also have LoRaWAN downlink
-#define WITH_RCVW
+//#define WITH_RCVW
 ////////////////////////////
 //normal behavior is to invert IQ for RX, the normal behavior at gateway is also to invert its IQ setting, only valid with WITH_RCVW
 #define INVERTIQ_ON_RX
@@ -133,7 +151,7 @@ uint8_t node_addr=8;
 
 ///////////////////////////////////////////////////////////////////
 // CHANGE HERE THE TIME IN MINUTES BETWEEN 2 READING & TRANSMISSION
-unsigned int idlePeriodInMin = 3;
+unsigned int idlePeriodInMin = 60;
 unsigned int idlePeriodInSec = 0;
 ///////////////////////////////////////////////////////////////////
 
@@ -164,9 +182,6 @@ uint8_t my_appKey[4]={5, 6, 7, 8};
 //unsigned char DevAddr[4] = { 0x12, 0x34, 0x56, 0x78 };
 ///////////////////////////////////////////////////////////////////
 
-//Danang
-//unsigned char DevAddr[4] = { 0x26, 0x04, 0x1F, 0x24 };
-
 //Pau
 unsigned char DevAddr[4] = { 0x26, 0x01, 0x17, 0x21 };
 #else
@@ -177,12 +192,25 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #endif
 
 ///////////////////////////////////////////////////////////////////
-// ENCRYPTION CONFIGURATION AND KEYS FOR LSC ENCRYPTION METHOD
-#ifdef WITH_LSC
-#include "local_lsc.h"
-#endif
 
-///////////////////////////////////////////////////////////////////
+// SENSORS DEFINITION 
+//////////////////////////////////////////////////////////////////
+// CHANGE HERE THE NUMBER OF SENSORS, SOME CAN BE NOT CONNECTED
+#ifdef WAZISENSE
+#ifdef SI7021_SENSOR
+//add SI7021 temp and hum
+SI7021 si7021;
+const int number_of_sensors = 4;
+bool foundSI7021=false;
+#else
+//add solar panel level on A2
+const int number_of_sensors = 2;
+#endif
+#else
+//only one soil humidity sensors
+const int number_of_sensors = 1;
+#endif
+//////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
 // IF YOU SEND A LONG STRING, INCREASE THE SIZE OF MESSAGE
@@ -273,29 +301,83 @@ uint32_t TXPacketCount=0;
 // this is for the Teensy36, Teensy35, Teensy31/32 & TeensyLC
 // need v6 of Snooze library
 #if defined __MK20DX256__ || defined __MKL26Z64__ || defined __MK64FX512__ || defined __MK66FX1M0__
-#define LOW_POWER_PERIOD 60
-#include <Snooze.h>
-SnoozeTimer timer;
-SnoozeBlock sleep_config(timer);
+  #define LOW_POWER_PERIOD 60
+  #include <Snooze.h>
+  SnoozeTimer timer;
+  SnoozeBlock sleep_config(timer);
 #elif defined ARDUINO_ESP8266_ESP01 || defined ARDUINO_ESP8266_NODEMCU || defined ESP8266
-#define LOW_POWER_PERIOD 60
-//we will use the deepSleep feature, so no additional library
+  #define LOW_POWER_PERIOD 60
+  //we will use the deepSleep feature, so no additional library
+#elif defined ARDUINO_ARCH_ASR650X
+  #define LOW_POWER_PERIOD 60
+  static TimerEvent_t wakeUp;
 #else // for all other boards based on ATMega168, ATMega328P, ATMega32U4, ATMega2560, ATMega256RFR2, ATSAMD21G18A
-#define LOW_POWER_PERIOD 8
-// you need the LowPower library from RocketScream
-// https://github.com/rocketscream/Low-Power
-#include "LowPower.h"
+  #define LOW_POWER_PERIOD 8
+  // you need the LowPower library from RocketScream
+  // https://github.com/rocketscream/Low-Power
+  #include "LowPower.h"
+  
+  #ifdef __SAMD21G18A__
+  // use the RTC library
+  #include "RTCZero.h"
+  /* Create an rtc object */
+  RTCZero rtc;
+  #endif
+#endif
+#endif
 
-#ifdef __SAMD21G18A__
-// use the RTC library
-#include "RTCZero.h"
-/* Create an rtc object */
-RTCZero rtc;
+#ifdef OLED
+#include <U8x8lib.h>
+//you can also power the OLED screen with a digital pin, here pin 8
+#define OLED_PWR_PIN 8
+// connection may depend on the board. Use A5/A4 for most Arduino boards. On ESP8266-based board we use GPI05 and GPI04. Heltec ESP32 has embedded OLED.
+#if defined ARDUINO_Heltec_WIFI_LoRa_32 || defined ARDUINO_WIFI_LoRa_32 || defined HELTEC_LORA
+U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
+#elif defined ESP8266 || defined ARDUINO_ESP8266_ESP01
+//U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 5, /* data=*/ 4, /* reset=*/ U8X8_PIN_NONE);
+U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 12, /* data=*/ 14, /* reset=*/ U8X8_PIN_NONE);
+#else
+#ifdef OLED_GND234
+  #ifdef OLED_PWR_PIN
+    #undef OLED_PWR_PIN
+    #define OLED_PWR_PIN 2
+  #endif
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 3, /* data=*/ 4, /* reset=*/ U8X8_PIN_NONE);
+#elif defined OLED_9GND876
+  #ifdef OLED_PWR_PIN
+    #undef OLED_PWR_PIN
+    #define OLED_PWR_PIN 8
+  #endif  
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 7, /* data=*/ 6, /* reset=*/ U8X8_PIN_NONE);
+#elif defined OLED_7GND654
+  #ifdef OLED_PWR_PIN
+    #undef OLED_PWR_PIN
+    #define OLED_PWR_PIN 6
+  #endif  
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 5, /* data=*/ 4, /* reset=*/ U8X8_PIN_NONE);  
+#elif defined OLED_GND13_12_11
+  #ifdef OLED_PWR_PIN
+    #undef OLED_PWR_PIN
+    #define OLED_PWR_PIN 13
+  #endif  
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 12, /* data=*/ 11, /* reset=*/ U8X8_PIN_NONE); 
+#elif defined OLED_GND579
+  #ifdef OLED_PWR_PIN
+    #undef OLED_PWR_PIN
+    #define OLED_PWR_PIN 5
+  #endif  
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 7, /* data=*/ 9, /* reset=*/ U8X8_PIN_NONE); 
+#else
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A5, /* data=*/ A4, /* reset=*/ U8X8_PIN_NONE);
 #endif
 #endif
+char oled_msg[20];
 #endif
 
 unsigned long nextTransmissionTime=0L;
+
+// array containing sensors pointers
+Sensor* sensor_ptrs[number_of_sensors];
 
 #ifdef WITH_EEPROM
 struct sx1272config {
@@ -343,7 +425,6 @@ long getCmdValue(int &i, char* cmdstr, char* strBuff=NULL) {
 #endif
 
 #ifndef STRING_LIB
-
 char *ftoa(char *a, double f, int precision)
 {
  long p[] = {0,10,100,1000,10000,100000,1000000,10000000,100000000};
@@ -393,6 +474,13 @@ void lowPower(unsigned long time_ms) {
   FLUSHOUTPUT;
   
 #else
+
+#if defined __MK20DX256__ || defined __MKL26Z64__ || defined __MK64FX512__ || defined __MK66FX1M0__
+  // warning, setTimer accepts value from 1ms to 65535ms max
+  // milliseconds
+  // by default, LOW_POWER_PERIOD is 60s for those microcontrollers
+  timer.setTimer(LOW_POWER_PERIOD*1000);
+#endif
               
   while (waiting_t>0) {  
   
@@ -456,7 +544,18 @@ void lowPower(unsigned long time_ms) {
 #else            
       Snooze.deepSleep(sleep_config);
 #endif
-  
+#elif defined ARDUINO_ESP8266_ESP01 || defined ARDUINO_ESP8266_NODEMCU || defined ESP8266
+      //in microseconds
+      //it is reported that RST pin should be connected to pin 16 to actually reset the board when deepsleep
+      //timer is triggered
+      if (waiting_t < LOW_POWER_PERIOD*1000) {
+        ESP.deepSleep(waiting_t*1000*1000);
+        waiting_t = 0;
+      }
+      else {
+        ESP.deepSleep(LOW_POWER_PERIOD*1000*1000);
+        waiting_t = waiting_t - LOW_POWER_PERIOD*1000;          
+      } 
 #else
       // use the delay function
       delay(waiting_t);
@@ -478,29 +577,89 @@ void lowPower(unsigned long time_ms) {
                      |_|    
 ******************************/
 
-void setup()
-{
-  // initialization of the temperature sensor
-  sensor_Init();
+void setup() {
   
 #ifdef LOW_POWER
+  bool low_power_status = IS_LOWPOWER;  
 #ifdef __SAMD21G18A__
   rtc.begin();
 #endif  
 #else
-  digitalWrite(PIN_POWER,HIGH);
+  bool low_power_status = IS_NOT_LOWPOWER;
+  //digitalWrite(PIN_POWER,HIGH);
 #endif
   
-  delay(3000);
+  delay(1000);
   // Open serial communications and wait for port to open:
 #if defined __SAMD21G18A__ && not defined ARDUINO_SAMD_FEATHER_M0 
   SerialUSB.begin(38400);
 #else
   Serial.begin(38400);  
+#endif
+
+#ifdef OLED_PWR_PIN
+  pinMode(OLED_PWR_PIN, OUTPUT);
+  digitalWrite(OLED_PWR_PIN, HIGH);
+#ifdef OLED_9GND876
+  //use pin 9 as ground
+  pinMode(9, OUTPUT);
+  digitalWrite(9, LOW);
+#elif defined OLED_7GND654
+  //use pin 7 as ground
+  pinMode(7, OUTPUT);
+  digitalWrite(7, LOW);
+#endif
+#endif
+
+  //////////////////////////////////////////////////////////////////
+// ADD YOUR SENSORS HERE   
+// Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power, pin_trigger=-1)
+#ifdef WAZISENSE
+  sensor_ptrs[0] = new rawAnalog("SH", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A6, (uint8_t) 6 /*no pin trigger*/);
+  sensor_ptrs[0]->set_n_sample(NSAMPLE);
+  sensor_ptrs[1] = new rawAnalog("SPL", IS_ANALOG, IS_CONNECTED, IS_NOT_LOWPOWER, (uint8_t) A2, -1 /*no pin trigger*/);
+  sensor_ptrs[1]->set_n_sample(NSAMPLE);  
+#ifdef SI7021_SENSOR
+  if (si7021.initialize()) {
+    PRINTLN_CSTSTR("SI7021 Sensor found");
+    foundSI7021=true;
+  } else {
+    PRINTLN_CSTSTR("SI7021 Sensor missing");
+  }    
+  sensor_ptrs[2] = new si7021_Temperature((char*)"SIT", IS_NOT_ANALOG, foundSI7021, IS_NOT_LOWPOWER, -1, -1 /*no pin trigger*/);
+  sensor_ptrs[3] = new si7021_Humidity((char*)"SIH", IS_NOT_ANALOG, foundSI7021, IS_NOT_LOWPOWER, -1, -1 /*no pin trigger*/);
+#endif      
+#else
+  sensor_ptrs[0] = new rawAnalog("SH", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A0, (uint8_t) 6 /*no pin trigger*/);
+#endif  
+////////////////////////////////////////////////////////////////// 
+  
+#ifdef OLED
+  digitalWrite(OLED_PWR_PIN, HIGH);
+  delay(200);
+  u8x8.begin();
+  //u8x8.setFont(u8x8_font_chroma48medium8_r);
+  u8x8.setFont(u8x8_font_pxplustandynewtv_r);
+  u8x8.drawString(0, 0, "PRIMA IntelIrriS");
+#ifdef WAZISENSE
+  u8x8.drawString(0, 1, "with WaziSense  ");
+#else
+  u8x8.drawString(0, 1, "with DIY IoT    ");
+#endif
+  u8x8.drawString(0, 2, "SoilHumidity N/A");
+
+  delay(2000);
+  digitalWrite(OLED_PWR_PIN, LOW);  
 #endif  
   
   // Print a start message
-  PRINT_CSTSTR("LoRa temperature sensor, extended version\n");
+  PRINT_CSTSTR("LoRa soil humidity sensor, extended version\n");
+
+#ifdef WAZISENSE
+  PRINT_CSTSTR("WaziSense board\n");
+  //for the solar panel monitorin circuit
+  pinMode(A2, INPUT);  
+#endif
 
 #ifdef ARDUINO_AVR_PRO
   PRINT_CSTSTR("Arduino Pro Mini detected\n");  
@@ -692,7 +851,7 @@ void setup()
 *******************************************************************************************************/
 
 #ifdef WITH_EEPROM
-#if defined ARDUINO_ESP8266_ESP01 || defined ARDUINO_ESP8266_NODEMCU
+#if defined ARDUINO_ESP8266_ESP01 || defined ARDUINO_ESP8266_NODEMCU || defined ARDUINO_ARCH_ASR650X
   EEPROM.begin(512);
 #endif
   // get config from EEPROM
@@ -766,12 +925,6 @@ void setup()
   PRINT_CSTSTR("node addr: ");
   PRINT_VALUE("%d", node_addr);
   PRINTLN;
-  
-#ifdef WITH_LSC
-  //need to initialize the LSC encoder
-  //each time you want to change the session key, you need to call this function  
-  LSC_session_init();
-#endif
 
 #ifdef SX126X
   PRINT_CSTSTR("SX126X");
@@ -808,7 +961,7 @@ void loop(void)
   long endSend;
   uint8_t app_key_offset=0;
   int e;
-  float temp;
+  float sensor_value;
   
 #ifndef LOW_POWER
   // 600000+random(15,60)*1000
@@ -819,39 +972,6 @@ void loop(void)
       PRINTLN_VALUE("%ld",nextTransmissionTime);
       PRINTLN_VALUE("%ld",(idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
 #endif      
-
-#ifdef LOW_POWER
-      digitalWrite(PIN_POWER,HIGH);
-      // security?
-      delay(200);    
-#endif
-
-      temp = 0.0;
-      
-      /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      // change here how the temperature should be computed depending on your sensor type
-      //  
-    
-      for (int i=0; i<5; i++) {
-          temp += sensor_getValue();  
-          delay(100);
-      }
-
-      //
-      // 
-      // /////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-      
-#ifdef LOW_POWER
-      digitalWrite(PIN_POWER,LOW);
-#endif
-      
-      PRINT_CSTSTR("Mean temp is ");
-      temp = temp/5;
-      PRINT_VALUE("%f", temp);
-      PRINTLN;
-
-      // for testing, uncomment if you just want to test, without a real temp sensor plugged
-      temp = 22.5;
       
 #if defined WITH_APPKEY && not defined LORAWAN
       app_key_offset = sizeof(my_appKey);
@@ -859,20 +979,99 @@ void loop(void)
       memcpy(message,my_appKey,app_key_offset);
 #endif
 
+#ifdef WAZISENSE
+      int A2value=analogRead(A2);
+      PRINT_CSTSTR("Solar panel is at level ");
+      PRINTLN_VALUE("%d", A2value);
+
+      pinMode(8, OUTPUT);
+      digitalWrite(8, HIGH);
+      delay(100);
+      digitalWrite(8, LOW);
+      delay(200);
+      digitalWrite(8, HIGH);
+      delay(100);
+      digitalWrite(8, LOW);
+#endif
+
+#ifdef OLED
+      //at startup and only every 20 transmitted packets
+      if (TXPacketCount == 0 || (TXPacketCount % 20) == 19) {
+        digitalWrite(OLED_PWR_PIN, HIGH);
+        u8x8.begin();
+        u8x8.setFont(u8x8_font_chroma48medium8_r);
+        u8x8.drawString(0, 0, "PRIMA IntelIrriS");
+#ifdef WAZISENSE
+        u8x8.drawString(0, 1, "with WaziSense  ");
+#else
+        u8x8.drawString(0, 1, "with DIY IoT    ");
+#endif
+      }
+#endif
+
       uint8_t r_size;
 
-      // the recommended format if now \!TC/22.5
-#ifdef STRING_LIB
-      r_size=sprintf((char*)message+app_key_offset,"\\!%s/%s",nomenclature_str,String(temp).c_str());
+      char final_str[80] = "\\!";
       
-      //for range test with a LoRaWAN gateway on TTN
-      //r_size=sprintf((char*)message+app_key_offset,"Hello from UPPA");
-      
-#else
-      char float_str[10];
-      ftoa(float_str,temp,2);
-      r_size=sprintf((char*)message+app_key_offset,"\\!%s/%s",nomenclature_str,float_str);
+      //this is how we can wake up some sensors in advance in case they need a longer warmup time
+      //digitalWrite(sensor_ptrs[4]->get_pin_power(),HIGH);
+
+#ifdef SI7021_SENSOR
+      //here we handle separately the SI7021
+      float humidity, temperature;
+      si7021.getHumidity(humidity);
+      si7021.getTemperature(temperature);
+      si7021.triggerMeasurement();
+    
+      sensor_ptrs[2]->set_data((double)temperature);
+      sensor_ptrs[3]->set_data((double)humidity);            
 #endif
+
+      // main loop for sensors, actually, you don't have to edit anything here
+      // just add a predefined sensor if needed or provide a new sensor class instance for a handle a new physical sensor
+      for (int i=0; i<number_of_sensors; i++) {
+
+          if (sensor_ptrs[i]->get_is_connected() || sensor_ptrs[i]->has_fake_data()) {
+
+#ifdef STRING_LIB
+              if (i==0) {
+                  sprintf(final_str, "%s%s/%s", final_str, sensor_ptrs[i]->get_nomenclature(), String(sensor_ptrs[i]->get_value()).c_str());
+              } 
+              else {
+                  sprintf(final_str, "%s/%s/%s", final_str, sensor_ptrs[i]->get_nomenclature(), String(sensor_ptrs[i]->get_value()).c_str());
+              }
+#else
+              char float_str[10];            
+              ftoa(float_str, sensor_ptrs[i]->get_value(), 2);
+          
+              if (i==0) {
+                  sprintf(final_str, "%s%s/%s", final_str, sensor_ptrs[i]->get_nomenclature(), float_str);
+              } 
+              else {
+                  sprintf(final_str, "%s/%s/%s", final_str, sensor_ptrs[i]->get_nomenclature(), float_str);
+              }
+
+#ifdef OLED
+              if (TXPacketCount == 0 || (TXPacketCount % 20) == 19) {
+                // don't show the '\!' characters
+                sprintf(oled_msg, "%s/%s", sensor_ptrs[i]->get_nomenclature(), float_str); 
+                u8x8.drawString(0, 2+i, oled_msg);
+              }  
+#endif              
+#endif              
+          }
+      }
+
+#ifdef OLED
+      if (TXPacketCount == 0 || (TXPacketCount % 20) == 19) {
+        delay(2000);
+        digitalWrite(OLED_PWR_PIN, LOW);
+        //need to wait long enough otherwise there will be not enough power for transmission
+        delay(1000);
+      }
+#endif
+      
+      r_size=sprintf((char*)message+app_key_offset, final_str);
 
       PRINT_CSTSTR("Sending ");
       PRINT_STR("%s",(char*)(message+app_key_offset));
@@ -889,7 +1088,7 @@ void loop(void)
 
       uint8_t p_type=PKT_TYPE_DATA;
       
-#if defined WITH_AES || defined WITH_LSC
+#if defined WITH_AES
       // indicate that payload is encrypted
       p_type = p_type | PKT_FLAG_DATA_ENCRYPTED;
 #endif
@@ -917,21 +1116,7 @@ void loop(void)
 #endif
       pl=local_aes_lorawan_create_pkt(message, pl, app_key_offset);
 #endif
-
-/********************************** 
- _      _____ _____ 
-| |    /  ___/  __ \
-| |    \ `--.| /  \/
-| |     `--. \ |    
-| |____/\__/ / \__/\
-\_____/\____/ \____/
-***********************************/
-//use our Lightweight Stream Cipher (LSC) encrypting
-////////////////////////////////////////////////////
-#ifdef WITH_LSC
-      PRINT_CSTSTR("end-device uses LSC encryption\n");
-      pl=local_lsc_create_pkt(message, pl, app_key_offset, p_type, node_addr);
-#endif
+///////////////////////////////////
 
       startSend=millis();
 
