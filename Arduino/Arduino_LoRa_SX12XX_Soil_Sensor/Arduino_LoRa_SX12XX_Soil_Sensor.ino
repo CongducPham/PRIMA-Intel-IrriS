@@ -50,7 +50,7 @@
 //#define WAZISENSE
 //#define SI7021_SENSOR
 
-#define OLED
+//#define OLED
 //various predefined connection setups for OLED
 // GND, VCC, SCL, SDA
 //#define OLED_GND234
@@ -203,12 +203,12 @@ SI7021 si7021;
 const int number_of_sensors = 4;
 bool foundSI7021=false;
 #else
-//add solar panel level on A2
+//1 soil humidity + solar panel level on A2
 const int number_of_sensors = 2;
 #endif
 #else
-//only one soil humidity sensors
-const int number_of_sensors = 1;
+//2 soil humidity sensors
+const int number_of_sensors = 2;
 #endif
 //////////////////////////////////////////////////////////////////
 
@@ -615,10 +615,8 @@ void setup() {
 // ADD YOUR SENSORS HERE   
 // Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power, pin_trigger=-1)
 #ifdef WAZISENSE
-  sensor_ptrs[0] = new rawAnalog("SH", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A6, (uint8_t) 6 /*no pin trigger*/);
-  sensor_ptrs[0]->set_n_sample(NSAMPLE);
+  sensor_ptrs[0] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A6, (uint8_t) 6 /*no pin trigger*/);
   sensor_ptrs[1] = new rawAnalog("SPL", IS_ANALOG, IS_CONNECTED, IS_NOT_LOWPOWER, (uint8_t) A2, -1 /*no pin trigger*/);
-  sensor_ptrs[1]->set_n_sample(NSAMPLE);  
 #ifdef SI7021_SENSOR
   if (si7021.initialize()) {
     PRINTLN_CSTSTR("SI7021 Sensor found");
@@ -630,8 +628,11 @@ void setup() {
   sensor_ptrs[3] = new si7021_Humidity((char*)"SIH", IS_NOT_ANALOG, foundSI7021, IS_NOT_LOWPOWER, -1, -1 /*no pin trigger*/);
 #endif      
 #else
-  sensor_ptrs[0] = new rawAnalog("SH", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A0, (uint8_t) 6 /*no pin trigger*/);
-#endif  
+  sensor_ptrs[0] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A0, (uint8_t) A1 /*no pin trigger*/);
+  sensor_ptrs[1] = new rawAnalog("SH2", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A2, (uint8_t) A3 /*no pin trigger*/);
+#endif
+  sensor_ptrs[0]->set_n_sample(NSAMPLE);  
+  sensor_ptrs[1]->set_n_sample(NSAMPLE);  
 ////////////////////////////////////////////////////////////////// 
   
 #ifdef OLED
