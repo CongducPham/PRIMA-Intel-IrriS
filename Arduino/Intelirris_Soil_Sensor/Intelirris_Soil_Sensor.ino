@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: November 17th, 2021 by C. Pham
+ * last update: November 30th, 2021 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -47,20 +47,62 @@
 #include "SX128X_RadioSettings.h"
 #endif       
 
+////////////////////////////////////////////////////////////////////
+// WAZISENSE and WAZIDEV v1.4 boards have
+//  - an embedded SI7021 sensor
+// WAZISENSE has an integrated solar panel level monitoring circuit 
+//  - input voltage comming from solar panel is exposed on pin A2
+// WAZIDEV has a battery voltage level monitoring circuit
+//  - exposed on pin A7, and D7 must then be at LOW level
+////////////////////////////////////////////////////////////////////
+
+//choose either WAZISENSE or WAZIDEV14, or NONE of them for DIY ProMini
 //#define WAZISENSE
+//#define WAZIDEV14
+
+//can be uncommented for both WAZISENSE and WAZIDEV14
 //#define SI7021_SENSOR
 
+//uncomment to have 2 soil humidity sensors SH1 and SH2
+#define TWO_SHUM_SENSORS
+
+#ifdef WAZISENSE
+//uncomment to transmit data related to solar panel level 
+//#define SOLAR_PANEL_LEVEL
+//this is how you need to connect the analog soil humidity sensors
+#define SH1_ANALOG_PIN A6
+#define SH1_PWR_PIN 6
+#define SH2_ANALOG_PIN A7
+#define SH2_PWR_PIN 7
+#else
+#ifdef WAZIDEV14
+//uncomment to transmit data related to battery voltage level 
+//#define BAT_LEVEL
+#endif
+//this is how you need to connect the analog soil humidity sensors
+#define SH1_ANALOG_PIN A0
+#define SH1_PWR_PIN A1
+#define SH2_ANALOG_PIN A2
+#define SH2_PWR_PIN A3
+#endif
+
+//uncomment if you have an OLED attached
+//verify how you want to connect the OLED
+//OLED is not recommended for operational deployment
 //#define OLED
 //various predefined connection setups for OLED
 // GND, VCC, SCL, SDA
 //#define OLED_GND234
-//#define OLED_9GND876 //9 as GND
 //#define OLED_7GND654 //7 as GND
 //#define OLED_GND13_12_11
-//For WaziSense
-#define OLED_GND579
 
-#define NSAMPLE 2
+//For WaziDev without SOLAR_PANEL_LEVEL
+#define OLED_9GND876 //9 as GND
+//For WaziDev with SOLAR_PANEL_LEVEL, cannot use D7
+//#define OLED_A3GNDA2_A1_A0 //A3 as GND
+
+//Suitable for WaziSense
+//#define OLED_GND579
 
 // Include sensors
 #include "Sensor.h"
@@ -108,8 +150,8 @@
 //#define STRING_LIB
 ////////////////////////////
 #define LOW_POWER
-//#define LOW_POWER_HIBERNATE
-//#define SHOW_LOW_POWER_CYCLE
+#define LOW_POWER_HIBERNATE
+//#define SHOW_LOW_POWER_CYCLE //uncomment only for debugging and testing
 ////////////////////////////
 //Use LoRaWAN AES-like encryption
 //#define WITH_AES
@@ -151,8 +193,13 @@ uint8_t node_addr=8;
 
 ///////////////////////////////////////////////////////////////////
 // CHANGE HERE THE TIME IN MINUTES BETWEEN 2 READING & TRANSMISSION
-unsigned int idlePeriodInMin = 60;
+unsigned int idlePeriodInMin = 30;
 unsigned int idlePeriodInSec = 0;
+///////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////
+// CHANGE HERE THE DEFAULT NUMBER OF READING FOR ATTACHED SENSORS
+#define NSAMPLE 2
 ///////////////////////////////////////////////////////////////////
 
 #ifdef WITH_APPKEY
@@ -195,20 +242,52 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 
 // SENSORS DEFINITION 
 //////////////////////////////////////////////////////////////////
-// CHANGE HERE THE NUMBER OF SENSORS, SOME CAN BE NOT CONNECTED
-#ifdef WAZISENSE
-#ifdef SI7021_SENSOR
-//add SI7021 temp and hum
-SI7021 si7021;
-const int number_of_sensors = 4;
-bool foundSI7021=false;
+// NORMALLY YOU DO NOT NEED TO CHANGE THIS SECTION
+#if defined WAZISENSE || defined WAZIDEV14
+  #ifdef SI7021_SENSOR
+    SI7021 si7021;
+    bool foundSI7021=false;
+    uint8_t si7021_temp_index;
+    uint8_t si7021_hum_index;
+    #if defined SOLAR_PANEL_LEVEL || defined BAT_LEVEL
+      //soil sensor(s) + SI7021 temp/hum + solar|battery level
+      #ifdef TWO_SHUM_SENSORS
+        const int number_of_sensors = 5;
+      #else
+        const int number_of_sensors = 4;
+      #endif
+    #else
+       //soil sensor(s) + SI7021 temp/hum
+      #ifdef TWO_SHUM_SENSORS
+        const int number_of_sensors = 4;
+      #else
+        const int number_of_sensors = 3;
+      #endif
+    #endif
+  #else
+    #if defined SOLAR_PANEL_LEVEL || defined BAT_LEVEL
+      //soil sensor(s) + solar|battery level
+      #ifdef TWO_SHUM_SENSORS
+        const int number_of_sensors = 3;
+      #else
+        const int number_of_sensors = 2;
+      #endif
+    #else
+       //soil sensor(s)
+      #ifdef TWO_SHUM_SENSORS
+        const int number_of_sensors = 2;
+      #else
+        const int number_of_sensors = 1;
+      #endif
+    #endif  
+  #endif
 #else
-//1 soil humidity + solar panel level on A2
-const int number_of_sensors = 2;
-#endif
-#else
-//2 soil humidity sensors
-const int number_of_sensors = 2;
+  //soil sensor(s) on regular ProMini PCB version
+  #ifdef TWO_SHUM_SENSORS
+    const int number_of_sensors = 2;
+  #else
+    const int number_of_sensors = 1;
+  #endif
 #endif
 //////////////////////////////////////////////////////////////////
 
@@ -367,6 +446,12 @@ U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 12, /* data=*/ 14, /* reset=*
     #define OLED_PWR_PIN 5
   #endif  
   U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 7, /* data=*/ 9, /* reset=*/ U8X8_PIN_NONE); 
+#elif defined OLED_A3GNDA2_A1_A0
+  #ifdef OLED_PWR_PIN
+    #undef OLED_PWR_PIN
+    #define OLED_PWR_PIN A2
+  #endif  
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A1, /* data=*/ A0, /* reset=*/ U8X8_PIN_NONE); 
 #else
   U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A5, /* data=*/ A4, /* reset=*/ U8X8_PIN_NONE);
 #endif
@@ -608,15 +693,40 @@ void setup() {
   //use pin 7 as ground
   pinMode(7, OUTPUT);
   digitalWrite(7, LOW);
+#elif defined OLED_A3GNDA2_A1_A0
+  //use pin A3 as ground
+  pinMode(A3, OUTPUT);
+  analogWrite(A3, LOW);  
 #endif
 #endif
 
+  uint8_t sensor_index=0;
+  
   //////////////////////////////////////////////////////////////////
 // ADD YOUR SENSORS HERE   
 // Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power, pin_trigger=-1)
-#ifdef WAZISENSE
-  sensor_ptrs[0] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A6, (uint8_t) 6 /*no pin trigger*/);
-  sensor_ptrs[1] = new rawAnalog("SPL", IS_ANALOG, IS_CONNECTED, IS_NOT_LOWPOWER, (uint8_t) A2, -1 /*no pin trigger*/);
+  //SH1
+  sensor_ptrs[sensor_index] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH1_ANALOG_PIN, (uint8_t) SH1_PWR_PIN /*no pin trigger*/);
+  sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  sensor_index++;
+#ifdef TWO_SHUM_SENSORS
+  //SH2
+  sensor_ptrs[sensor_index] = new rawAnalog("SH2", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH2_ANALOG_PIN, (uint8_t) SH2_PWR_PIN /*no pin trigger*/);
+  sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  sensor_index++;
+#endif
+
+#if defined WAZISENSE && defined SOLAR_PANEL_LEVEL  
+  sensor_ptrs[sensor_index] = new rawAnalog("SPL", IS_ANALOG, IS_CONNECTED, IS_NOT_LOWPOWER, (uint8_t) A2, -1 /*no pin trigger*/);
+  sensor_ptrs[sensor_index]->set_n_sample(1);
+  sensor_index++;  
+#endif
+#if defined WAZIDEV14 && defined BAT_LEVEL
+  sensor_ptrs[sensor_index] = new rawAnalog("BAT", IS_ANALOG, IS_CONNECTED, IS_NOT_LOWPOWER, (uint8_t) A7, -1 /*no pin trigger*/);
+  sensor_ptrs[sensor_index]->set_n_sample(1);
+  sensor_index++;  
+#endif
+  
 #ifdef SI7021_SENSOR
   if (si7021.initialize()) {
     PRINTLN_CSTSTR("SI7021 Sensor found");
@@ -624,33 +734,36 @@ void setup() {
   } else {
     PRINTLN_CSTSTR("SI7021 Sensor missing");
   }    
-  sensor_ptrs[2] = new si7021_Temperature((char*)"SIT", IS_NOT_ANALOG, foundSI7021, IS_NOT_LOWPOWER, -1, -1 /*no pin trigger*/);
-  sensor_ptrs[3] = new si7021_Humidity((char*)"SIH", IS_NOT_ANALOG, foundSI7021, IS_NOT_LOWPOWER, -1, -1 /*no pin trigger*/);
-#endif      
-#else
-  sensor_ptrs[0] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A0, (uint8_t) A1 /*no pin trigger*/);
-  sensor_ptrs[1] = new rawAnalog("SH2", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) A2, (uint8_t) A3 /*no pin trigger*/);
+  sensor_ptrs[sensor_index] = new si7021_Temperature((char*)"SIT", IS_NOT_ANALOG, foundSI7021, IS_NOT_LOWPOWER, -1, -1 /*no pin trigger*/);
+  si7021_temp_index=sensor_index;
+  sensor_index++;
+  sensor_ptrs[sensor_index] = new si7021_Humidity((char*)"SIH", IS_NOT_ANALOG, foundSI7021, IS_NOT_LOWPOWER, -1, -1 /*no pin trigger*/);
+  si7021_hum_index=sensor_index;
+  sensor_index++;
 #endif
-  sensor_ptrs[0]->set_n_sample(NSAMPLE);  
-  sensor_ptrs[1]->set_n_sample(NSAMPLE);  
+ 
 ////////////////////////////////////////////////////////////////// 
   
 #ifdef OLED
   digitalWrite(OLED_PWR_PIN, HIGH);
   delay(200);
   u8x8.begin();
-  //u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.setFont(u8x8_font_pxplustandynewtv_r);
+  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  //u8x8.setFont(u8x8_font_pxplustandynewtv_r);
   u8x8.drawString(0, 0, "PRIMA IntelIrriS");
 #ifdef WAZISENSE
   u8x8.drawString(0, 1, "with WaziSense  ");
+#elif defined WAZIDEV14  
+  u8x8.drawString(0, 1, "with WaziDev1.4 ");
 #else
   u8x8.drawString(0, 1, "with DIY IoT    ");
 #endif
   u8x8.drawString(0, 2, "SoilHumidity N/A");
 
   delay(2000);
+#ifdef LOW_POWER  
   digitalWrite(OLED_PWR_PIN, LOW);  
+#endif  
 #endif  
   
   // Print a start message
@@ -658,8 +771,24 @@ void setup() {
 
 #ifdef WAZISENSE
   PRINT_CSTSTR("WaziSense board\n");
-  //for the solar panel monitorin circuit
-  pinMode(A2, INPUT);  
+#ifdef SOLAR_PANEL_LEVEL  
+  //for the solar panel monitoring circuit
+  pinMode(A2, INPUT);
+#endif    
+#endif
+
+#ifdef WAZIDEV14
+  PRINT_CSTSTR("WaziDev v1.4 board\n");
+  pinMode(7, OUTPUT);
+#ifdef BAT_LEVEL  
+  //for the bat level monitoring circuit
+  pinMode(A7, INPUT);
+  //need to put D7 low to activate the monitoring circuit
+  digitalWrite(7, LOW);
+#else
+  //keep D7 HIGH to de-activate the bat level monitoring circuit
+  digitalWrite(7, HIGH);  
+#endif    
 #endif
 
 #ifdef ARDUINO_AVR_PRO
@@ -997,17 +1126,24 @@ void loop(void)
 
 #ifdef OLED
       //at startup and only every 20 transmitted packets
+#ifdef LOW_POWER      
       if (TXPacketCount == 0 || (TXPacketCount % 20) == 19) {
+#endif        
         digitalWrite(OLED_PWR_PIN, HIGH);
         u8x8.begin();
         u8x8.setFont(u8x8_font_chroma48medium8_r);
+        //u8x8.setFont(u8x8_font_pxplustandynewtv_r);
         u8x8.drawString(0, 0, "PRIMA IntelIrriS");
 #ifdef WAZISENSE
         u8x8.drawString(0, 1, "with WaziSense  ");
+#elif defined WAZIDEV14  
+        u8x8.drawString(0, 1, "with WaziDev1.4 ");
 #else
         u8x8.drawString(0, 1, "with DIY IoT    ");
 #endif
+#ifdef LOW_POWER
       }
+#endif      
 #endif
 
       uint8_t r_size;
@@ -1018,14 +1154,15 @@ void loop(void)
       //digitalWrite(sensor_ptrs[4]->get_pin_power(),HIGH);
 
 #ifdef SI7021_SENSOR
-      //here we handle separately the SI7021
+      //here chose to handle separately the SI7021
+      //as it is an integrated sensors for both temperature and humidity
       float humidity, temperature;
       si7021.getHumidity(humidity);
       si7021.getTemperature(temperature);
       si7021.triggerMeasurement();
-    
-      sensor_ptrs[2]->set_data((double)temperature);
-      sensor_ptrs[3]->set_data((double)humidity);            
+      //we just inject the data into the corresponding sensor object
+      sensor_ptrs[si7021_temp_index]->set_data((double)temperature);
+      sensor_ptrs[si7021_hum_index]->set_data((double)humidity);            
 #endif
 
       // main loop for sensors, actually, you don't have to edit anything here
@@ -1053,23 +1190,29 @@ void loop(void)
               }
 
 #ifdef OLED
+#ifdef LOW_POWER
               if (TXPacketCount == 0 || (TXPacketCount % 20) == 19) {
+#endif                
                 // don't show the '\!' characters
                 sprintf(oled_msg, "%s/%s", sensor_ptrs[i]->get_nomenclature(), float_str); 
                 u8x8.drawString(0, 2+i, oled_msg);
+#ifdef LOW_POWER                
               }  
-#endif              
+#endif
+#endif   
 #endif              
           }
       }
 
 #ifdef OLED
+#ifdef LOW_POWER
       if (TXPacketCount == 0 || (TXPacketCount % 20) == 19) {
         delay(2000);
         digitalWrite(OLED_PWR_PIN, LOW);
         //need to wait long enough otherwise there will be not enough power for transmission
         delay(1000);
       }
+#endif      
 #endif
       
       r_size=sprintf((char*)message+app_key_offset, final_str);
