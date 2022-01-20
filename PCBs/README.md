@@ -17,7 +17,7 @@ Our modified communication library makes wiring a bit easier because only CS, MI
 
 You can download all the Gerber zipped archive and view them on an [online Gerber viewer](https://www.pcbgogo.com/GerberViewer.html).
 
-- Arduino ProMini v3 PCB for RFM95W/NiceRF SX1262 zipped Gerber archive, 2 layer board of 30x77mm [.zip](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/MySecondProMiniLoRaBreakout_2021-11-14.zip)
-- Arduino ProMini v2 PCB for NiceRF SX1280 zipped Gerber archive, 2 layer board of 30x77mm [.zip](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/MySecondProMiniLoRaBreakout_SX128X_2021-11-14.zip)
+- Arduino ProMini v3 PCB for RFM95W/NiceRF SX1262 zipped Gerber archive, 2 layer board of 30x77mm [.zip](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/MySecondProMiniLoRaBreakout_2022-01-20.zip)
+- Arduino ProMini v2 PCB for NiceRF SX1280 zipped Gerber archive, 2 layer board of 30x77mm [.zip](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/MySecondProMiniLoRaBreakout_SX128X_2022-01-20.zip)
 
 You can easily make them produced on many online PCB manufacturers. Usually, you just need to provide the zip archive and both size and number of layers are detected. You can dramatically decrease the price by using "panelize" option. We use 3x1 for ProMini PCBs. For instance, we ordered them from [JLCPCB](https://jlcpcb.com/) and the cost of 10 panels (i.e. 30 ProMini breakout) is about $4! 
