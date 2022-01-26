@@ -3,7 +3,6 @@ Low-cost LoRa IoT platform for the PRIMA INTEL-IRRIS project
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/intel-irris-logo.png" width="300">
 
-
 Latest news
 -----------
 
@@ -22,6 +21,10 @@ These based framework will be enhanced with Intel-IrriS specific AI features and
 Tutorials
 ---------
 
+General presentation of the PRIMA INTEL-IRRIS project
+
+- [Intel-IrriS’s presentation slides](http://cpham.perso.univ-pau.fr/LORA/INTEL-IRRIS/Intel-Irris-presentation.pdf)
+
 1 general online tutorial on IoT, Arduino, LoRa, AI 
 
 - [Arduino-Sensor-LoRa tutorial](https://cpham.perso.univ-pau.fr/LORA/WAZIUP/tuto/index.html)
@@ -30,12 +33,15 @@ The generic low-cost IoT framework from which the Intel-IrriS platform is derive
 
 - [Low-cost IoT framework](https://github.com/CongducPham/LowCostLoRaGw)
 
-Intel-IrriS specific tutorials
+INTEL-IRRIS specific tutorials
 
-- [Building the DIY soil device](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform.pdf)
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform.pdf). Slides.
 
-- [List of parts for DIY soil device](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-IrriS-low-cost-sensor-hardware-parts.pdf)
+- [Build the LoRa IoT soil humidity sensor for the PRIMA INTEL-IRRIS project](https://youtu.be/zcazzDbXvHk). **YouTube video**.
 
+- [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB.pdf). Slides.
+
+- [List of hardware parts for the INTEL-IRRIS soil device](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-IrriS-low-cost-sensor-hardware-parts.pdf). Document.
 
 Enjoy!
 C. Pham
