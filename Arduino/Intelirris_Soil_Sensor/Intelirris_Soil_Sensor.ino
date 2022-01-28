@@ -64,7 +64,7 @@
 //#define SI7021_SENSOR
 
 //uncomment to have 2 soil humidity sensors SH1 and SH2
-#define TWO_SHUM_SENSORS
+//#define TWO_SHUM_SENSORS
 
 #ifdef WAZISENSE
 //uncomment to transmit data related to solar panel level 
