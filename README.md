@@ -35,11 +35,17 @@ The generic low-cost IoT framework from which the INTEL-IRRIS platform is derive
 
 INTEL-IRRIS specific tutorials
 
-- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform.pdf). Slides.
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform.pdf). Slides. Related videos: Video n°1, Video n°2 and Video n°3.
 
-- [Build the LoRa IoT microcontroller platform for the PRIMA INTEL-IRRIS project](https://youtu.be/3jdQ0Uo0phQ). **YouTube video**.
+- [Building the INTEL-IRRIS IoT platform. Part 2: edge-enabled gateway (WaziGate)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-edge-gateway.pdf). Slides. Related videos: Video n°4.
 
-- [Build the LoRa IoT soil sensor device for the PRIMA INTEL-IRRIS project](https://youtu.be/zcazzDbXvHk). **YouTube video**.
+- Video n°1: [Build the LoRa IoT microcontroller platform for the PRIMA INTEL-IRRIS project](https://youtu.be/3jdQ0Uo0phQ). **YouTube video**.
+
+- Video n°2: [Build the LoRa IoT soil sensor device for the PRIMA INTEL-IRRIS project](https://youtu.be/zcazzDbXvHk). **YouTube video**.
+
+- Video n°3: [Connect the SEN0308 capacitive sensor and test LoRa data transmission on the Edge IoT gateway](https://youtu.be/n0YGan7_vUc). **YouTube video**.
+
+- Video n°4: [Transmitting to the INTEL-IRRIS WaziGate Edge IoT gateway](). **YouTube video**. To come.
 
 - [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB.pdf). Slides.
 
