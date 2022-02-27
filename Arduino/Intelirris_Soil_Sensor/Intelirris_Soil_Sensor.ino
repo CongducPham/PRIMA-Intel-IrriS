@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: November 30th, 2021 by C. Pham
+ * last update: February 2nd, 2022 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -26,26 +26,20 @@
  *  
  */
 
-#include <SPI.h>
-//this is the standard behaviour of library, use SPI Transaction switching
-#define USE_SPI_TRANSACTION  
-//indicate in this file the radio module: SX126X, SX127X or SX128X
-#include "RadioSettings.h"
+/********************************************************************
+ _____              __ _                       _   _             
+/  __ \            / _(_)                     | | (_)            
+| /  \/ ___  _ __ | |_ _  __ _ _   _ _ __ __ _| |_ _  ___  _ __  
+| |    / _ \| '_ \|  _| |/ _` | | | | '__/ _` | __| |/ _ \| '_ \ 
+| \__/\ (_) | | | | | | | (_| | |_| | | | (_| | |_| | (_) | | | |
+ \____/\___/|_| |_|_| |_|\__, |\__,_|_|  \__,_|\__|_|\___/|_| |_|
+                          __/ |                                  
+                         |___/                                   
+********************************************************************/
 
-#ifdef SX126X
-#include <SX126XLT.h>                                          
-#include "SX126X_RadioSettings.h"
-#endif
-
-#ifdef SX127X
-#include <SX127XLT.h>                                          
-#include "SX127X_RadioSettings.h"
-#endif
-
-#ifdef SX128X
-#include <SX128XLT.h>                                          
-#include "SX128X_RadioSettings.h"
-#endif       
+////////////////////////////////////////////////////////////////////
+// sends data to INTEL-IRRIS WaziGate edge-gateway
+#define TO_WAZIGATE
 
 ////////////////////////////////////////////////////////////////////
 // WAZISENSE and WAZIDEV v1.4 boards have
@@ -63,67 +57,19 @@
 //can be uncommented for both WAZISENSE and WAZIDEV14
 //#define SI7021_SENSOR
 
-//uncomment to have 2 soil humidity sensors SH1 and SH2
-//#define TWO_SHUM_SENSORS
-
-#ifdef WAZISENSE
-//uncomment to transmit data related to solar panel level 
-//#define SOLAR_PANEL_LEVEL
-//this is how you need to connect the analog soil humidity sensors
-#define SH1_ANALOG_PIN A6
-#define SH1_PWR_PIN 6
-#define SH2_ANALOG_PIN A7
-#define SH2_PWR_PIN 7
-#else
-#ifdef WAZIDEV14
-//uncomment to transmit data related to battery voltage level 
-//#define BAT_LEVEL
-#endif
-//this is how you need to connect the analog soil humidity sensors
-#define SH1_ANALOG_PIN A0
-#define SH1_PWR_PIN A1
-#define SH2_ANALOG_PIN A2
-#define SH2_PWR_PIN A3
+//uncomment to use XLPP format to send to WAZIGATE for instance
+//so uncomment XLPP only with LORAWAN to WAZIGATE
+#ifdef TO_WAZIGATE
+#define LORAWAN
+#define USE_XLPP
 #endif
 
-//uncomment if you have an OLED attached
-//verify how you want to connect the OLED
-//OLED is not recommended for operational deployment
-//#define OLED
-//various predefined connection setups for OLED
-// GND, VCC, SCL, SDA
-//#define OLED_GND234
-//#define OLED_7GND654 //7 as GND
-//#define OLED_GND13_12_11
+//uncomment to have 1 soil temperature sensor ST
+//using a one-wire DS18B20 sensor
+//#define SOIL_TEMP_SENSOR
 
-//For WaziDev without SOLAR_PANEL_LEVEL
-#define OLED_9GND876 //9 as GND
-//For WaziDev with SOLAR_PANEL_LEVEL, cannot use D7
-//#define OLED_A3GNDA2_A1_A0 //A3 as GND
-
-//Suitable for WaziSense
-//#define OLED_GND579
-
-// Include sensors
-#include "Sensor.h"
-#include "rawAnalog.h"
-#ifdef SI7021_SENSOR
-#include <Wire.h>
-#include "i2c_SI7021.h"
-#include "si7021_Temperature.h"
-#include "si7021_Humidity.h"
-#endif
-
-/********************************************************************
- _____              __ _                       _   _             
-/  __ \            / _(_)                     | | (_)            
-| /  \/ ___  _ __ | |_ _  __ _ _   _ _ __ __ _| |_ _  ___  _ __  
-| |    / _ \| '_ \|  _| |/ _` | | | | '__/ _` | __| |/ _ \| '_ \ 
-| \__/\ (_) | | | | | | | (_| | |_| | | | (_| | |_| | (_) | | | |
- \____/\___/|_| |_|_| |_|\__, |\__,_|_|  \__,_|\__|_|\___/|_| |_|
-                          __/ |                                  
-                         |___/                                   
-********************************************************************/
+//uncomment to have a soil tensiometer watermark sensor
+//#define WITH_WATERMARK
 
 ///////////////////////////////////////////////////////////////////
 // COMMENT OR UNCOMMENT TO CHANGE FEATURES. 
@@ -132,7 +78,7 @@
 // FOR UPLINK WITH ONLY AES ENCRYTION: uncomment WITH_AES
 // FOR UPLINK TO LORAWAN CLOUD ENCAPSULATED LORAWAN FORMAT: uncomment WITH_AES & EXTDEVADDR 
 // FOR UPLINK TO LORAWAN CLOUD NATIVE LORAWAN FORMAT: uncomment LORAWAN in RadioSettings.h
-// FOR UPLINK TO LORAWAN CLOUD AND DOWNLINK WITH NATIVE LORAWAN FORMAT: uncomment LORAWAN in RadioSettings.h & WITH_RCVW
+// FOR UPLINK TO LORAWAN CLOUD AND DOWNLINK WITH NATIVE LORAWAN FORMAT: uncomment LORAWAN & WITH_RCVW
 // 
 // more info: https://github.com/CongducPham/LowCostLoRaGw/blob/master/gw_full_latest/README-aes_lorawan.md
 //
@@ -152,6 +98,11 @@
 #define LOW_POWER
 #define LOW_POWER_HIBERNATE
 //#define SHOW_LOW_POWER_CYCLE //uncomment only for debugging and testing
+////////////////////////////
+//Use native LoRaWAN packet format to send to LoRaWAN gateway - beware it does not mean you device is a full LoRaWAN device
+#ifndef TO_WAZIGATE
+//#define LORAWAN
+#endif
 ////////////////////////////
 //Use LoRaWAN AES-like encryption
 //#define WITH_AES
@@ -187,13 +138,13 @@
 ///////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
-// CHANGE HERE THE NODE ADDRESS 
+// CHANGE HERE THE NODE ADDRESS IN NO LORAWAN MODE
 uint8_t node_addr=8;
 //////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
 // CHANGE HERE THE TIME IN MINUTES BETWEEN 2 READING & TRANSMISSION
-unsigned int idlePeriodInMin = 30;
+unsigned int idlePeriodInMin = 60;
 unsigned int idlePeriodInSec = 0;
 ///////////////////////////////////////////////////////////////////
 
@@ -210,6 +161,142 @@ uint8_t my_appKey[4]={5, 6, 7, 8};
 ///////////////////////////////////////////////////////////////////
 #endif
 
+
+/********************************************************************
+  _        ___    __      ___   _  _ 
+ | |   ___| _ \__ \ \    / /_\ | \| |
+ | |__/ _ \   / _` \ \/\/ / _ \| .` |
+ |____\___/_|_\__,_|\_/\_/_/ \_\_|\_|
+********************************************************************/
+                                     
+///////////////////////////////////////////////////////////////////
+// LORAWAN OR EXTENDED DEVICE ADDRESS FOR LORAWAN CLOUD
+#if defined LORAWAN || defined EXTDEVADDR
+///////////////////////////////////////////////////////////////////
+//ENTER HERE your Device Address from the TTN device info (same order, i.e. msb). Example for 0x12345678
+//unsigned char DevAddr[4] = { 0x12, 0x34, 0x56, 0x78 };
+///////////////////////////////////////////////////////////////////
+
+//Pau
+//unsigned char DevAddr[4] = { 0x26, 0x01, 0x17, 0x21 };
+
+//WaziGate default
+//26011DAA
+unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xAA};
+#else
+///////////////////////////////////////////////////////////////////
+// DO NOT CHANGE HERE
+unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
+///////////////////////////////////////////////////////////////////
+#endif
+
+///////////////////////////////////////////////////////////////////
+
+/********************************************************************
+   ___  _        _ 
+  / _ \| |___ __| |
+ | (_) | / -_) _` |
+  \___/|_\___\__,_|
+********************************************************************/
+                     
+//uncomment if you have an OLED attached
+//verify how you want to connect the OLED
+//OLED is not recommended for operational deployment
+
+//#define OLED
+//various predefined connection setups for OLED
+// GND, VCC, SCL, SDA
+//#define OLED_GND234
+//#define OLED_7GND654 //7 as GND
+//#define OLED_GND13_12_11
+
+//For WaziDev without SOLAR_PANEL_LEVEL
+#define OLED_9GND876 //9 as GND
+//For WaziDev with SOLAR_PANEL_LEVEL, cannot use D7
+//#define OLED_A3GNDA2_A1_A0 //A3 as GND
+
+//Suitable for WaziSense
+//#define OLED_GND579
+
+/********************************************************************
+  ___                              _         
+ / __| ___ _ _  ___ ___ _ _   _ __(_)_ _  ___
+ \__ \/ -_) ' \(_-</ _ \ '_| | '_ \ | ' \(_-<
+ |___/\___|_||_/__/\___/_|   | .__/_|_||_/__/
+                             |_|             
+********************************************************************/
+
+#ifdef WAZISENSE
+//uncomment to transmit data related to solar panel level 
+//#define SOLAR_PANEL_LEVEL
+//this is how you need to connect the analog soil humidity sensors
+#define SH1_ANALOG_PIN A6
+#define SH1_PWR_PIN 6
+#define TEMP_DIGITAL_PIN 7
+#define TEMP_PWR_PIN A7
+#else
+#ifdef WAZIDEV14
+//uncomment to transmit data related to battery voltage level 
+//#define BAT_LEVEL
+#endif
+//this is how you need to connect the analog soil humidity sensors
+#define SH1_ANALOG_PIN A0
+#define SH1_PWR_PIN A1
+#define TEMP_DIGITAL_PIN 3
+#define TEMP_PWR_PIN 4
+
+#ifdef WITH_WATERMARK
+#define WM_PWR_PIN1 6
+#define WM_PWR_PIN2 7
+#define WM_ANALOG_PIN A0
+#endif
+
+#endif
+
+
+/********************************************************************
+  ___            _           _           
+ |_ _|_ __   ___| |_   _  __| | ___  ___ 
+  | || '_ \ / __| | | | |/ _` |/ _ \/ __|
+  | || | | | (__| | |_| | (_| |  __/\__ \
+ |___|_| |_|\___|_|\__,_|\__,_|\___||___/
+********************************************************************/                                         
+
+#include <SPI.h>
+//this is the standard behaviour of library, use SPI Transaction switching
+#define USE_SPI_TRANSACTION  
+//indicate in this file the radio module: SX126X, SX127X or SX128X
+#include "RadioSettings.h"
+
+#ifdef SX126X
+#include <SX126XLT.h>                                          
+#include "SX126X_RadioSettings.h"
+#endif
+
+#ifdef SX127X
+#include <SX127XLT.h>                                          
+#include "SX127X_RadioSettings.h"
+#endif
+
+#ifdef SX128X
+#include <SX128XLT.h>                                          
+#include "SX128X_RadioSettings.h"
+#endif       
+
+// Include sensors
+#include "Sensor.h"
+#include "rawAnalog.h"
+#ifdef SI7021_SENSOR
+#include <Wire.h>
+#include "i2c_SI7021.h"
+#include "si7021_Temperature.h"
+#include "si7021_Humidity.h"
+#endif
+
+#ifdef USE_XLPP
+#include <xlpp.h>
+#endif
+
 ///////////////////////////////////////////////////////////////////
 // ENCRYPTION CONFIGURATION AND KEYS FOR LORAWAN
 #ifdef LORAWAN
@@ -220,25 +307,6 @@ uint8_t my_appKey[4]={5, 6, 7, 8};
 #ifdef WITH_AES
 #include "local_lorawan.h"
 #endif
-
-///////////////////////////////////////////////////////////////////
-// LORAWAN OR EXTENDED DEVICE ADDRESS FOR LORAWAN CLOUD
-#if defined LORAWAN || defined EXTDEVADDR
-///////////////////////////////////////////////////////////////////
-//ENTER HERE your Device Address from the TTN device info (same order, i.e. msb). Example for 0x12345678
-//unsigned char DevAddr[4] = { 0x12, 0x34, 0x56, 0x78 };
-///////////////////////////////////////////////////////////////////
-
-//Pau
-unsigned char DevAddr[4] = { 0x26, 0x01, 0x17, 0x21 };
-#else
-///////////////////////////////////////////////////////////////////
-// DO NOT CHANGE HERE
-unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
-///////////////////////////////////////////////////////////////////
-#endif
-
-///////////////////////////////////////////////////////////////////
 
 // SENSORS DEFINITION 
 //////////////////////////////////////////////////////////////////
@@ -309,6 +377,10 @@ SX127XLT LT;
 
 #ifdef SX128X
 SX128XLT LT;
+#endif
+
+#ifdef USE_XLPP
+XLPP xlpp(120);
 #endif
 
 //keep track of the number of successful transmissions
@@ -706,12 +778,18 @@ void setup() {
 // ADD YOUR SENSORS HERE   
 // Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power, pin_trigger=-1)
   //SH1
+#ifdef WITH_WATERMARK
+  sensor_ptrs[sensor_index] = new watermark("WM", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) WM_ANALOG_PIN, (uint8_t) WM_PWR_PIN1, (uint8_t) WM_PWR_PIN2 /*use pin trigger as second power pin*/);
+  sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  sensor_index++;
+#else
   sensor_ptrs[sensor_index] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH1_ANALOG_PIN, (uint8_t) SH1_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
   sensor_index++;
-#ifdef TWO_SHUM_SENSORS
-  //SH2
-  sensor_ptrs[sensor_index] = new rawAnalog("SH2", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH2_ANALOG_PIN, (uint8_t) SH2_PWR_PIN /*no pin trigger*/);
+#endif  
+#ifdef SOIL_TEMP_SENSOR
+  //ST
+  sensor_ptrs[sensor_index] = new DS18B20((char*)"DS", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
   sensor_index++;
 #endif
@@ -1099,8 +1177,8 @@ void loop(void)
 #else
       //time for next wake up
       nextTransmissionTime=millis()+((idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
-      PRINTLN_VALUE("%ld",nextTransmissionTime);
-      PRINTLN_VALUE("%ld",(idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
+      //PRINTLN_VALUE("%ld",nextTransmissionTime);
+      //PRINTLN_VALUE("%ld",(idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
 #endif      
       
 #if defined WITH_APPKEY && not defined LORAWAN
@@ -1148,6 +1226,11 @@ void loop(void)
 
       uint8_t r_size;
 
+#ifdef USE_XLPP
+      // Create xlpp payload.
+      xlpp.reset();
+#endif
+
       char final_str[80] = "\\!";
       
       //this is how we can wake up some sensors in advance in case they need a longer warmup time
@@ -1179,8 +1262,10 @@ void loop(void)
                   sprintf(final_str, "%s/%s/%s", final_str, sensor_ptrs[i]->get_nomenclature(), String(sensor_ptrs[i]->get_value()).c_str());
               }
 #else
-              char float_str[10];            
-              ftoa(float_str, sensor_ptrs[i]->get_value(), 2);
+              char float_str[10];
+              double tmp_value=sensor_ptrs[i]->get_value();
+                          
+              ftoa(float_str, tmp_value, 2);
           
               if (i==0) {
                   sprintf(final_str, "%s%s/%s", final_str, sensor_ptrs[i]->get_nomenclature(), float_str);
@@ -1189,6 +1274,17 @@ void loop(void)
                   sprintf(final_str, "%s/%s/%s", final_str, sensor_ptrs[i]->get_nomenclature(), float_str);
               }
 
+#ifdef USE_XLPP
+              //TODO
+              //there is an issue with current XLPP so we use addTemperature() for all values
+              randomSeed(analogRead(2));
+              //test 1
+              //tmp_value=212.5+random(1,5);
+              //test 2
+              tmp_value=0.0+random(250,550);            
+              xlpp.addTemperature(i, tmp_value);
+#endif
+              
 #ifdef OLED
 #ifdef LOW_POWER
               if (TXPacketCount == 0 || (TXPacketCount % 20) == 19) {
@@ -1220,14 +1316,18 @@ void loop(void)
       PRINT_CSTSTR("Sending ");
       PRINT_STR("%s",(char*)(message+app_key_offset));
       PRINTLN;
-      
+
+#ifdef USE_XLPP
+      PRINT_CSTSTR("use XLPP format for transmission to WaziGate");
+      PRINTLN;
+#else
       PRINT_CSTSTR("Real payload size is ");
       PRINT_VALUE("%d", r_size);
       PRINTLN;
 
       LT.printASCIIPacket(message, r_size);
       PRINTLN;
-      
+#endif      
       int pl=r_size+app_key_offset;
 
       uint8_t p_type=PKT_TYPE_DATA;
@@ -1255,10 +1355,15 @@ void loop(void)
 #ifdef WITH_AES
 #ifdef LORAWAN
       PRINT_CSTSTR("end-device uses native LoRaWAN packet format\n");
+#ifdef USE_XLPP
+      pl=local_aes_lorawan_create_pkt(xlpp.buf, xlpp.len, app_key_offset);
+#else
+      pl=local_aes_lorawan_create_pkt(message, pl, app_key_offset);      
+#endif        
 #else
       PRINT_CSTSTR("end-device uses encapsulated LoRaWAN packet format only for encryption\n");
+      pl=local_aes_lorawan_create_pkt(message, pl, app_key_offset);      
 #endif
-      pl=local_aes_lorawan_create_pkt(message, pl, app_key_offset);
 #endif
 ///////////////////////////////////
 
@@ -1274,7 +1379,11 @@ void loop(void)
 #ifdef LORAWAN
       //will return packet length sent if OK, otherwise 0 if transmit error
       //we use raw format for LoRaWAN
-      if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX)) 
+#ifdef USE_XLPP
+      if (LT.transmit(xlpp.buf, pl, 10000, MAX_DBM, WAIT_TX))
+#else
+      if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX))
+#endif       
 #else
       //will return packet length sent if OK, otherwise 0 if transmit error
       if (LT.transmitAddressed(message, pl, p_type, DEFAULT_DEST_ADDR, node_addr, 10000, MAX_DBM, WAIT_TX))  
@@ -1588,15 +1697,15 @@ void loop(void)
       //how much do we still have to wait, in millisec?
       unsigned long now_millis=millis();
 
-      PRINTLN_VALUE("%ld",now_millis);
-      PRINTLN_VALUE("%ld",nextTransmissionTime);
+      //PRINTLN_VALUE("%ld",now_millis);
+      //PRINTLN_VALUE("%ld",nextTransmissionTime);
       
       if (millis() > nextTransmissionTime)
         nextTransmissionTime=millis()+1000;
         
       unsigned long waiting_t = nextTransmissionTime-now_millis;
 
-      PRINTLN_VALUE("%ld",waiting_t);
+      //PRINTLN_VALUE("%ld",waiting_t);
       FLUSHOUTPUT;
 
       lowPower(waiting_t);
