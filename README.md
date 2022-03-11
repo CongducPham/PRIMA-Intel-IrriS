@@ -12,11 +12,13 @@ Latest news
 Quick start
 -----------
 
-The [Arduino sketch](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino/Arduino_LoRa_SX12XX_Soil_Sensor) for the soil sensor device is in the Arduino folder
+The [Arduino sketch](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino/Intelirris_Soil_Sensor) for the soil sensor device is in the [Arduino folder](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino).
 
-The general gateway part will either be the [LowCostLoRaGwLow](https://github.com/CongducPham/LowCostLoRaGwLow) framework or the [WaziGate](https://github.com/Waziup/WaziGate) framework.
+The general gateway part will either be the [LowCostLoRaGw](https://github.com/CongducPham/LowCostLoRaGw) framework or the [WaziGate](https://github.com/Waziup/WaziGate) framework.
 
 These based framework will be enhanced with INTEL-IRRIS specific AI features and UI. These additional contributions will be put in the Gateway folder.
+
+**The INTEL-IRRIS WaziGate SD card images are available on [http://intel-irris.eu/results](http://intel-irris.eu/results). Select EU433 or EU868 version.**
 
 Tutorials
 ---------
