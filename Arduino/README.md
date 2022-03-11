@@ -20,6 +20,15 @@ It can be configured as LoRaWAN 1.0 device for both uplink and downlink transmis
 
 See the related tutorial slides and videos.
 
+Default configuration for INTEL-IRRIS project
+===
+
+- Capacitive sensor SEN0308 connected to A0 (signal) and A1 (power)
+- LoRaWAN mode to WaziGate (single channel)
+- EU433 band (for Algeria and Morocco)
+- Device address is 26011DAA
+
+
 Enjoy!
 C. Pham
 Coordinator of PRIMA Intel-IrriS

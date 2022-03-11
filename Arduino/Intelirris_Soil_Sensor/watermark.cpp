@@ -50,7 +50,7 @@ void watermark::update_data()
     
     digitalWrite(get_pin_power(),LOW); // some time low is good
     
-    k = 15000*k/l;
+    k = 10000*k/l;
     Serial.println(k);
 
 		set_data(k/1.0);

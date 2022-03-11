@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: February 2nd, 2022 by C. Pham
+ * last update: March 10th, 2022 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -42,6 +42,25 @@
 #define TO_WAZIGATE
 
 ////////////////////////////////////////////////////////////////////
+// Frequency band - do not change in SX127X_RadioSettings.h anymore
+//#define BAND868
+//#define BAND900
+#define BAND433
+
+////////////////////////////////////////////////////////////////////
+// Test device
+//#define TEST_DEVICE_RANDOM
+
+////////////////////////////////////////////////////////////////////
+// uncomment to have a soil tensiometer watermark sensor
+//#define WITH_WATERMARK
+
+////////////////////////////////////////////////////////////////////
+// uncomment to have 1 soil temperature sensor ST
+// using a one-wire DS18B20 sensor
+//#define SOIL_TEMP_SENSOR
+
+////////////////////////////////////////////////////////////////////
 // WAZISENSE and WAZIDEV v1.4 boards have
 //  - an embedded SI7021 sensor
 // WAZISENSE has an integrated solar panel level monitoring circuit 
@@ -63,13 +82,6 @@
 #define LORAWAN
 #define USE_XLPP
 #endif
-
-//uncomment to have 1 soil temperature sensor ST
-//using a one-wire DS18B20 sensor
-//#define SOIL_TEMP_SENSOR
-
-//uncomment to have a soil tensiometer watermark sensor
-//#define WITH_WATERMARK
 
 ///////////////////////////////////////////////////////////////////
 // COMMENT OR UNCOMMENT TO CHANGE FEATURES. 
@@ -180,9 +192,16 @@ uint8_t my_appKey[4]={5, 6, 7, 8};
 //Pau
 //unsigned char DevAddr[4] = { 0x26, 0x01, 0x17, 0x21 };
 
-//WaziGate default
+#ifdef WITH_WATERMARK
+//WaziGate default for WATERMARK
+//26011DBB
+unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xBB};
+#else
+//WaziGate default for SEN0308
 //26011DAA
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xAA};
+#endif
+
 #else
 ///////////////////////////////////////////////////////////////////
 // DO NOT CHANGE HERE
@@ -242,12 +261,12 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 //this is how you need to connect the analog soil humidity sensors
 #define SH1_ANALOG_PIN A0
 #define SH1_PWR_PIN A1
-#define TEMP_DIGITAL_PIN 3
-#define TEMP_PWR_PIN 4
+#define TEMP_DIGITAL_PIN 6
+#define TEMP_PWR_PIN 7
 
 #ifdef WITH_WATERMARK
-#define WM_PWR_PIN1 6
-#define WM_PWR_PIN2 7
+#define WM_PWR_PIN1 8
+#define WM_PWR_PIN2 9
 #define WM_ANALOG_PIN A0
 #endif
 
@@ -291,6 +310,10 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #include "i2c_SI7021.h"
 #include "si7021_Temperature.h"
 #include "si7021_Humidity.h"
+#endif
+
+#ifdef WITH_WATERMARK
+#include "watermark.h"
 #endif
 
 #ifdef USE_XLPP
@@ -1277,11 +1300,13 @@ void loop(void)
 #ifdef USE_XLPP
               //TODO
               //there is an issue with current XLPP so we use addTemperature() for all values
+#ifdef TEST_DEVICE_RANDOM              
               randomSeed(analogRead(2));
               //test 1
               //tmp_value=212.5+random(1,5);
               //test 2
-              tmp_value=0.0+random(250,550);            
+              tmp_value=0.0+random(250,550);
+#endif                          
               xlpp.addTemperature(i, tmp_value);
 #endif
               
