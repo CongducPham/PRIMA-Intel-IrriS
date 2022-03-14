@@ -61,6 +61,12 @@ INTEL-IRRIS specific tutorials
 
 - [List of hardware parts for the INTEL-IRRIS soil sensor device](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-IrriS-low-cost-sensor-hardware-parts.pdf). Document.
 
+
+The starter-kit
+---------
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/starter-kit-v0-bg-white.png" width="300">
+
 Enjoy!
 C. Pham
 Coordinator of PRIMA INTEL-IRRIS

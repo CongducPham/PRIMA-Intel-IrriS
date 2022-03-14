@@ -13,6 +13,13 @@ Just get the SD card image, flash it on an 8GB SD card class 10 and plug it into
 
 The additional code on top of the generic WaziGate framework is provided in this folder, although the SD card image has already everything installed.
 
+Check for the following tutorials/videos on the gateway part:
+
+- [Building the INTEL-IRRIS IoT platform. Part 2: edge-enabled gateway (WaziGate)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-edge-gateway.pdf). Slides. Related videos: Video n°4.
+
+- [Building the INTEL-IRRIS IoT platform. Part 3: the INTEL-IRRIS starter-kit (WaziGate)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-starter-kit.pdf). Slides.
+
+- Video n°4: [Demonstrating the INTEL-IRRIS soil sensor device & WaziGate framework for intelligent irrigation in-the-box](https://youtu.be/j-1Nk0tv0xM). **YouTube video**. 
 
 Enjoy!
 C. Pham
