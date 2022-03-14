@@ -9,7 +9,7 @@ Check on [INTEL-IRRIS web site](http://intel-irris.eu/results) for the SD card i
 
 Just get the SD card image, flash it on an 8GB SD card class 10 and plug it into a Raspberry Pi (3B/3B+/4B, although 3B is recommended) with a LoRa hat.
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/wazigate.png" width="300">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/wazigate.jpg" width="300">
 
 The additional code on top of the generic WaziGate framework is provided in this folder, although the SD card image has already everything installed.
 
