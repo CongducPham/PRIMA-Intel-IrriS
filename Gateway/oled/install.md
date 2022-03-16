@@ -1,3 +1,8 @@
+Expand filesystem
+-----------------
+
+	> sudo raspi-config
+	
 PIP3 on WaziGate
 ----------------
 
@@ -13,6 +18,12 @@ info from https://learn.adafruit.com/monochrome-oled-breakouts/python-setup
 	
 then see small example from https://learn.adafruit.com/monochrome-oled-breakouts/python-usage-2
 
+
+copy distrib from laptop
+------------------------
+
+	> scp -r oled/ chirpstack_conf/ single_chan_pkt_fwd/ config_band.sh show_band.sh pi@192.168.2.2:/home/pi
+	
 The INTEL-IRRIS OLED service
 ----------------------------
 

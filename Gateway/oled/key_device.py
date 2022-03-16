@@ -1,4 +1,11 @@
-device_id_for_oled="62225f4d491ae300015c7344"
+#first device on INTEL-IRRIS SD card image – capacitive sensor
+device_id_for_oled="62286d72f06c4c0001eba943"
+
+#second device on INTEL-IRRIS SD card image – tensiometer sensor
+#device_id_for_oled="622a0c50f8f06600016be8fd"
+
+#test device 
+#device_id_for_oled="62225f4d491ae300015c7344"
 
 sensor_type="capacitive"
 sensor_model="SEN0308"

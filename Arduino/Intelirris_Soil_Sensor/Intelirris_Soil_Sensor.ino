@@ -808,6 +808,7 @@ void setup() {
 #else
   sensor_ptrs[sensor_index] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH1_ANALOG_PIN, (uint8_t) SH1_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  sensor_ptrs[sensor_index]->set_warmup_time(400);
   sensor_index++;
 #endif  
 #ifdef SOIL_TEMP_SENSOR
