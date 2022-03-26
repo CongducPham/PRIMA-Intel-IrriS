@@ -54,11 +54,14 @@
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
 //#define WITH_WATERMARK
+////////////////////////////////////////////////////////////////////
+// uncomment to force the watermark to have default device address for WaziGate
+//#define WM_AS_PRIMARY_SENSOR
 
 ////////////////////////////////////////////////////////////////////
 // uncomment to have 1 soil temperature sensor ST
 // using a one-wire DS18B20 sensor
-//#define SOIL_TEMP_SENSOR
+#define SOIL_TEMP_SENSOR
 
 ////////////////////////////////////////////////////////////////////
 // WAZISENSE and WAZIDEV v1.4 boards have
@@ -189,15 +192,12 @@ uint8_t my_appKey[4]={5, 6, 7, 8};
 //unsigned char DevAddr[4] = { 0x12, 0x34, 0x56, 0x78 };
 ///////////////////////////////////////////////////////////////////
 
-//Pau
-//unsigned char DevAddr[4] = { 0x26, 0x01, 0x17, 0x21 };
-
-#ifdef WITH_WATERMARK
-//WaziGate default for WATERMARK
+#if defined WITH_WATERMARK && not defined WM_AS_PRIMARY_SENSOR
+//Watermark soil sensor device has always this address which is different from the default address
 //26011DBB
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xBB};
 #else
-//WaziGate default for SEN0308
+//default device address for WaziGate, mainly for SEN0308 soil sensor device
 //26011DAA
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xAA};
 #endif
@@ -310,6 +310,10 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #include "i2c_SI7021.h"
 #include "si7021_Temperature.h"
 #include "si7021_Humidity.h"
+#endif
+
+#ifdef SOIL_TEMP_SENSOR
+#include "DS18B20.h"
 #endif
 
 #ifdef WITH_WATERMARK
@@ -808,7 +812,7 @@ void setup() {
 #else
   sensor_ptrs[sensor_index] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH1_ANALOG_PIN, (uint8_t) SH1_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
-  sensor_ptrs[sensor_index]->set_warmup_time(400);
+  sensor_ptrs[sensor_index]->set_warmup_time(200);
   sensor_index++;
 #endif  
 #ifdef SOIL_TEMP_SENSOR
