@@ -61,7 +61,7 @@
 ////////////////////////////////////////////////////////////////////
 // uncomment to have 1 soil temperature sensor ST
 // using a one-wire DS18B20 sensor
-#define SOIL_TEMP_SENSOR
+//#define SOIL_TEMP_SENSOR
 
 ////////////////////////////////////////////////////////////////////
 // WAZISENSE and WAZIDEV v1.4 boards have
@@ -346,14 +346,14 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
     uint8_t si7021_hum_index;
     #if defined SOLAR_PANEL_LEVEL || defined BAT_LEVEL
       //soil sensor(s) + SI7021 temp/hum + solar|battery level
-      #ifdef TWO_SHUM_SENSORS
+      #ifdef SOIL_TEMP_SENSOR
         const int number_of_sensors = 5;
       #else
         const int number_of_sensors = 4;
       #endif
     #else
        //soil sensor(s) + SI7021 temp/hum
-      #ifdef TWO_SHUM_SENSORS
+      #ifdef SOIL_TEMP_SENSOR
         const int number_of_sensors = 4;
       #else
         const int number_of_sensors = 3;
@@ -362,14 +362,14 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
   #else
     #if defined SOLAR_PANEL_LEVEL || defined BAT_LEVEL
       //soil sensor(s) + solar|battery level
-      #ifdef TWO_SHUM_SENSORS
+      #ifdef SOIL_TEMP_SENSOR
         const int number_of_sensors = 3;
       #else
         const int number_of_sensors = 2;
       #endif
     #else
        //soil sensor(s)
-      #ifdef TWO_SHUM_SENSORS
+      #ifdef SOIL_TEMP_SENSOR
         const int number_of_sensors = 2;
       #else
         const int number_of_sensors = 1;
@@ -378,7 +378,7 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
   #endif
 #else
   //soil sensor(s) on regular ProMini PCB version
-  #ifdef TWO_SHUM_SENSORS
+  #ifdef SOIL_TEMP_SENSOR
     const int number_of_sensors = 2;
   #else
     const int number_of_sensors = 1;
