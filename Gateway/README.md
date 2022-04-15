@@ -24,3 +24,31 @@ Check for the following tutorials/videos on the gateway part:
 Enjoy!
 C. Pham
 Coordinator of PRIMA Intel-IrriS
+
+Manuel installation on top of generic WaziGate distribution
+====================================================
+
+These are various tools that provide additional features for the INTEL-IRRIS WaziGate.
+
+Start with the generic WaziGate distribution.
+
+After installation, you will get the default configuration for the INTEL-IRRIS WaziGate that is used in the starter-kit. The default soil device will then work out-of-the-box with the INTEL-IRRIS WaziGate.
+
+First step: copy everything to the WaziGate
+-------------------------------
+
+Assuming RPI's address is 192.168.2.2:
+
+	> scp -r * pi@192.168.2.2:/home/pi
+	
+Second step: install the additional packages and the tools
+---------------------------------------------
+
+To have the WaziGate in EU433 frequency band:
+
+	> ./install.sh eu433
+
+To have the WaziGate in EU868 frequency band:
+
+	> ./install.sh eu868
+
