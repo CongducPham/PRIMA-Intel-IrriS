@@ -5,8 +5,8 @@ TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -
 
 echo "--> Adding an additional device to the existing device 62286d72f06c4c0001eba943"
 echo "--> Create device 622a0c50f8f06600016be8fd"
-curl -X POST "http://localhost/devices" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"actuators\":[],\"id\":\"622a0c50f8f06600016be8fd\",\"name\":\"INTEL-IRRIS Soil Sensor\",\"sensors\":[{\"id\":\"temperatureSensor_0\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"Raw value from WM200\",\"model\":\"WM200\",\"type\":\"tensiometer\",\"sensor_dry_max\":550,\"sensor_wet_max\":0,\"sensor_n_interval\":6,\"value_index\":0},\"name\":\"Soil Humidity Sensor\",\"quantity\":\"\",\"time\":\"2022-04-06T14:39:45.205Z\",\"unit\":\"\",\"value\":550}]}"
-echo "		name: INTEL-IRRIS Soil Sensor"
+curl -X POST "http://localhost/devices" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"actuators\":[],\"id\":\"622a0c50f8f06600016be8fd\",\"name\":\"SOIL-AREA-2\",\"sensors\":[{\"id\":\"temperatureSensor_0\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"Raw value from WM200\",\"model\":\"WM200\",\"type\":\"tensiometer\",\"sensor_dry_max\":550,\"sensor_wet_max\":0,\"sensor_n_interval\":6,\"value_index\":0},\"name\":\"Soil Humidity Sensor\",\"quantity\":\"\",\"time\":\"2022-04-06T14:39:45.205Z\",\"unit\":\"\",\"value\":550}]}"
+echo "		name: SOIL-AREA-2"
 echo "		with Soil Humidity Sensor displaying Raw value from WM200"
 echo "		and initialized with 550 value"
 

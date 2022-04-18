@@ -1,7 +1,7 @@
 """
 Based on example from Adafruit.
 
-INTEL-IRRIS oled service. Author: C. Pham. Last update April 7th, 2022.
+INTEL-IRRIS oled service. Author: C. Pham. Last update April 16th, 2022.
 
 Called by /etc/systemd/system/intel-irris-oled-service.service
 
@@ -43,6 +43,7 @@ else:
 sensor_type=key_device.sensor_type
 sensor_model=key_device.sensor_model
 device_id_for_oled=key_device.device_id_for_oled
+sensor_id_for_oled='temperatureSensor_0'
 has_found_device=False
 
 #-------------------------------------------------------------------------
@@ -107,7 +108,8 @@ except ValueError:
 	#	time.sleep(1)
 		
 font_size = 10
-font_saver_size = 14
+font_saver_size = 12
+visual_bar_height = 14
 
 # Load default font.
 font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", font_size)
@@ -125,11 +127,19 @@ draw = ImageDraw.Draw(image)
 # oled-service configuration
 #-------------------------------------------------------------------------
 
-#duration of screen saver mode
-_oled_display_timer=120
-#duration of the full information screen
-_oled_display_duration=6
+if key_device.cyclic_show_all_device:
+	#duration of screen saver mode
+	oled_display_timer=12
+	#duration of the full information screen
+	oled_display_duration=5
+else:
+	#duration of screen saver mode
+	oled_display_timer=120
+	#duration of the full information screen
+	oled_display_duration=6	
 
+device_name_for_oled='undef'
+all_devices_id_list=[]
 last_raw_value=0
 last_raw_value_minutes=0
 last_raw_value_days=0
@@ -142,11 +152,11 @@ tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[key_devi
 # check if default device id is valid
 #-------------------------------------------------------------------------
 
-def check_default_device():
+def check_for_device(device_id):
 	global has_found_device
 	has_found_device=False
-	print ('oled-service: check for device '+device_id_for_oled)
-	WaziGate_url='http://localhost/devices/'+device_id_for_oled
+	print ('oled-service: check for device '+device_id)
+	WaziGate_url='http://localhost/devices/'+device_id
 	try:
 		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 		print ('oled-service: returned msg from server is '),
@@ -159,6 +169,9 @@ def check_default_device():
 			if "not found" in response.text:
 				has_found_device=False
 			else:
+				device_json=json.loads(response.text)
+				global device_name_for_oled
+				device_name_for_oled=device_json["name"][0:24]
 				has_found_device=True
 		else:
 			print ('oled-service: bad request')
@@ -176,7 +189,7 @@ def check_default_device():
 # set meta data for new default sensor
 #-------------------------------------------------------------------------
 
-def set_meta_data():
+def set_meta_data(device_id):
 	my_token="hello"
 	#get the token first
 	WaziGate_url='http://localhost/auth/token'
@@ -201,12 +214,14 @@ def set_meta_data():
 
 	print ('=========================================')
 				
-	WaziGate_url='http://localhost/devices/'+device_id_for_oled+'/sensors/temperatureSensor_0/meta'
+	WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'
 	try:
 		if sensor_model=="WM200":
-			pload = '{"model":"WM200","sensor_dry_max":550,"sensor_n_interval":6,"sensor_wet_max":0,"type":"tensiometer","value_index":0}'
+			#pload = '{"model":"WM200","sensor_dry_max":550,"sensor_n_interval":6,"sensor_wet_max":0,"type":"tensiometer","value_index":0}'
+			pload = '{"model":"WM200","sensor_dry_max":550,"sensor_n_interval":6,"sensor_wet_max":0,"type":"tensiometer"}'
 		else:
-			pload = '{"model":"SEN0308","sensor_dry_max":800,"sensor_n_interval":6,"sensor_wet_max":0,"type":"capacitive","value_index":0}'
+			#pload = '{"model":"SEN0308","sensor_dry_max":800,"sensor_n_interval":6,"sensor_wet_max":0,"type":"capacitive","value_index":0}'
+			pload = '{"model":"SEN0308","sensor_dry_max":800,"sensor_n_interval":6,"sensor_wet_max":0,"type":"capacitive"}'
 		
 		WaziGate_headers_auth['Authorization']='Bearer'+my_token[1:-2]
 		response = requests.post(WaziGate_url, headers=WaziGate_headers_auth, data=pload, timeout=30)
@@ -227,6 +242,86 @@ def set_meta_data():
 		
 	print ('=========================================')	
 
+
+#-------------------------------------------------------------------------
+# get list of all devices
+#-------------------------------------------------------------------------
+
+def get_all_devices_id_list():
+	print ('oled-service: get list of all devices')
+	global has_found_device
+	has_found_device=False	
+	global all_devices_id_list
+	all_devices_id_list=[]
+	
+	WaziGate_url='http://localhost/devices'
+	try:
+		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
+		print ('oled-service: returned msg from server is '),
+		print (response.status_code)
+		print (response.reason)
+		
+		if 200 <= response.status_code < 300:
+			print ('oled-service: GET success')
+			print (response.text)
+			device_json=json.loads(response.text)
+			print (len(device_json))
+			
+			if len(device_json) >= 2:
+				for i in range (1,len(device_json)):
+					default_device_json=device_json[i]
+					print (default_device_json)
+					
+					sensor_type="undef"
+					sensor_model="undef"
+					
+					sensor_json=default_device_json['sensors']
+					print (len(sensor_json))
+					
+					if len(sensor_json)!=0:
+						if str(default_device_json['sensors'][0]['value'])=='None':
+							print ('oled-service: value is null, skip device')
+						else:	
+							sensor_name=default_device_json['sensors'][0]['name']
+							if 'kind' in default_device_json["sensors"][0]["meta"]:
+								sensor_meta_kind=default_device_json["sensors"][0]["meta"]["kind"]
+							else:
+								sensor_meta_kind='no kind in meta'				
+			
+							if "SEN0308" in sensor_name or "SEN0308" in sensor_meta_kind: 
+								sensor_type="capacitive"
+								sensor_model="SEN0308"
+				
+							if "WM200" in sensor_name or "WM200" in sensor_meta_kind:
+								sensor_type="tensiometer"
+								sensor_model="WM200"			
+				
+							print(sensor_model, sensor_type)
+							
+							if sensor_type!='undef':
+								device_id=default_device_json["id"]
+								print (device_id)
+					
+								print ('oled-service: add in device id list')
+								all_devices_id_list.append(device_id)
+					
+								has_found_device=True	
+				
+								set_meta_data(device_id)
+							else:
+								print ('oled-service: unknown sensor type, skip device')		
+					else:
+						print ('oled-service: device has no sensor defined, skip device')	
+		else:
+			print ('oled-service: bad request')
+			print (response.text)			
+			
+	except requests.exceptions.RequestException as e:
+		print (e)
+		print ('oled-service: requests command failed')	
+	
+	print ('=========================================')		
+	
 #-------------------------------------------------------------------------
 # find new default device
 #-------------------------------------------------------------------------
@@ -255,27 +350,42 @@ def find_new_default_device():
 
 				sensor_type="undef"
 				sensor_model="undef"
+				
+				sensor_json=default_device_json['sensors']
+				print (len(sensor_json))
+				
+				if len(sensor_json)!=0:
+					if str(default_device_json['sensors'][0]['value'])=='None':
+						print ('oled-service: value is null, skip device')
+					else:				
+						sensor_name=default_device_json['sensors'][0]['name']
+						if 'kind' in default_device_json["sensors"][0]["meta"]:
+							sensor_meta_kind=default_device_json["sensors"][0]["meta"]["kind"]
+						else:
+							sensor_meta_kind='no kind in meta'	
 			
-				device_name=default_device_json['sensors'][0]['name']	
-				device_meta_kind=default_device_json["sensors"][0]["meta"]["kind"]			
-			
-				if "SEN0308" in device_name or "SEN0308" in device_meta_kind: 
-					sensor_type="capacitive"
-					sensor_model="SEN0308"
+						if "SEN0308" in sensor_name or "SEN0308" in sensor_meta_kind: 
+							sensor_type="capacitive"
+							sensor_model="SEN0308"
 				
-				if "WM200" in device_name or "WM200" in device_meta_kind:
-					sensor_type="tensiometer"
-					sensor_model="WM200"			
+						if "WM200" in sensor_name or "WM200" in sensor_meta_kind:
+							sensor_type="tensiometer"
+							sensor_model="WM200"			
 				
-				print(sensor_model, sensor_type)
+						print(sensor_model, sensor_type)
+
+						if sensor_type!='undef':
+							global device_id_for_oled
+							device_id_for_oled=default_device_json["id"]
+							print (device_id_for_oled)
 				
-				global device_id_for_oled
-				device_id_for_oled=default_device_json["id"]
-				print (device_id_for_oled)
+							has_found_device=True	
 				
-				has_found_device=True	
-				
-				set_meta_data()
+							set_meta_data(device_id_for_oled)
+						else:
+							print ('oled-service: unknown sensor type, skip device')		
+				else:
+					print ('oled-service: device has no sensor defined, skip device')		
 		else:
 			print ('oled-service: bad request')
 			print (response.text)			
@@ -290,8 +400,8 @@ def find_new_default_device():
 # get sensor type and model from local database
 #-------------------------------------------------------------------------
 
-def get_sensor_type_from_local_database():
-	WaziGate_url='http://localhost/devices/'+device_id_for_oled+'/sensors/temperatureSensor_0'
+def get_sensor_type_from_local_database(device_id):
+	WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 	try:
 		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 		print ('oled-service: returned msg from server is '),
@@ -340,7 +450,7 @@ def set_sensor_intervals():
 # init sensor data for OLED
 #-------------------------------------------------------------------------
 
-if check_default_device():
+if check_for_device(device_id_for_oled):
 	print ('oled-service: found device')		
 else:
 	print ('oled-service: device not found!')
@@ -349,7 +459,7 @@ else:
 if has_found_device:	
 	if key_device.get_sensor_type_from_local_database:
 		print ('oled-service: get sensor type and model from local database')
-		get_sensor_type_from_local_database()
+		get_sensor_type_from_local_database(device_id_for_oled)
 	else:
 		print ('oled-service: get sensor type and model from key_device.py')
 		sensor_type=key_device.sensor_type
@@ -413,10 +523,16 @@ def screen_saver(duration):
 		draw.rectangle((0, 0, oled.width, oled.height), outline=0, fill=0)	
 		x=random.randint(min_x, max_x)
 		y=random.randint(min_y, max_y)
+		ytop=y
 		
 		if has_found_device:
-			draw.text((x, y), str(last_raw_value), font=font_saver, fill=255)
-		
+			text_to_display=device_name_for_oled[0:12]
+			draw.text((x, ytop), text_to_display, font=font_saver, fill=255)
+			ytop=ytop+font_saver_size
+			
+			draw.text((x, ytop), str(last_raw_value), font=font_saver, fill=255)
+			ytop=ytop+font_saver_size
+					
 			if last_raw_value_days:
 				text_to_display=str(last_raw_value_days)+screen_saver_str_1
 			else:
@@ -425,22 +541,25 @@ def screen_saver(duration):
 				else:				
 					text_to_display=str(last_raw_value_minutes)+"mins"
 						
-			draw.text((x, y+font_saver_size), text_to_display, font=font_saver, fill=255)
-	
+			draw.text((x, ytop), text_to_display, font=font_saver, fill=255)
+			ytop=ytop+font_saver_size
+				
 			if sensor_type=='capacitive':
-				draw.text((x, y+2*font_saver_size), capacitive_soil_condition, font=font_saver, fill=255)
+				draw.text((x, ytop), capacitive_soil_condition, font=font_saver, fill=255)
 			else:
-				draw.text((x, y+2*font_saver_size), tensiometer_soil_condition, font=font_saver, fill=255)	
+				draw.text((x, ytop), tensiometer_soil_condition, font=font_saver, fill=255)	
 
+			ytop=ytop+font_saver_size
+			
 			# Draw a white rectangle
-			draw.rectangle((x+67, y+10, x+67+15, y+3*font_saver_size), outline=255, fill=0)
+			draw.rectangle((x+67, y+14, x+67+15, y+4+3*visual_bar_height), outline=255, fill=0)
 
 			if sensor_type=='capacitive':
 				if value_index_capacitive==0:
 					draw.text((x+67+4, y+20), "!", font=font_saver, fill=255)
 				else:
 					for i in range(value_index_capacitive):
-						draw.rectangle((x+67+2, y+3*font_saver_size-6-i*6, x+67+15-2, y+3*font_saver_size-2-i*6), outline=255, fill=255)
+						draw.rectangle((x+67+2, y+4+3*visual_bar_height-6-i*6, x+67+15-2, y+4+3*visual_bar_height-2-i*6), outline=255, fill=255)
 		else:
 			draw.text((x, y), "no device, create one", font=font, fill=255)
 			draw.text((x, y+1*font_saver_size), "w/ SEN0308 or WM200", font=font, fill=255)		
@@ -459,8 +578,8 @@ def screen_saver(duration):
 #get last stored value for a given device id: key_device.device_id_for_oled
 #--------------------------------------------------------------------------		
 						
-def get_last_raw_value():
-	WaziGate_url='http://localhost/devices/'+device_id_for_oled+'/sensors/temperatureSensor_0'
+def get_last_raw_value(device_id):
+	WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 	try:
 		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 		print ('oled-service: returned msg from server is '),
@@ -505,10 +624,10 @@ def get_last_raw_value():
 #determine the soil condition string indication for capacitive
 #--------------------------------------------------------------------------
 
-def get_capacitive_soil_condition(raw_value):
+def get_capacitive_soil_condition(device_id, raw_value):
 
 	if key_device.get_value_index_from_local_database:
-		WaziGate_url='http://localhost/devices/'+device_id_for_oled+'/sensors/temperatureSensor_0'
+		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 		try:
 			response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 			print ('oled-service: returned msg from server is '),
@@ -568,7 +687,7 @@ def get_capacitive_soil_condition(raw_value):
 		
 		print ('=========================================')	
 				
-		WaziGate_url='http://localhost/devices/'+device_id_for_oled+'/sensors/temperatureSensor_0/meta'
+		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'
 		try:
 			pload = '{"value_index":' + str(value_index_capacitive)+'}'
 			WaziGate_headers_auth['Authorization']='Bearer'+my_token[1:-2]
@@ -597,7 +716,7 @@ def get_capacitive_soil_condition(raw_value):
 #determine the soil condition string indication for tensiometer
 #--------------------------------------------------------------------------
 	
-def get_tensiometer_soil_condition(raw_value): 
+def get_tensiometer_soil_condition(device_id, raw_value): 
 	value_interval=int(key_device.tensiometer_sensor_wet_max/key_device.tensiometer_sensor_n_interval)
 	value_index=int(raw_value/value_interval)
 	#in case the sensed value is greater than the maximum value defined
@@ -609,6 +728,8 @@ def get_tensiometer_soil_condition(raw_value):
 #------------------------------------------------------------
 #main loop
 #------------------------------------------------------------
+
+device_index=0
 	
 while True:
 
@@ -645,8 +766,16 @@ while True:
 
 	draw.text((x, ttop), "INTEL-IRRIS WaziGate", font=font, fill=255)
 	ttop=ttop+font_size
+	
+	if key_device.cyclic_show_all_device:
+		get_all_devices_id_list()
+		
+		if has_found_device:
+			if device_index >= len(all_devices_id_list):
+				device_index=0
+			device_id_for_oled=all_devices_id_list[device_index]	
 
-	if check_default_device():
+	if check_for_device(device_id_for_oled):
 		print ('oled-service: found device')
 	else:
 		print ('oled-service: device not found!')
@@ -654,12 +783,13 @@ while True:
 		
 	if has_found_device:
 		print ('oled-service: device id'+device_id_for_oled)	
-		text_to_display=sensor_model+" "+sensor_type
+		#text_to_display=sensor_model+" "+sensor_type
+		text_to_display=device_name_for_oled
 		draw.text((x, ttop), text_to_display, font=font, fill=255)
 		ttop=ttop+font_size
 
 		#we read the last value of the device
-		get_last_raw_value()
+		get_last_raw_value(device_id_for_oled)
 	
 		if last_raw_value_days:
 			text_to_display=str(last_raw_value_days)+main_screen_str_1
@@ -677,10 +807,10 @@ while True:
 		ttop=ttop+font_size
 	
 		if sensor_type=='capacitive':
-			get_capacitive_soil_condition(last_raw_value)
+			get_capacitive_soil_condition(device_id_for_oled, last_raw_value)
 			text_to_display=main_screen_str_5+str(capacitive_soil_condition)
 		else:
-			get_tensiometer_soil_condition(last_raw_value)
+			get_tensiometer_soil_condition(device_id_for_oled, last_raw_value)
 			text_to_display=main_screen_str_5+str(tensiometer_soil_condition)	
 
 		draw.text((x, ttop), text_to_display, font=font, fill=255)
@@ -698,6 +828,19 @@ while True:
 	oled.image(image)
 	oled.show()
 	
-	time.sleep(_oled_display_duration)
+	if len(all_devices_id_list)>1:
+		#duration of screen saver mode
+		oled_display_timer=12
+		#duration of the full information screen
+		oled_display_duration=5
+	else:
+		#duration of screen saver mode
+		oled_display_timer=120
+		#duration of the full information screen
+		oled_display_duration=6			
 	
-	screen_saver(_oled_display_timer)	
+	time.sleep(oled_display_duration)
+	
+	screen_saver(oled_display_timer)
+	
+	device_index=device_index+1	

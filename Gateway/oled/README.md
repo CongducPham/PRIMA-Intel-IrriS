@@ -1,8 +1,7 @@
 This is a breakdown of all the steps to install the INTEL-IRRIS OLED service on top of the generic WaziGate distribution. The `install.sh` script actually does the installation. 
 
-
-Expand filesystem
------------------
+Expand filesystem if needed
+---------------------------
 
 	> sudo raspi-config
 	
@@ -14,7 +13,7 @@ PIP3 on WaziGate
 OLED on WaziGate
 ----------------
 
-info from https://learn.adafruit.com/monochrome-oled-breakouts/python-setup
+More info from https://learn.adafruit.com/monochrome-oled-breakouts/python-setup
 
 	> sudo pip3 install adafruit-circuitpython-ssd1306
 	> sudo apt-get install python3-pil
@@ -28,7 +27,13 @@ The INTEL-IRRIS OLED service
 	> sudo cp intel-irris-oled-service.service.txt /etc/systemd/system/intel-irris-oled-service.service
 	> sudo systemctl enable intel-irris-oled-service.service
 	
-Changing the device id
-----------------------
+How the OLED service works?
+---------------------------
 
-edit `key_device.py` and change `device_id_for_oled`.		 
+The OLED service (`intel-irris-oled-service.service.txt`) takes some configuration definitions from `key_device.py`. Then, it will try to discover all devices with either "SEN0308" or "WM200" in their sensor name or sensor kind.
+
+It will display a main screen then a screen saver	by cycling sequentially through all discovered devices. It will display in the screen saver a visual interface to indicate the soil humidity level.
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/oled-cycling.png" width="500">
+
+More information on the OLED screen can be found in the [starter-kit slides](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-starter-kit.pdf).

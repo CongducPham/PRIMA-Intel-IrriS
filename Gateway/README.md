@@ -17,32 +17,49 @@ Check for the following tutorials/videos on the gateway part:
 
 - [Building the INTEL-IRRIS IoT platform. Part 2: edge-enabled gateway (WaziGate)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-edge-gateway.pdf). Slides. Related videos: Video n°4.
 
-- [Building the INTEL-IRRIS IoT platform. Part 3: the INTEL-IRRIS starter-kit (WaziGate)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-starter-kit.pdf). Slides.
+- [Building the INTEL-IRRIS IoT platform. Part 3: the INTEL-IRRIS starter-kit (WaziGate)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-starter-kit.pdf). Slides. These slides are targeting technology partners to show them of to build the starter-kit from the parts.
 
 - Video n°4: [Demonstrating the INTEL-IRRIS soil sensor device & WaziGate framework for intelligent irrigation in-the-box](https://youtu.be/j-1Nk0tv0xM). **YouTube video**. 
 
-Enjoy!
-C. Pham
-Coordinator of PRIMA Intel-IrriS
 
-Manuel installation on top of generic WaziGate distribution
-====================================================
+Manual installation on top of generic WaziGate distribution
+===========================================================
 
-These are various tools that provide additional features for the INTEL-IRRIS WaziGate.
+The customized WaziGate distribution consists in a pre-configured WaziGate with 1 device and either a capacitive SEN0308 sensor or a Watermark water tension sensor.
 
-Start with the generic WaziGate distribution.
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-dashboard.png" width="500">
 
-After installation, you will get the default configuration for the INTEL-IRRIS WaziGate that is used in the starter-kit. The default soil device will then work out-of-the-box with the INTEL-IRRIS WaziGate.
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-sensor-data.png" width="300">
+
+It also adds an OLED screen which will quickly display sensor information to the user, without having to log in the WaziGate dashboard for the full and advanced user interface.
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/oled-cycling.png" width="500">
+
+The distribution therefore provides various tools to install and configure the generic WaziGate distribution to produce the INTEL-IRRIS WaziGate distribution that is used in the starter-kit and that should be similar to the distributed SD card image. The default soil device will then work out-of-the-box with the INTEL-IRRIS WaziGate.
+
+Start with the generic WaziGate distribution
+--------------------------------------------
+
+Get the WaziGate image from [https://www.waziup.io/downloads/](https://www.waziup.io/downloads/). Flash it on an 8GB SD card.
+
+Connect the Raspberry Pi (WaziGate) to your laptop/desktop which shares its Internet connection to the WaziGate to enable installation procedure. Power the WaziGate, allows for 6 to 8mins as the first boot initializes a lot of components of the WaziGate. Then, log in the WaziGate as pi user with default password `loragateway`.
+
+	> ssh pi@wazigate.local
+
+All these steps are explained on [https://www.waziup.io/documentation/wazigate/v2/install/](https://www.waziup.io/documentation/wazigate/v2/install/).
+
+With the WaziGate is connected to your laptop/desktop which shares its Internet connection to the WaziGate, you can now start the INTEL-IRRIS-specific installation procedure.
 
 First step: copy everything to the WaziGate
--------------------------------
+-------------------------------------------
 
-Assuming RPI's address is 192.168.2.2:
+Assuming you downloaded the whole repo on your laptop/desktop computer:
 
-	> scp -r * pi@192.168.2.2:/home/pi
+	> cd Gateway
+	> scp -r * pi@wazigate.local:/home/pi
 	
 Second step: install the additional packages and the tools
----------------------------------------------
+----------------------------------------------------------
 
 To have the WaziGate in EU433 frequency band:
 
@@ -51,4 +68,12 @@ To have the WaziGate in EU433 frequency band:
 To have the WaziGate in EU868 frequency band:
 
 	> ./install.sh eu868
+	
+The script updates the RaspberryOS, installs `pip3` for `python3`, installs the `adafruit-circuitpython-ssd1306` and `python3-pil` packages for the OLED then installs the OLED service as a system service.
+
+The last step is to configure the WaziGate with a pre-configured device matching the configuration of the INTEL-IRRIS soil sensor device Arduino program (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino/Intelirris_Soil_Sensor](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino/Intelirris_Soil_Sensor)).
+
+Enjoy!
+C. Pham
+Coordinator of PRIMA Intel-IrriS
 

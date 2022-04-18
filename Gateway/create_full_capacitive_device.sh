@@ -7,8 +7,8 @@ DATE=`date +"%Y-%m-%dT%H:%M:%S.%3NZ"`
 
 echo "--> date is $DATE" 
 echo "--> Create device 62286d72f06c4c0001eba943"
-curl -X POST "http://localhost/devices" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"actuators\":[],\"id\":\"62286d72f06c4c0001eba943\",\"name\":\"INTEL-IRRIS Soil Sensor\",\"sensors\":[{\"id\":\"temperatureSensor_0\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"Raw value from SEN0308\",\"model\":\"SEN0308\",\"type\":\"capacitive\",\"sensor_dry_max\":800,\"sensor_wet_max\":0,\"sensor_n_interval\":6,\"value_index\":0},\"name\":\"Soil Humidity Sensor\",\"quantity\":\"\",\"time\":\"2022-04-06T14:39:45.205Z\",\"unit\":\"\",\"value\":800}]}"
-echo "		name: INTEL-IRRIS Soil Sensor"
+curl -X POST "http://localhost/devices" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"actuators\":[],\"id\":\"62286d72f06c4c0001eba943\",\"name\":\"SOIL-AREA-1\",\"sensors\":[{\"id\":\"temperatureSensor_0\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"Raw value from SEN0308\",\"model\":\"SEN0308\",\"type\":\"capacitive\",\"sensor_dry_max\":800,\"sensor_wet_max\":0,\"sensor_n_interval\":6,\"value_index\":0},\"name\":\"Soil Humidity Sensor\",\"quantity\":\"\",\"time\":\"2022-04-06T14:39:45.205Z\",\"unit\":\"\",\"value\":800}]}"
+echo "		name: SOIL-AREA-1"
 echo "		with Soil Humidity Sensor displaying Raw value from SEN0308"
 echo "		and initialized with 800 value"
 

@@ -65,7 +65,7 @@ INTEL-IRRIS specific tutorials
 The starter-kit
 ---------
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/starter-kit-bg-white.png" width="300">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/starter-kit-bg-white.jpg" width="300">
 
 Enjoy!
 C. Pham
