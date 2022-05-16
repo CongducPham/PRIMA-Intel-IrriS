@@ -30,6 +30,19 @@ import digitalio
 from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
 
+#import pyqrcode
+#import png
+#from pyqrcode import QRCode
+
+## String which represents the QR code
+#s = "WIFI:S:WAZIGATE_B827EBD1B236;T:WPA2;P:loragateway;;"
+
+## Generate QR code
+#url = pyqrcode.create(s)
+
+## Create and save the png file 
+#url.png('/home/pi/oled/wifi.png', scale = 6)
+
 #-------------------------------------------------------------------------
 # information related to the soil sensor device
 #-------------------------------------------------------------------------
@@ -122,10 +135,17 @@ image = Image.new("1", (oled.width, oled.height))
 
 # Get drawing object to draw on image.
 draw = ImageDraw.Draw(image)
+
+image2 = Image.open("/home/pi/oled/wifi.png")
+image_r = image2.resize((oled.height,oled.height), Image.BICUBIC)
+image_bw = image_r.convert("1")
 	
 #-------------------------------------------------------------------------
 # oled-service configuration
 #-------------------------------------------------------------------------
+
+#set to 0 to disable wifi qrcode
+oled_wifi_qrcode_display_duration=10
 
 if key_device.cyclic_show_all_device:
 	#duration of screen saver mode
@@ -134,7 +154,7 @@ if key_device.cyclic_show_all_device:
 	oled_display_duration=5
 else:
 	#duration of screen saver mode
-	oled_display_timer=120
+	oled_display_timer=30
 	#duration of the full information screen
 	oled_display_duration=6	
 
@@ -743,6 +763,21 @@ while True:
 
 	# Draw a white background
 	draw.rectangle((0, 0, oled.width, oled.height), outline=255, fill=255)
+	
+	if oled_wifi_qrcode_display_duration: 
+		for x in range(oled.height):
+			for y in range(oled.height):
+				draw.point((x+32,y),fill=int(image_bw.getpixel((x,y))))
+
+		# Display image
+		oled.image(image)
+		oled.show()
+		time.sleep(oled_wifi_qrcode_display_duration)	
+		# Clear display.
+		oled.fill(0)
+		oled.show()
+		# Draw a white background
+		draw.rectangle((0, 0, oled.width, oled.height), outline=255, fill=255)		
 
 	# Draw a smaller inner rectangle
 	draw.rectangle(
@@ -835,7 +870,7 @@ while True:
 		oled_display_duration=5
 	else:
 		#duration of screen saver mode
-		oled_display_timer=120
+		oled_display_timer=30
 		#duration of the full information screen
 		oled_display_duration=6			
 	
