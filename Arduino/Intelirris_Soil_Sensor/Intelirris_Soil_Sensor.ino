@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: March 10th, 2022 by C. Pham
+ * last update: June 2nd, 2022 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -79,11 +79,12 @@
 //can be uncommented for both WAZISENSE and WAZIDEV14
 //#define SI7021_SENSOR
 
-//uncomment to use XLPP format to send to WAZIGATE for instance
-//so uncomment XLPP only with LORAWAN to WAZIGATE
+//uncomment to use LPP format to send to WAZIGATE for instance
+//so uncomment LPP only with LORAWAN to WAZIGATE
 #ifdef TO_WAZIGATE
 #define LORAWAN
 #define USE_XLPP
+//#define USE_LPP
 #endif
 
 ///////////////////////////////////////////////////////////////////
@@ -193,12 +194,14 @@ uint8_t my_appKey[4]={5, 6, 7, 8};
 ///////////////////////////////////////////////////////////////////
 
 #if defined WITH_WATERMARK && not defined WM_AS_PRIMARY_SENSOR
-//Watermark soil sensor device has always this address which is different from the default address
-//26011DBB
-unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xBB};
+//Watermark soil sensor device has a different address from the default address 26011DAA
+//26011DB1
+//if you need another address for tensiometer sensor device, use B1, B2, B3,..., BF
+unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xB2};
 #else
-//default device address for WaziGate, mainly for SEN0308 soil sensor device
+//default device address for WaziGate configuration, mainly for SEN0308 capacitive soil sensor device
 //26011DAA
+//if you need another address for capacitive sensor device, use AA, AB, AC,..., AF
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xAA};
 #endif
 
@@ -324,6 +327,10 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #include <xlpp.h>
 #endif
 
+#ifdef USE_LPP
+#include <CayenneLPP.h>
+#endif
+
 ///////////////////////////////////////////////////////////////////
 // ENCRYPTION CONFIGURATION AND KEYS FOR LORAWAN
 #ifdef LORAWAN
@@ -406,8 +413,12 @@ SX127XLT LT;
 SX128XLT LT;
 #endif
 
-#ifdef USE_XLPP
-XLPP xlpp(120);
+#ifdef USE_XLPP 
+XLPP lpp(120);
+#endif
+
+#ifdef USE_LPP 
+CayenneLPP lpp(120);
 #endif
 
 //keep track of the number of successful transmissions
@@ -1254,9 +1265,9 @@ void loop(void)
 
       uint8_t r_size;
 
-#ifdef USE_XLPP
-      // Create xlpp payload.
-      xlpp.reset();
+#if defined USE_XLPP || defined USE_LPP
+      // Create lpp payload.
+      lpp.reset();
 #endif
 
       char final_str[80] = "\\!";
@@ -1302,17 +1313,42 @@ void loop(void)
                   sprintf(final_str, "%s/%s/%s", final_str, sensor_ptrs[i]->get_nomenclature(), float_str);
               }
 
-#ifdef USE_XLPP
+#ifdef WITH_WATERMARK
+              ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, 28.0, -1.0), 2);
+              sprintf(final_str, "%s/CB/%s", final_str, float_str);
+#endif              
+
+#if defined USE_XLPP || defined USE_LPP
               //TODO
               //there is an issue with current XLPP so we use addTemperature() for all values
 #ifdef TEST_DEVICE_RANDOM              
               randomSeed(analogRead(2));
+#ifdef WITH_WATERMARK
+              //test 1
+              //tmp_value=55+random(50,200);
+              //test 2
+              tmp_value=0.0+random(130,330);
+#else
               //test 1
               //tmp_value=212.5+random(1,5);
               //test 2
               tmp_value=0.0+random(250,550);
-#endif                          
-              xlpp.addTemperature(i, tmp_value);
+#endif              
+#endif
+ 
+#ifdef WITH_WATERMARK
+              //tmp_value=110.0; // for testing, i.e. 1100omhs
+              // here we convert to centibar, using a mean temperature of 28°C
+              lpp.addTemperature(i, sensor_ptrs[i]->convert_value(tmp_value, 28.0, -1.0));
+              
+              //Note: for watermark, raw data is scaled by dividing by 10 because addAnalogInput() will not accept
+              //large values while resistance value for watermark can go well beyond 3000
+              //TODO when wazigate LPP decoding bug is fixed, we could use un-scaled value                                    
+              lpp.addTemperature(i+1, tmp_value);                
+#else
+              //tmp_value=250.0; // for testing              
+              lpp.addTemperature(i, tmp_value);
+#endif                         
 #endif
               
 #ifdef OLED
@@ -1347,8 +1383,8 @@ void loop(void)
       PRINT_STR("%s",(char*)(message+app_key_offset));
       PRINTLN;
 
-#ifdef USE_XLPP
-      PRINT_CSTSTR("use XLPP format for transmission to WaziGate");
+#if defined USE_XLPP || defined USE_LPP
+      PRINT_CSTSTR("use LPP format for transmission to WaziGate");
       PRINTLN;
 #else
       PRINT_CSTSTR("Real payload size is ");
@@ -1385,8 +1421,10 @@ void loop(void)
 #ifdef WITH_AES
 #ifdef LORAWAN
       PRINT_CSTSTR("end-device uses native LoRaWAN packet format\n");
-#ifdef USE_XLPP
-      pl=local_aes_lorawan_create_pkt(xlpp.buf, xlpp.len, app_key_offset);
+#if defined USE_XLPP
+      pl=local_aes_lorawan_create_pkt(lpp.buf, lpp.len, app_key_offset);
+#elif defined USE_LPP 
+      pl=local_aes_lorawan_create_pkt(lpp.getBuffer(), lpp.getSize(), app_key_offset);      
 #else
       pl=local_aes_lorawan_create_pkt(message, pl, app_key_offset);      
 #endif        
@@ -1409,9 +1447,11 @@ void loop(void)
 #ifdef LORAWAN
       //will return packet length sent if OK, otherwise 0 if transmit error
       //we use raw format for LoRaWAN
-#ifdef USE_XLPP
-      if (LT.transmit(xlpp.buf, pl, 10000, MAX_DBM, WAIT_TX))
-#else
+#if defined USE_XLPP
+      if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX))
+#elif defined USE_LPP 
+      if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX))
+#else      
       if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX))
 #endif       
 #else

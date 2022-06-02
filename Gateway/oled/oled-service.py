@@ -81,14 +81,16 @@ if lang=='fr':
 	main_screen_str_1=" jours"
 	main_screen_str_2=""
 	main_screen_str_3=" mins"
-	main_screen_str_4="valeur: "		
+	main_screen_str_4="valeur: "
+	main_screen_str_4cb="cbar: "			
 	main_screen_str_5="sol est "			
 else:
 	screen_saver_str_1=" days"
 	main_screen_str_1=" days ago"
 	main_screen_str_2="ago"
 	main_screen_str_3=" mins ago"
-	main_screen_str_4="raw: "	
+	main_screen_str_4="raw: "
+	main_screen_str_4cb="cbar: "		
 	main_screen_str_5="soil is "	
 			
 # reset oled at each main screen cycle to handle screen shut off by other services such as wazigate-system
@@ -237,8 +239,8 @@ def set_meta_data(device_id):
 	WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'
 	try:
 		if sensor_model=="WM200":
-			#pload = '{"model":"WM200","sensor_dry_max":550,"sensor_n_interval":6,"sensor_wet_max":0,"type":"tensiometer","value_index":0}'
-			pload = '{"model":"WM200","sensor_dry_max":550,"sensor_n_interval":6,"sensor_wet_max":0,"type":"tensiometer"}'
+			#pload = '{"model":"WM200","sensor_dry_max":8000,"sensor_n_interval":6,"sensor_wet_max":0,"type":"tensiometer","value_index":0}'
+			pload = '{"model":"WM200","sensor_dry_max":120,"sensor_n_interval":6,"sensor_wet_max":0,"type":"tensiometer"}'
 		else:
 			#pload = '{"model":"SEN0308","sensor_dry_max":800,"sensor_n_interval":6,"sensor_wet_max":0,"type":"capacitive","value_index":0}'
 			pload = '{"model":"SEN0308","sensor_dry_max":800,"sensor_n_interval":6,"sensor_wet_max":0,"type":"capacitive"}'
@@ -273,6 +275,8 @@ def get_all_devices_id_list():
 	has_found_device=False	
 	global all_devices_id_list
 	all_devices_id_list=[]
+	global sensor_type
+	global sensor_model	
 	
 	WaziGate_url='http://localhost/devices'
 	try:
@@ -350,6 +354,8 @@ def find_new_default_device():
 	print ('oled-service: try to find new default device')
 	global has_found_device
 	has_found_device=False
+	global sensor_type
+	global sensor_model
 	
 	WaziGate_url='http://localhost/devices'
 	try:
@@ -367,7 +373,7 @@ def find_new_default_device():
 			if len(device_json) >= 2:
 				default_device_json=device_json[len(device_json)-1]
 				print (default_device_json)
-
+				
 				sensor_type="undef"
 				sensor_model="undef"
 				
@@ -421,6 +427,9 @@ def find_new_default_device():
 #-------------------------------------------------------------------------
 
 def get_sensor_type_from_local_database(device_id):
+	global sensor_type
+	global sensor_model
+	
 	WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 	try:
 		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
@@ -432,9 +441,7 @@ def get_sensor_type_from_local_database(device_id):
 			print ('oled-service: GET success')
 			print (response.text)
 			device_json=json.loads(response.text)
-			global sensor_type
 			sensor_type=device_json["meta"]["type"]
-			global sensor_model
 			sensor_model=device_json["meta"]["model"]
 			print(sensor_model, sensor_type)
 		else:
@@ -452,6 +459,14 @@ def get_sensor_type_from_local_database(device_id):
 #-------------------------------------------------------------------------		
 		
 def set_sensor_intervals():
+	global last_raw_value
+	global last_raw_value_minutes
+	global last_raw_value_days
+	global value_index_capacitive
+	global value_index_tensiometer
+	global capacitive_soil_condition
+	global tensiometer_soil_condition
+	
 	if sensor_type=='capacitive':
 		last_raw_value=key_device.capacitive_sensor_dry_max
 	else:
@@ -489,7 +504,7 @@ print(sensor_model, sensor_type)
 
 if sensor_type=='capacitive':
 	last_raw_value=key_device.capacitive_sensor_dry_max
-if sensor_type=='tensiomter':
+if sensor_type=='tensiometer':
 	last_raw_value=key_device.tensiometer_sensor_wet_max
 else:		
 	last_raw_value=key_device.capacitive_sensor_dry_max
@@ -549,8 +564,9 @@ def screen_saver(duration):
 			text_to_display=device_name_for_oled[0:12]
 			draw.text((x, ytop), text_to_display, font=font_saver, fill=255)
 			ytop=ytop+font_saver_size
-			
+		
 			draw.text((x, ytop), str(last_raw_value), font=font_saver, fill=255)
+				
 			ytop=ytop+font_saver_size
 					
 			if last_raw_value_days:
@@ -580,6 +596,14 @@ def screen_saver(duration):
 				else:
 					for i in range(value_index_capacitive):
 						draw.rectangle((x+67+2, y+4+3*visual_bar_height-6-i*6, x+67+15-2, y+4+3*visual_bar_height-2-i*6), outline=255, fill=255)
+
+			if sensor_type=='tensiometer':
+				if value_index_tensiometer==0:
+					draw.text((x+67+4, y+20), "!", font=font_saver, fill=255)
+				else:
+					for i in range(value_index_tensiometer):
+						draw.rectangle((x+67+2, y+4+3*visual_bar_height-6-i*6, x+67+15-2, y+4+3*visual_bar_height-2-i*6), outline=255, fill=255)
+												
 		else:
 			draw.text((x, y), "no device, create one", font=font, fill=255)
 			draw.text((x, y+1*font_saver_size), "w/ SEN0308 or WM200", font=font, fill=255)		
@@ -646,6 +670,8 @@ def get_last_raw_value(device_id):
 
 def get_capacitive_soil_condition(device_id, raw_value):
 
+	global value_index_capacitive
+	
 	if key_device.get_value_index_from_local_database:
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 		try:
@@ -658,7 +684,6 @@ def get_capacitive_soil_condition(device_id, raw_value):
 				print ('oled-service: GET success')
 				print (response.text)
 				device_json=json.loads(response.text)
-				global value_index_capacitive
 				value_index_capacitive=device_json["meta"]["value_index"]
 				print(value_index_capacitive)			
 			else:
@@ -672,7 +697,6 @@ def get_capacitive_soil_condition(device_id, raw_value):
 		print ('=========================================')	
 	else:
 		value_interval=int(key_device.capacitive_sensor_dry_max/key_device.capacitive_sensor_n_interval)
-		#global value_index_capacitive
 		value_index_capacitive=int(raw_value/value_interval)	
 		#in case the sensed value is greater than the maximum value defined
 		if value_index_capacitive >= key_device.capacitive_sensor_n_interval:
@@ -737,13 +761,41 @@ def get_capacitive_soil_condition(device_id, raw_value):
 #--------------------------------------------------------------------------
 	
 def get_tensiometer_soil_condition(device_id, raw_value): 
-	value_interval=int(key_device.tensiometer_sensor_wet_max/key_device.tensiometer_sensor_n_interval)
-	value_index=int(raw_value/value_interval)
-	#in case the sensed value is greater than the maximum value defined
-	if value_index >= key_device.tensiometer_sensor_n_interval:
-		value_index = key_device.tensiometer_sensor_n_interval-1		
+
+	global value_index_tensiometer
+	
+	if key_device.use_irrometer_interval_for_tensiometer:
+		#from irrometer: https://www.irrometer.com/basics.html
+		#0-10 Centibars = Saturated soil
+		#10-30 Centibars = Soil is adequately wet (except coarse sands, which are drying)
+		#30-60 Centibars = Usual range for irrigation (most soils)
+		#60-100 Centibars = Usual range for irrigation in heavy clay
+		#100-200 Centibars = Soil is becoming dangerously dry- proceed with caution!
+		#	
+		#we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-very wet/saturated
+		if raw_value > 100:
+			value_index_tensiometer=0	 
+		if raw_value > 60:
+			value_index_tensiometer=1	
+		if raw_value > 30:
+			value_index_tensiometer=2	
+		if raw_value > 10:
+			value_index_tensiometer=4	
+		else:
+			value_index_tensiometer=5												
+	else:
+		value_interval=int(key_device.tensiometer_sensor_dry_max/key_device.tensiometer_sensor_n_interval)
+		value_index_tensiometer=int(raw_value/value_interval)
+		#in case the sensed value is greater than the maximum value defined
+		if value_index_tensiometer >= key_device.tensiometer_sensor_n_interval:
+			value_index_tensiometer = key_device.tensiometer_sensor_n_interval-1		
+		
+		#we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-very wet/saturated
+		#so for tensiometer we need to invert the index
+		value_index_tensiometer=key_device.tensiometer_sensor_n_interval-1-value_index_tensiometer	
+				
 	global tensiometer_soil_condition
-	tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[value_index]	
+	tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[value_index_tensiometer]	
 										
 #------------------------------------------------------------
 #main loop
@@ -814,10 +866,20 @@ while True:
 		print ('oled-service: found device')
 	else:
 		print ('oled-service: device not found!')
-		find_new_default_device()
-		
+		find_new_default_device()	
+			
 	if has_found_device:
-		print ('oled-service: device id'+device_id_for_oled)	
+		if key_device.get_sensor_type_from_local_database:
+			print ('oled-service: get sensor type and model from local database')
+			get_sensor_type_from_local_database(device_id_for_oled)
+		else:
+			print ('oled-service: get sensor type and model from key_device.py')
+			sensor_type=key_device.sensor_type
+			sensor_model=key_device.sensor_model
+
+		print(sensor_model, sensor_type)
+			
+		print ('oled-service: device id '+device_id_for_oled)	
 		#text_to_display=sensor_model+" "+sensor_type
 		text_to_display=device_name_for_oled
 		draw.text((x, ttop), text_to_display, font=font, fill=255)
@@ -836,8 +898,12 @@ while True:
 			
 		draw.text((x, ttop), text_to_display, font=font, fill=255)
 		ttop=ttop+font_size
-	
-		text_to_display=main_screen_str_4+str(last_raw_value)
+		
+		if sensor_type=='capacitive':
+			text_to_display=main_screen_str_4+str(last_raw_value)
+		else:	
+			text_to_display=main_screen_str_4cb+str(last_raw_value)
+									
 		draw.text((x, ttop), text_to_display, font=font, fill=255)
 		ttop=ttop+font_size
 	

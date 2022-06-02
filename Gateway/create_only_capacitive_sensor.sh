@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# this script creates a SEN0308 sensor attached to a given device
+
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"

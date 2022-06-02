@@ -74,6 +74,7 @@ class Sensor {
     
     virtual void update_data();
     virtual double get_value();
+    virtual double convert_value(double v1, double v2, double v3);
     
   private:
   	char _nomenclature[MAX_NOMENCLATURE_LENGTH+1];

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# this script creates an empty SEN0308 sensor as primary device, i.e. temperatureSensor_0 displaying no kind
+
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"

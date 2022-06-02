@@ -15,6 +15,7 @@ class watermark : public Sensor {
     watermark(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power, int pin_trigger);
     void update_data();
     double get_value();
+    double convert_value(double v1, double v2, double v3);
 };
 
 #endif

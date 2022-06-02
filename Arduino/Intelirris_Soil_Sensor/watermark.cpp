@@ -7,6 +7,7 @@
 */
 
 #include "watermark.h"
+#include <math.h>
 
 watermark::watermark(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power, int pin_trigger):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power, pin_trigger){
   if (get_is_connected()){
@@ -49,7 +50,8 @@ void watermark::update_data()
     }
     
     digitalWrite(get_pin_power(),LOW); // some time low is good
-    
+
+    //here we use a 10 KOhm resistor
     k = 10000*k/l;
     Serial.println(k);
 
@@ -73,5 +75,56 @@ void watermark::update_data()
 double watermark::get_value()
 {
   update_data();
-  return get_data();
+  //we scale data by dividing by 10
+  //TODO when wazigate LPP decoding bug is fixed, we could use un-scaled value
+  return (get_data()/10.0);
+}
+
+//taken from watermark UNO CODE: https://www.irrometer.com/download/arduinocode.zip
+//
+double watermark::convert_value(double v1, double v2, double v3)
+{
+  const double open_resistance=35000.0, short_resistance=200.0, short_CB=240.0, open_CB=255.0; 
+  double WM1_CB=0.0;
+    //we re-scale v1 by multiplying by 10.0
+  double r=v1*10.0;
+  double t=v2;
+  
+  //*****************CONVERSION OF RESISTANCE TO kPa************************************
+
+  //convert WM1 Reading to Centibars or KiloPascal
+  if (r>550.00) {
+    
+    if (r>8000.00) {
+      
+      WM1_CB=-2.246-5.239*(r/1000.00)*(1+.018*(t-24.00))-.06756*(r/1000.00)*(r/1000.00)*((1.00+0.018*(t-24.00))*(1.00+0.018*(t-24.00))); 
+    } 
+    else if (r>1000.00) {
+
+      WM1_CB=(-3.213*(r/1000.00)-4.093)/(1-0.009733*(r/1000.00)-0.01205*(t)) ;
+    } 
+    else {
+
+      WM1_CB=((r/1000.00)*23.156-12.736)*(1.00+0.018*(t-24.00));
+    }
+    
+  } 
+  else {
+
+    if (r>300.00)  {
+      WM1_CB=0.00;
+    }
+    
+    if (r<300.00 && v1>=short_resistance) {
+      
+      WM1_CB=short_CB; //240 is a fault code for sensor terminal short
+    }
+  }
+    
+  if (r>=open_resistance) {
+    
+    WM1_CB=open_CB; //255 is a fault code for open circuit or sensor not present 
+  }
+
+  return(abs(WM1_CB));
 }
