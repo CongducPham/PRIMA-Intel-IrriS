@@ -593,6 +593,8 @@ def screen_saver(duration):
 			if sensor_type=='capacitive':
 				if value_index_capacitive==0:
 					draw.text((x+67+4, y+20), "!", font=font_saver, fill=255)
+				elif value_index_capacitive<0:	
+					draw.text((x+67+4, y+20), "?", font=font_saver, fill=255)					
 				else:
 					for i in range(value_index_capacitive):
 						draw.rectangle((x+67+2, y+4+3*visual_bar_height-6-i*6, x+67+15-2, y+4+3*visual_bar_height-2-i*6), outline=255, fill=255)
@@ -600,6 +602,8 @@ def screen_saver(duration):
 			if sensor_type=='tensiometer':
 				if value_index_tensiometer==0:
 					draw.text((x+67+4, y+20), "!", font=font_saver, fill=255)
+				elif value_index_tensiometer<0:	
+					draw.text((x+67+4, y+20), "?", font=font_saver, fill=255)
 				else:
 					for i in range(value_index_tensiometer):
 						draw.rectangle((x+67+2, y+4+3*visual_bar_height-6-i*6, x+67+15-2, y+4+3*visual_bar_height-2-i*6), outline=255, fill=255)
@@ -773,13 +777,18 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 		#100-200 Centibars = Soil is becoming dangerously dry- proceed with caution!
 		#	
 		#we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-very wet/saturated
-		if raw_value > 100:
+		
+		if raw_value == 255:
+			value_index_tensiometer=-1
+		elif raw_value == 240:
+			value_index_tensiometer=-2		 			
+		elif raw_value > 100:
 			value_index_tensiometer=0	 
-		if raw_value > 60:
+		elif raw_value > 60:
 			value_index_tensiometer=1	
-		if raw_value > 30:
+		elif raw_value > 30:
 			value_index_tensiometer=2	
-		if raw_value > 10:
+		elif raw_value > 10:
 			value_index_tensiometer=4	
 		else:
 			value_index_tensiometer=5												
@@ -795,7 +804,12 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 		value_index_tensiometer=key_device.tensiometer_sensor_n_interval-1-value_index_tensiometer	
 				
 	global tensiometer_soil_condition
-	tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[value_index_tensiometer]	
+	if value_index_tensiometer==-1:
+		tensiometer_soil_condition='no sensor'
+	elif value_index_tensiometer==-2:
+		tensiometer_soil_condition='err'
+	else:			
+		tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[value_index_tensiometer]	
 										
 #------------------------------------------------------------
 #main loop

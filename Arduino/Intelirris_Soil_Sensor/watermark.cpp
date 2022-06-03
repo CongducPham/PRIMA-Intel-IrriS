@@ -32,6 +32,7 @@ void watermark::update_data()
     
     uint32_t k=0;
     uint32_t l=0;
+    uint32_t tmp=0;
     
 		pinMode(get_pin_power(), OUTPUT);
     pinMode(get_pin_trigger(), OUTPUT);
@@ -41,18 +42,34 @@ void watermark::update_data()
       digitalWrite(get_pin_power(),LOW);
       digitalWrite(get_pin_trigger(),HIGH);
  //     delay(0.1); // change a litle, not important
-      k += analogRead(get_pin_read());
-    
+      tmp=analogRead(get_pin_read());
+      //Serial.println(tmp);
+      k += tmp;
+      //Serial.println(k);
       digitalWrite(get_pin_power(),HIGH);
       digitalWrite(get_pin_trigger(),LOW);
  //     delay(0.1); 
-      l += analogRead(get_pin_read());
+      tmp=analogRead(get_pin_read());
+      //Serial.println(tmp); 
+      l += tmp;
+      //Serial.println(l);      
     }
     
     digitalWrite(get_pin_power(),LOW); // some time low is good
 
-    //here we use a 10 KOhm resistor
-    k = WM_RESISTOR*k/l;
+    if (l > 0) 
+    {
+      k = WM_RESISTOR * k / l;
+    }
+    else
+    {
+      k = WM_MAX_RESISTOR;
+    }
+
+    if (k>WM_MAX_RESISTOR || k<0)
+      k=WM_MAX_RESISTOR;
+
+    //k=600;
     Serial.println(k);
 
 		set_data(k/1.0);
@@ -93,6 +110,7 @@ double watermark::convert_value(double v1, double v2, double v3)
   //*****************CONVERSION OF RESISTANCE TO kPa************************************
 
   //convert WM1 Reading to Centibars or KiloPascal
+  //Resistance < 550 Ohms: CB=0 -> saturated
   if (r>550.00) {
     
     if (r>8000.00) {
@@ -105,7 +123,7 @@ double watermark::convert_value(double v1, double v2, double v3)
     } 
     else {
 
-      WM1_CB=((r/1000.00)*23.156-12.736)*(1.00+0.018*(t-24.00));
+      WM1_CB=((r/1000.00)*23.156-12.736)-(1.00+0.018*(t-24.00));
     }
     
   } 

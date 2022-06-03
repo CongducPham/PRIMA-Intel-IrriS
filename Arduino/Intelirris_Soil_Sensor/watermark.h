@@ -11,6 +11,7 @@
 #define WATERMARKANALOG_SCALE _BOARD_MVOLT_SCALE
 //put here the resistor value, in Ohms
 #define WM_RESISTOR 10000
+#define WM_MAX_RESISTOR 40000
 
 class watermark : public Sensor {
   public:    
