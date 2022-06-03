@@ -52,7 +52,7 @@ void watermark::update_data()
     digitalWrite(get_pin_power(),LOW); // some time low is good
 
     //here we use a 10 KOhm resistor
-    k = 10000*k/l;
+    k = WM_RESISTOR*k/l;
     Serial.println(k);
 
 		set_data(k/1.0);

@@ -9,6 +9,8 @@
 #include "Sensor.h"
 
 #define WATERMARKANALOG_SCALE _BOARD_MVOLT_SCALE
+//put here the resistor value, in Ohms
+#define WM_RESISTOR 10000
 
 class watermark : public Sensor {
   public:    
