@@ -57,6 +57,7 @@ void watermark::update_data()
     
     digitalWrite(get_pin_power(),LOW); // some time low is good
 
+    // if l==0 it means either very dry (i.e. wm has infinite resistance)
     if (l > 0) 
     {
       k = WM_RESISTOR * k / l;
@@ -101,7 +102,7 @@ double watermark::get_value()
 //
 double watermark::convert_value(double v1, double v2, double v3)
 {
-  const double open_resistance=35000.0, short_resistance=200.0, short_CB=240.0, open_CB=255.0; 
+  const double open_resistance=WM_MAX_RESISTOR, short_resistance=200.0, short_CB=240.0, open_CB=255.0; 
   double WM1_CB=0.0;
     //we re-scale v1 by multiplying by 10.0
   double r=v1*10.0;

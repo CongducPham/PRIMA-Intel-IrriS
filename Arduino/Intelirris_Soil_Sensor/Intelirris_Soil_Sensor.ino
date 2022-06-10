@@ -54,6 +54,7 @@
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
 //#define WITH_WATERMARK
+#define WM_REF_TEMPERATURE 28.0
 ////////////////////////////////////////////////////////////////////
 // uncomment to force the watermark to have default device address for WaziGate
 //#define WM_AS_PRIMARY_SENSOR
@@ -197,7 +198,7 @@ uint8_t my_appKey[4]={5, 6, 7, 8};
 //Watermark soil sensor device has a different address from the default address 26011DAA
 //26011DB1
 //if you need another address for tensiometer sensor device, use B1, B2, B3,..., BF
-unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xB2};
+unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xB1};
 #else
 //default device address for WaziGate configuration, mainly for SEN0308 capacitive soil sensor device
 //26011DAA
@@ -1314,7 +1315,8 @@ void loop(void)
               }
 
 #ifdef WITH_WATERMARK
-              ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, 28.0, -1.0), 2);
+              //taking 28°C as the default soil temperature
+              ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0), 2);
               sprintf(final_str, "%s/CB/%s", final_str, float_str);
 #endif              
 
@@ -1339,7 +1341,7 @@ void loop(void)
 #ifdef WITH_WATERMARK
               //tmp_value=110.0; // for testing, i.e. 1100omhs
               // here we convert to centibar, using a mean temperature of 28°C
-              lpp.addTemperature(i, sensor_ptrs[i]->convert_value(tmp_value, 28.0, -1.0));
+              lpp.addTemperature(i, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0));
               
               //Note: for watermark, raw data is scaled by dividing by 10 because addAnalogInput() will not accept
               //large values while resistance value for watermark can go well beyond 3000
