@@ -43,6 +43,7 @@ sed -i "s/^WAZIGATE_ID.*/WAZIGATE_ID=$WAZIGATE_ID/g" .env
 
 SSID="WAZIGATE_${WAZIGATE_ID^^}"
 
+#added for INTEL-IRRIS oled service
 qrencode -t PNG -o /home/pi/oled/wifi.png "WIFI:S:$SSID;T:WPA2;P:loragateway;;"
 
 ################################################################################
@@ -91,3 +92,6 @@ docker load -i wazigate_images.tar
 log 4 "Starting docker containers"
 # Create containers
 docker-compose up -d
+
+#added for INTEL-IRRIS oled service
+/home/pi/intel-irris-auto-config.sh

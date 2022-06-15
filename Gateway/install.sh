@@ -1,7 +1,7 @@
 #!/bin/bash
 
-./config_band.sh $1
-./show_band.sh
+./scripts/config_band.sh $1
+./scripts/show_band.sh
 
 echo "apt-get update"
 sudo apt-get update
@@ -16,7 +16,7 @@ cd oled
 ./install.sh
 
 cd ..
-./create_full_capacitive_device.sh
+./scripts/create_full_capacitive_device.sh
 
 ##see https://www.raspberryme.com/ajout-dune-horloge-temps-reel-ds3231-au-raspberry-pi/
 
