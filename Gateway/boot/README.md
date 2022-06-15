@@ -1,0 +1,77 @@
+Auto-configuration on boot for the INTEL-IRRIS WaziGate
+====================================================
+
+What is it?
+-----------
+
+The INTEL-IRRIS WaziGate provides a simple auto-configuration mechanism to automatically configure the gateway on boot for specific deployment settings using the base INTEL-IRRIS WaziGate SD card image: set frequency band, create pre-configured devices with pre-configured sensors,... For instance, the 433MHz version SD card image with a default pre-configured capacitive-based sensor device is now the only SD card image for download. If you need to have the INTEL-IRRIS WaziGate in 868MHz version or have pre-configuration for Watermark-based sensor devices, then you can use this simple auto-configuration mechanism.
+
+How it works?
+-----------
+
+After flashing the INTEL-IRRIS WaziGate SD card image, you can insert the SD card in any computer (Windows, Linux, MacOS) to copy some configuration files in the `/boot` partition which is in FAT32 format and therefore easily accessible.
+
+There are basically 2 configuration files you can put in the `/boot` partition:
+
+- `intel-irris-band.txt`: simply contains either `eu868` or `eu433`
+- `intel-irris-auto-config.sh`: runs a number of shell scripts to configure the WaziGate using its embedded REST API
+
+This is how the auto-configuration mechanism works:
+
+- on boot, the INTEL-IRRIS WaziGate executes `/home/pi/intel-irris-auto-config.sh` after all containers have been launched.
+
+- `/home/pi/intel-irris-auto-config.sh` waits for the `wazigate-edge` container to be up and running then first look for `/boot/intel-irris-band.txt` to configure the frequency band. If `/boot/intel-irris-band.txt` exists and contains either `eu868` or `eu433` then the corresponding band is configured for the WaziGate, otherwise the `eu433` is used.
+
+- `/home/pi/intel-irris-auto-config.sh` then look for `/boot/intel-irris-auto-config.sh`. If the script exists, it will be launched. `/boot/intel-irris-auto-config.sh` typically calls some utility scripts that are in the `scripts` folder to create pre-configured devices with sensors for the INTEL-IRRIS WaziGate.
+
+- after executing `/boot/intel-irris-auto-config.sh`, `/home/pi/intel-irris-auto-config.sh` creates `/boot/intel-irris-auto-config.done` to indicate that the auto-configuration has been performed. The WaziGate is then rebooted.
+
+- it means that if the auto-configuration mechanism is used, the INTEL-IRRIS WaziGate will need more time to be operational.
+
+- on boot, if `/boot/intel-irris-auto-config.done` exists then `/boot/intel-irris-auto-config.sh` is not launched.
+
+Example 1: set INTEL-IRRIS WaziGate in 868MHz version
+-----------
+
+- flash the INTEL-IRRIS WaziGate SD card image
+- insert the SD card in any computer (Windows, Linux, MacOS)
+- open the `boot` drive that should appear on your computer
+- download from INTEL-IRRIS GitHub (`Gateway/boot`) either `intel-irris-band-433.txt` or `intel-irris-band-868.txt` to be copied into the `boot` drive as `intel-irris-band.txt`
+- safely eject the `boot` drive
+- insert the SD card in the RPI and power the RPI
+
+Example 2: have the INTEL-IRRIS WaziGate working with a Watermark-based device
+-----------
+
+- flash the INTEL-IRRIS WaziGate SD card image
+- insert the SD card in any computer (Windows, Linux, MacOS)
+- open the `boot` drive that should appear on your computer
+- download from INTEL-IRRIS GitHub (`Gateway/boot`) `default-1-watermark/intel-irris-auto-config.sh` to be copied into the `boot` drive as `intel-irris-auto-config.sh`
+- safely eject the `boot` drive
+- insert the SD card in the RPI and power the RPI
+
+Example 3: have the INTEL-IRRIS WaziGate working with 4 Watermark-based device
+-----------
+
+- flash the INTEL-IRRIS WaziGate SD card image
+- insert the SD card in any computer (Windows, Linux, MacOS)
+- open the `boot` drive that should appear on your computer
+- download from INTEL-IRRIS GitHub (`Gateway/boot`) `config-4-watermark/intel-irris-auto-config.sh` to be copied into the `boot` drive as `intel-irris-auto-config.sh`
+- safely eject the `boot` drive
+- insert the SD card in the RPI and power the RPI
+
+Example 4: have the INTEL-IRRIS WaziGate working with a customized setting
+-----------
+
+- flash the INTEL-IRRIS WaziGate SD card image
+- insert the SD card in any computer (Windows, Linux, MacOS)
+- open the `boot` drive that should appear on your computer
+- create on your computer an `intel-irris-auto-config.sh` script that actually creates and configures devices according to your setting
+- copy the file into the `boot` drive as `intel-irris-auto-config.sh`
+- safely eject the `boot` drive
+- insert the SD card in the RPI and power the RPI
+
+Enjoy!
+C. Pham
+Coordinator of PRIMA Intel-IrriS
+
