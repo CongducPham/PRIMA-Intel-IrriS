@@ -1,5 +1,7 @@
 #!/bin/bash
 
+logger -t intel-irris-auto-config "create-4-watermark"
+
 cd /home/pi/scripts
 ./delete_sensor.sh
 ./create_full_tensiometer_device_with_dev_addr.sh 1 B1
