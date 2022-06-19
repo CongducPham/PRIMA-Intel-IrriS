@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # Ex: create_full_tensiometer_device_with_dev_addr.sh 1 B1
-# this script creates a watermark sensor with SOIL-AREA-x and dev addr 26011Dyy
+# this script creates device with 1 watermark sensor with SOIL-AREA-x and dev addr 26011Dyy
 # for watermark, it is recommended to use B1, B2, B3,... for yy
 # the device id will be x62286d72f06c4c0001eba943: i.e. 162286d72f06c4c0001eba943
 
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
-    echo "Need the device id where the sensor will be added"
+    echo "Need the device name index and the last byte of the device address"
+    echo "e.g. create_full_tensiometer_device_with_dev_addr.sh 1 B1"
     exit
 fi
 

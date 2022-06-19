@@ -8,7 +8,8 @@
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
-    echo "Need the device id where the sensor will be added"
+    echo "Need the device name index and the last byte of the device address"
+    echo "e.g. create_full_capacitive_device_with_dev_addr.sh 1 AA"
     exit
 fi
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # this script adds a watermark sensor as secondary device, i.e. SOIL-AREA-2 and devAddr=26011DB2
+# could be replaced by create_full_tensiometer_device_with_dev_addr.sh 2 B2
 
 echo "--> Get token"
 TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
