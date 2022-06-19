@@ -72,12 +72,25 @@ Example 4: have the INTEL-IRRIS WaziGate working with a customized setting
 - flash the INTEL-IRRIS WaziGate SD card image
 - insert the SD card in any computer (Windows, Linux, MacOS)
 - open the `boot` drive that should appear on your computer
-- download from INTEL-IRRIS GitHub (`Gateway/boot`) `create-custom-example/intel-irris-auto-config.sh` and see how the script creates one capacitive and one tensiometer device (SOIL-AREA-1/26011DAA and SOIL-AREA-2/26011DB1)
+- download from INTEL-IRRIS GitHub (`Gateway/boot`) `create-custom-example/intel-irris-auto-config.sh` and see how the script creates one capacitive and one tensiometer device (SOIL-AREA-1/26011DAA and SOIL-AREA-2/26011DB2)
 - based on this example, you can create on your computer an `intel-irris-auto-config.sh` script that actually creates and configures devices according to your setting
 - copy the file into the `boot` drive as `intel-irris-auto-config.sh`
 - be sure that there is no `intel-irris-auto-config.done` file in the `boot` drive, otherwise delete the file
 - safely eject the `boot` drive
 - insert the SD card in the RPI and power the RPI
+
+Example 5: have the INTEL-IRRIS WaziGate working with a Watermark-based device + 1 soil temperature sensor
+-----------
+
+- flash the INTEL-IRRIS WaziGate SD card image
+- insert the SD card in any computer (Windows, Linux, MacOS)
+- open the `boot` drive that should appear on your computer
+- download from INTEL-IRRIS GitHub (`Gateway/boot`) `create-default-watermark-st/intel-irris-auto-config.sh` to be copied into the `boot` drive as `intel-irris-auto-config.sh`
+- copy the file into the `boot` drive as `intel-irris-auto-config.sh`
+- be sure that there is no `intel-irris-auto-config.done` file in the `boot` drive, otherwise delete the file
+- safely eject the `boot` drive
+- insert the SD card in the RPI and power the RPI
+
 
 Enjoy!
 C. Pham
