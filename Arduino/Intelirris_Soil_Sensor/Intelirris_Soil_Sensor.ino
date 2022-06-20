@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: June 2nd, 2022 by C. Pham
+ * last update: June 20th, 2022 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -55,14 +55,20 @@
 // uncomment to have a soil tensiometer watermark sensor
 //#define WITH_WATERMARK
 #define WM_REF_TEMPERATURE 28.0
+
 ////////////////////////////////////////////////////////////////////
 // uncomment to force the watermark to have default device address for WaziGate
 //#define WM_AS_PRIMARY_SENSOR
 
 ////////////////////////////////////////////////////////////////////
+// uncomment to have 2 tensiometer watermark sensor on the same device
+//#define TWO_WATERMARK
+
+////////////////////////////////////////////////////////////////////
 // uncomment to have 1 soil temperature sensor ST
 // using a one-wire DS18B20 sensor
 //#define SOIL_TEMP_SENSOR
+//#define LINK_SOIL_TEMP_TO_CENTIBAR
 
 ////////////////////////////////////////////////////////////////////
 // WAZISENSE and WAZIDEV v1.4 boards have
@@ -249,6 +255,8 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
                              |_|             
 ********************************************************************/
 
+//RESERVED PINS on Arduino ProMini: 10, 11, 12, 13, 4
+
 #ifdef WAZISENSE
 //uncomment to transmit data related to solar panel level 
 //#define SOLAR_PANEL_LEVEL
@@ -262,16 +270,22 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 //uncomment to transmit data related to battery voltage level 
 //#define BAT_LEVEL
 #endif
-//this is how you need to connect the analog soil humidity sensors
+//this is how you need to connect the analog soil humidity sensor
 #define SH1_ANALOG_PIN A0
 #define SH1_PWR_PIN A1
-#define TEMP_DIGITAL_PIN 6
-#define TEMP_PWR_PIN 7
+//this is how you need to connect the DS18B20 soil temperature sensor
+#define TEMP_DIGITAL_PIN 2
+#define TEMP_PWR_PIN 3
 
 #ifdef WITH_WATERMARK
-#define WM_PWR_PIN1 8
-#define WM_PWR_PIN2 9
-#define WM_ANALOG_PIN A0
+//first Watermark
+#define WM1_PWR_PIN1 8
+#define WM1_PWR_PIN2 9
+#define WM1_ANALOG_PIN A0
+//second Watermark
+#define WM2_PWR_PIN1 6
+#define WM2_PWR_PIN2 7
+#define WM2_ANALOG_PIN A1
 #endif
 
 #endif
@@ -386,12 +400,25 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
   #endif
 #else
   //soil sensor(s) on regular ProMini PCB version
-  #ifdef SOIL_TEMP_SENSOR
-    const int number_of_sensors = 2;
+  #ifdef TWO_WATERMARK
+    #ifdef SOIL_TEMP_SENSOR
+      const int number_of_sensors = 3;
+    #else
+      const int number_of_sensors = 2;
+    #endif
   #else
-    const int number_of_sensors = 1;
-  #endif
+    #ifdef SOIL_TEMP_SENSOR
+      const int number_of_sensors = 2;
+    #else
+      const int number_of_sensors = 1;
+    #endif
+  #endif    
 #endif
+
+uint8_t capacitive_sensor_index;
+uint8_t wm1_sensor_index;
+uint8_t wm2_sensor_index;
+uint8_t soil_temp_sensor_index;
 //////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
@@ -816,21 +843,31 @@ void setup() {
   //////////////////////////////////////////////////////////////////
 // ADD YOUR SENSORS HERE   
 // Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power, pin_trigger=-1)
-  //SH1
+  //WM1 or SH1
 #ifdef WITH_WATERMARK
-  sensor_ptrs[sensor_index] = new watermark("WM", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) WM_ANALOG_PIN, (uint8_t) WM_PWR_PIN1, (uint8_t) WM_PWR_PIN2 /*use pin trigger as second power pin*/);
+  sensor_ptrs[sensor_index] = new watermark("WM1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) WM1_ANALOG_PIN, (uint8_t) WM1_PWR_PIN1, (uint8_t) WM1_PWR_PIN2 /*use pin trigger as second power pin*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  wm1_sensor_index=sensor_index;
   sensor_index++;
+#ifdef TWO_WATERMARK
+  //WM2
+  sensor_ptrs[sensor_index] = new watermark("WM2", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) WM2_ANALOG_PIN, (uint8_t) WM2_PWR_PIN1, (uint8_t) WM2_PWR_PIN2 /*use pin trigger as second power pin*/);
+  sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  wm2_sensor_index=sensor_index;
+  sensor_index++;
+#endif
 #else
   sensor_ptrs[sensor_index] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH1_ANALOG_PIN, (uint8_t) SH1_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
   sensor_ptrs[sensor_index]->set_warmup_time(200);
+  capacitive_sensor_index=sensor_index;
   sensor_index++;
 #endif  
 #ifdef SOIL_TEMP_SENSOR
   //ST
-  sensor_ptrs[sensor_index] = new DS18B20((char*)"DS", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
+  sensor_ptrs[sensor_index] = new DS18B20((char*)"ST", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  soil_temp_sensor_index=sensor_index;
   sensor_index++;
 #endif
 
@@ -1269,6 +1306,7 @@ void loop(void)
 #if defined USE_XLPP || defined USE_LPP
       // Create lpp payload.
       lpp.reset();
+      uint8_t ch=0;
 #endif
 
       char final_str[80] = "\\!";
@@ -1277,7 +1315,7 @@ void loop(void)
       //digitalWrite(sensor_ptrs[4]->get_pin_power(),HIGH);
 
 #ifdef SI7021_SENSOR
-      //here chose to handle separately the SI7021
+      //here we chose to handle separately the SI7021
       //as it is an integrated sensors for both temperature and humidity
       float humidity, temperature;
       si7021.getHumidity(humidity);
@@ -1315,9 +1353,20 @@ void loop(void)
               }
 
 #ifdef WITH_WATERMARK
-              //taking 28°C as the default soil temperature
-              ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0), 2);
-              sprintf(final_str, "%s/CB/%s", final_str, float_str);
+              //the first Watermark
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"WM1",3)==0) {
+                //taking 28°C as the default soil temperature
+                ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0), 2);
+                sprintf(final_str, "%s/CB1/%s", final_str, float_str);
+              }  
+#ifdef TWO_WATERMARK
+              //the second Watermark
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"WM2",3)==0) {
+                //taking 28°C as the default soil temperature
+                ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0), 2);
+                sprintf(final_str, "%s/CB2/%s", final_str, float_str);
+              }  
+#endif              
 #endif              
 
 #if defined USE_XLPP || defined USE_LPP
@@ -1339,18 +1388,57 @@ void loop(void)
 #endif
  
 #ifdef WITH_WATERMARK
-              //tmp_value=110.0; // for testing, i.e. 1100omhs
-              // here we convert to centibar, using a mean temperature of 28°C
-              lpp.addTemperature(i, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0));
-              
-              //Note: for watermark, raw data is scaled by dividing by 10 because addAnalogInput() will not accept
-              //large values while resistance value for watermark can go well beyond 3000
-              //TODO when wazigate LPP decoding bug is fixed, we could use un-scaled value                                    
-              lpp.addTemperature(i+1, tmp_value);                
+              //the first Watermark
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"WM1",3)==0) {
+                //tmp_value=110.0; // for testing, i.e. 1100omhs
+                // here we convert to centibar, using a mean temperature of 28°C
+                lpp.addTemperature(ch, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0));
+                ch++;
+                                 
+                //Note: for watermark, raw data is scaled by dividing by 10 because addAnalogInput() will not accept
+                //large values while resistance value for watermark can go well beyond 3000
+                //TODO when wazigate LPP decoding bug is fixed, we could use un-scaled value                                    
+                lpp.addTemperature(ch, tmp_value);
+                ch++;
+              }
+#ifdef TWO_WATERMARK
+              //the second Watermark
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"WM2",3)==0) {
+                //tmp_value=110.0; // for testing, i.e. 1100omhs
+                // here we convert to centibar, using a mean temperature of 28°C
+                lpp.addTemperature(ch, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0));
+                ch++;
+                
+                //Note: for watermark, raw data is scaled by dividing by 10 because addAnalogInput() will not accept
+                //large values while resistance value for watermark can go well beyond 3000
+                //TODO when wazigate LPP decoding bug is fixed, we could use un-scaled value                                    
+                lpp.addTemperature(ch, tmp_value);
+                ch++;
+              }
+#endif   
+
+#ifdef SOIL_TEMP_SENSOR
+              //the soil temperature sensor
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST",2)==0) {
+                //we always use channel 5 for soil temperature
+                lpp.addTemperature(5, tmp_value);
+#ifdef LINK_SOIL_TEMP_TO_CENTIBAR
+#ifdef WITH_WATERMARK
+                //TODO: the channel index is hardcoded
+                lpp.addTemperature(0, sensor_ptrs[wm1_sensor_index]->convert_value(sensor_ptrs[wm1_sensor_index]->get_data(), tmp_value, -1.0));
+#endif
+#ifdef TWO_WATERMARK
+                //TODO: the channel index is hardcoded
+                lpp.addTemperature(2, sensor_ptrs[wm2_sensor_index]->convert_value(sensor_ptrs[wm2_sensor_index]->get_data(), tmp_value, -1.0));
+#endif                
+#endif
+              }
+#endif
+
 #else
               //tmp_value=250.0; // for testing              
-              lpp.addTemperature(i, tmp_value);
-#endif                         
+              lpp.addTemperature(ch, tmp_value);
+#endif
 #endif
               
 #ifdef OLED
@@ -1378,6 +1466,8 @@ void loop(void)
       }
 #endif      
 #endif
+
+      delay(1000);
       
       r_size=sprintf((char*)message+app_key_offset, final_str);
 
@@ -1439,7 +1529,7 @@ void loop(void)
 
       startSend=millis();
 
-      LT.CarrierSense();
+      //LT.CarrierSense();
       
 #ifdef WITH_ACK
       p_type=PKT_TYPE_DATA | PKT_FLAG_ACK_REQ;

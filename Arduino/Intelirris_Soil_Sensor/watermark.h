@@ -8,7 +8,7 @@
 #define WATERMARK_H
 #include "Sensor.h"
 
-#define WATERMARKANALOG_SCALE _BOARD_MVOLT_SCALE
+#define WATERMARKANALOG_SCALE 10.0
 //put here the resistor value, in Ohms
 #define WM_RESISTOR 10000
 //we defined WM_MAX_RESISTOR=32760 because the transmitted value would be 32760/10=3276

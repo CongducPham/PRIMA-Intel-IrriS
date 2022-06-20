@@ -73,7 +73,9 @@ void watermark::update_data()
     //k=600;
     Serial.println(k);
 
-		set_data(k/1.0);
+    //we scale data by dividing by WATERMARKANALOG_SCALE, e.g. 10
+    //TODO when wazigate LPP decoding bug is fixed, we could use the raw resistance value
+		set_data(k/(1.0*WATERMARKANALOG_SCALE));
 
     //probably not needed with only 1 watermark 
     pinMode(get_pin_power(), INPUT); // hZ
@@ -93,19 +95,17 @@ void watermark::update_data()
 double watermark::get_value()
 {
   update_data();
-  //we scale data by dividing by 10
-  //TODO when wazigate LPP decoding bug is fixed, we could use un-scaled value
-  return (get_data()/10.0);
+  return (get_data());
 }
 
-//taken from watermark UNO CODE: https://www.irrometer.com/download/arduinocode.zip
+//taken from watermark UNO code: https://www.irrometer.com/download/arduinocode.zip
 //
 double watermark::convert_value(double v1, double v2, double v3)
 {
   const double open_resistance=WM_MAX_RESISTOR, short_resistance=200.0, short_CB=240.0, open_CB=255.0; 
   double WM1_CB=0.0;
     //we re-scale v1 by multiplying by 10.0
-  double r=v1*10.0;
+  double r=v1*WATERMARKANALOG_SCALE;
   double t=v2;
   
   //*****************CONVERSION OF RESISTANCE TO kPa************************************
