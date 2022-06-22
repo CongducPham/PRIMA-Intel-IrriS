@@ -10,7 +10,10 @@ DS18B20::DS18B20(char* nomenclature, bool is_analog, bool is_connected, bool is_
   if (get_is_connected()){
   
     if (get_pin_power()!=-1) {	
-    	pinMode(get_pin_power(),OUTPUT); 
+    	pinMode(get_pin_power(),OUTPUT);
+
+    if (get_pin_read()!=-1)
+      pinMode(get_pin_read(), INPUT);       
     
 			if (get_is_low_power())
        	digitalWrite(get_pin_power(),LOW);
@@ -24,7 +27,7 @@ DS18B20::DS18B20(char* nomenclature, bool is_analog, bool is_connected, bool is_
     // Pass our oneWire reference to Dallas Temperature 
     sensors = new DallasTemperature(ds);
       
-    set_warmup_time(1000);
+    set_warmup_time(50);
   }
 }
 

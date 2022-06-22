@@ -1019,7 +1019,7 @@ void setup() {
 #endif
   {
     PRINT_CSTSTR("LoRa Device found\n");                                  
-    delay(1000);
+    delay(500);
   }
   else
   {
@@ -1225,7 +1225,7 @@ void setup() {
   PRINT_CSTSTR(" successfully configured\n");
 
   //printf_begin();
-  delay(500);
+  //delay(500);
 }
 
 
@@ -1326,6 +1326,11 @@ void loop(void)
       sensor_ptrs[si7021_hum_index]->set_data((double)humidity);            
 #endif
 
+      for (int i=0; i<number_of_sensors; i++) {
+        //there might be specific pre-init operations for some sensors
+        sensor_ptrs[i]->pre_init();   
+      }
+      
       // main loop for sensors, actually, you don't have to edit anything here
       // just add a predefined sensor if needed or provide a new sensor class instance for a handle a new physical sensor
       for (int i=0; i<number_of_sensors; i++) {
@@ -1456,6 +1461,11 @@ void loop(void)
           }
       }
 
+      for (int i=0; i<number_of_sensors; i++) {
+        //there might be specific post-init operations for some sensors
+        sensor_ptrs[i]->post_init();   
+      }      
+
 #ifdef OLED
 #ifdef LOW_POWER
       if (TXPacketCount == 0 || (TXPacketCount % 20) == 19) {
@@ -1466,8 +1476,6 @@ void loop(void)
       }
 #endif      
 #endif
-
-      delay(1000);
       
       r_size=sprintf((char*)message+app_key_offset, final_str);
 

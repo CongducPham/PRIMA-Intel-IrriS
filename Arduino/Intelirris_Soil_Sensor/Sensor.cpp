@@ -145,15 +145,24 @@ void Sensor::set_n_sample(uint8_t n) {
 }   
 
 
-void Sensor::update_data(){
+void Sensor::update_data() {
   //sensor dependant code
 }
 
-double Sensor::get_value(){
+double Sensor::get_value() {
   update_data();
   return get_data();
 }
 
 double Sensor::convert_value(double v1, double v2, double v3) {
   return get_data();
+}
+
+
+void Sensor::pre_init() {
+  //sensor dependant code
+}
+
+void Sensor::post_init() {
+  //sensor dependant code
 }

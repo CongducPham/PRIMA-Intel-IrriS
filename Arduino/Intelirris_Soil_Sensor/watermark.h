@@ -21,6 +21,8 @@ class watermark : public Sensor {
     void update_data();
     double get_value();
     double convert_value(double v1, double v2, double v3);
+    void pre_init();
+    void post_init();
 };
 
 #endif

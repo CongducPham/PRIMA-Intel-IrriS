@@ -71,7 +71,9 @@ class Sensor {
     void set_warmup_time(uint16_t t);
     void set_fake_data(bool b);
     void set_n_sample(uint8_t n);
-    
+
+    virtual void pre_init();
+    virtual void post_init();
     virtual void update_data();
     virtual double get_value();
     virtual double convert_value(double v1, double v2, double v3);

@@ -147,3 +147,18 @@ double watermark::convert_value(double v1, double v2, double v3)
 
   return(abs(WM1_CB));
 }
+
+void watermark::pre_init() {
+  //we need to isolate the watermark from each other
+  //so here we put all pins to input mode
+  pinMode(get_pin_power(), INPUT);
+  pinMode(get_pin_trigger(), INPUT);
+  pinMode(get_pin_read(), INPUT);  
+}
+
+void watermark::post_init() {
+  pinMode(get_pin_power(), OUTPUT);
+  digitalWrite(get_pin_power(),LOW);
+  pinMode(get_pin_trigger(), OUTPUT);
+  digitalWrite(get_pin_trigger(),LOW);
+}
