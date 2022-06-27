@@ -3,8 +3,8 @@
 logger -t intel-irris-auto-config "create-4-watermark"
 
 cd /home/pi/scripts
-#delete the default device
-./delete_sensor.sh
+#delete all sensors
+./delete_all_sensors.sh
 #create SOIL-AREA-1 and device with address 26011DB1
 ./create_full_tensiometer_device_with_dev_addr.sh 1 B1
 #create SOIL-AREA-2 and device with address 26011DB2

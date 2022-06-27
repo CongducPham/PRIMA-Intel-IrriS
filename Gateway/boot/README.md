@@ -18,17 +18,17 @@ There are basically 2 configuration files you can put in this `/boot` partition:
 
 This is how the auto-configuration mechanism works:
 
-- when booting, the INTEL-IRRIS WaziGate executes `/home/pi/intel-irris-auto-config.sh` after all containers have been launched. So DO NOT modify this file!
+- when booting, the INTEL-IRRIS WaziGate executes `/home/pi/intel-irris-auto-config-main.sh` after all containers have been launched. So DO NOT modify this file!
 
-- `/home/pi/intel-irris-auto-config.sh` waits for the `wazigate-edge` container to be up and running. 
+- `/home/pi/intel-irris-auto-config-main.sh` waits for the `wazigate-edge` container to be up and running. 
 
 - if `/boot/intel-irris-auto-config.done` exists then no new configuration will be performed. If a new auto-configuration setting needs to be realized, then be sure to remove `/boot/intel-irris-auto-config.done`.
 
-- `/home/pi/intel-irris-auto-config.sh` then first looks for `/boot/intel-irris-band.txt` to configure the frequency band. If `/boot/intel-irris-band.txt` exists and contains either `eu868` or `eu433` then the corresponding band is configured for the WaziGate. Otherwise no new frequency band will be configured and the WaziGate will run with the default or last configured frequency band.
+- `/home/pi/intel-irris-auto-config-main.sh` then first looks for `/boot/intel-irris-band.txt` to configure the frequency band. If `/boot/intel-irris-band.txt` exists and contains either `eu868` or `eu433` then the corresponding band is configured for the WaziGate. Otherwise no new frequency band will be configured and the WaziGate will run with the default or last configured frequency band.
 
-- `/home/pi/intel-irris-auto-config.sh` then looks for `/boot/intel-irris-auto-config.sh`. If the script exists, it will be launched. `/boot/intel-irris-auto-config.sh` typically calls some utility scripts that are in the `scripts` folder to create pre-configured devices with sensors for the INTEL-IRRIS WaziGate. You can add your additional configuration tasks in this `/boot/intel-irris-auto-config.sh` script. 
+- `/home/pi/intel-irris-auto-config-main.sh` then looks for `/boot/intel-irris-auto-config.sh`. If the script exists, it will be launched. `/boot/intel-irris-auto-config.sh` typically calls some utility scripts that are in the `scripts` folder to create pre-configured devices with sensors for the INTEL-IRRIS WaziGate. You can add your additional configuration tasks in this `/boot/intel-irris-auto-config.sh` script. 
 
-- if frequency band configuration has been realized or if `/boot/intel-irris-auto-config.sh` has been executed, `/home/pi/intel-irris-auto-config.sh` creates `/boot/intel-irris-auto-config.done` to indicate that the auto-configuration has been performed. The WaziGate is then rebooted.
+- if frequency band configuration has been realized or if `/boot/intel-irris-auto-config.sh` has been executed, `/home/pi/intel-irris-auto-config-main.sh` creates `/boot/intel-irris-auto-config.done` to indicate that the auto-configuration has been performed. The WaziGate is then rebooted.
 
 - it means that if auto-configuration mechanism has been realized, the INTEL-IRRIS WaziGate will need more time to be operational as it needs to boot twice.
 

@@ -6,6 +6,7 @@ if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
     echo "Need the device id where the sensor will be added"
+    echo "e.g. create_only_capacitive_sensor.sh 62286d72f06c4c0001eba943"    
     exit
 fi
 
@@ -17,7 +18,10 @@ DATE=`date +"%Y-%m-%dT%H:%M:%S.%3NZ"`
 echo "--> date is $DATE" 
 echo "--> Use device $1"
 echo "--> Create capacitive sensor"
+
 curl -X POST "http://localhost/devices/$1/sensors" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"id\":\"temperatureSensor_0\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"Raw value from SEN0308\",\"model\":\"SEN0308\",\"type\":\"capacitive\",\"sensor_dry_max\":800,\"sensor_wet_max\":0,\"sensor_n_interval\":6,\"value_index\":0},\"name\":\"Soil Humidity Sensor\",\"quantity\":\"\",\"time\":\"2022-04-06T14:39:45.205Z\",\"unit\":\"\",\"value\":800}"
+
+echo "device $1"
 echo "		with Soil Humidity Sensor displaying Raw value from SEN0308"
 echo "		and initialized with 800 value"
 

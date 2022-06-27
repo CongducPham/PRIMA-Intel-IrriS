@@ -12,6 +12,11 @@ sudo cp wazigate/setup.sh /var/lib/wazigate/
 echo "Installing pip"
 sudo apt install -y python3-pip
 
+echo "Installing additional packages"
+
+echo "Installing jq"
+sudo apt install -y jq
+
 cd oled
 ./install.sh
 
