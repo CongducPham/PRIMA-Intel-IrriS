@@ -274,18 +274,19 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #define SH1_ANALOG_PIN A0
 #define SH1_PWR_PIN A1
 //this is how you need to connect the DS18B20 soil temperature sensor
-#define TEMP_DIGITAL_PIN 2
-#define TEMP_PWR_PIN 3
+//the analog soil humidity sensor and the DS18B20 shares the same pwr line
+#define TEMP_DIGITAL_PIN 5
+#define TEMP_PWR_PIN A1
 
 #ifdef WITH_WATERMARK
 //first Watermark
 #define WM1_PWR_PIN1 8
 #define WM1_PWR_PIN2 9
-#define WM1_ANALOG_PIN A0
+#define WM1_ANALOG_PIN A2
 //second Watermark
 #define WM2_PWR_PIN1 6
 #define WM2_PWR_PIN2 7
-#define WM2_ANALOG_PIN A1
+#define WM2_ANALOG_PIN A3
 #endif
 
 #endif
