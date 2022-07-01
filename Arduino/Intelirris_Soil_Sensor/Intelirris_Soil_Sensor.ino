@@ -2,7 +2,7 @@
  *  INTEL_IRRIS soil humidity sensor platform
  *  extended version with AES and custom Carrier Sense features
  *  
- *  Copyright (C) 2016-2021 Congduc Pham, University of Pau, France
+ *  Copyright (C) 2016-2022 Congduc Pham, University of Pau, France
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -275,7 +275,7 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #define SH1_PWR_PIN A1
 //this is how you need to connect the DS18B20 soil temperature sensor
 //the analog soil humidity sensor and the DS18B20 shares the same pwr line
-#define TEMP_DIGITAL_PIN 5
+#define TEMP_DIGITAL_PIN 7
 #define TEMP_PWR_PIN A1
 
 #ifdef WITH_WATERMARK
@@ -284,8 +284,8 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #define WM1_PWR_PIN2 9
 #define WM1_ANALOG_PIN A2
 //second Watermark
-#define WM2_PWR_PIN1 6
-#define WM2_PWR_PIN2 7
+#define WM2_PWR_PIN1 5
+#define WM2_PWR_PIN2 6
 #define WM2_ANALOG_PIN A3
 #endif
 
