@@ -676,39 +676,18 @@ def get_capacitive_soil_condition(device_id, raw_value):
 
 	global value_index_capacitive
 	
-	if key_device.get_value_index_from_local_database:
-		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
-		try:
-			response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
-			print ('oled-service: returned msg from server is '),
-			print (response.status_code)
-			print (response.reason)
-		
-			if 200 <= response.status_code < 300:
-				print ('oled-service: GET success')
-				print (response.text)
-				device_json=json.loads(response.text)
-				value_index_capacitive=device_json["meta"]["value_index"]
-				print(value_index_capacitive)			
-			else:
-				print ('oled-service: bad request')
-				print (response.text)			
+	#we first compute value_index on our own
+	value_interval=int(key_device.capacitive_sensor_dry_max/key_device.capacitive_sensor_n_interval)
+	value_index_capacitive=int(raw_value/value_interval)	
+	#in case the sensed value is greater than the maximum value defined
+	if value_index_capacitive >= key_device.capacitive_sensor_n_interval:
+		value_index_capacitive = key_device.capacitive_sensor_n_interval-1	
 			
-		except requests.exceptions.RequestException as e:
-			print (e)
-			print ('oled-service: requests command failed')
-		
-		print ('=========================================')	
-	else:
-		value_interval=int(key_device.capacitive_sensor_dry_max/key_device.capacitive_sensor_n_interval)
-		value_index_capacitive=int(raw_value/value_interval)	
-		#in case the sensed value is greater than the maximum value defined
-		if value_index_capacitive >= key_device.capacitive_sensor_n_interval:
-			value_index_capacitive = key_device.capacitive_sensor_n_interval-1	
-				
-		#we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-very wet
-		#so for capacitive we need to invert the index
-		value_index_capacitive=key_device.capacitive_sensor_n_interval-1-value_index_capacitive
+	#we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-saturated
+	#so for capacitive we need to invert the index
+	value_index_capacitive=key_device.capacitive_sensor_n_interval-1-value_index_capacitive
+	
+	print ('oled-service: value_index_capacitive is ', value_index_capacitive)	
 
 	if key_device.set_value_index_in_local_database:
 		my_token="hello"
@@ -756,6 +735,34 @@ def get_capacitive_soil_condition(device_id, raw_value):
 			print ('oled-service: requests command failed')
 			
 		print ('=========================================')
+	
+	##TODO check that value_index_iiwa is a recent value, in case IIWA is not running anymore		
+	if key_device.get_value_index_from_local_database:
+		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
+		try:
+			response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
+			print ('oled-service: returned msg from server is '),
+			print (response.status_code)
+			print (response.reason)
+		
+			if 200 <= response.status_code < 300:
+				print ('oled-service: GET success')
+				print (response.text)
+				device_json=json.loads(response.text)
+				
+				if "value_index_iiwa" in response.text:
+					value_index_capacitive=device_json["meta"]["value_index_iiwa"]
+					print('oled-service: using value_index_iiwa')
+					print(value_index_capacitive)					
+			else:
+				print ('oled-service: bad request')
+				print (response.text)			
+			
+		except requests.exceptions.RequestException as e:
+			print (e)
+			print ('oled-service: requests command failed')
+		
+		print ('=========================================')	
 					
 	global capacitive_soil_condition
 	capacitive_soil_condition=key_device.capacitive_sensor_soil_condition[value_index_capacitive]
@@ -768,6 +775,7 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 
 	global value_index_tensiometer
 	
+	#we first compute value_index on our own
 	if key_device.use_irrometer_interval_for_tensiometer:
 		#from irrometer: https://www.irrometer.com/basics.html
 		#0-10 Centibars = Saturated soil
@@ -802,7 +810,84 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 		#we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-very wet/saturated
 		#so for tensiometer we need to invert the index
 		value_index_tensiometer=key_device.tensiometer_sensor_n_interval-1-value_index_tensiometer	
+		
+	print ('oled-service: value_index_tensiometer is ', value_index_tensiometer)	
+
+	if key_device.set_value_index_in_local_database:
+		my_token="hello"
+		#get the token first
+		WaziGate_url='http://localhost/auth/token'
+		try:
+			pload = '{"username":"admin","password":"loragateway"}'
+			response = requests.post(WaziGate_url, headers=WaziGate_headers, data=pload, timeout=30)
+			print ('oled-service: returned msg from server is '),
+			print (response.status_code)
+			print (response.reason)
+		
+			if 200 <= response.status_code < 300:
+				print ('oled-service: POST success')
+				print (response.text)
+				my_token=response.text
+			else:
+				print ('oled-service: bad request')
+				print (response.text)			
+			
+		except requests.exceptions.RequestException as e:
+			print (e)
+			print ('oled-service: requests command failed')
+		
+		print ('=========================================')	
 				
+		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'
+		try:
+			pload = '{"value_index":' + str(value_index_tensiometer)+'}'
+			WaziGate_headers_auth['Authorization']='Bearer'+my_token[1:-2]
+			response = requests.post(WaziGate_url, headers=WaziGate_headers_auth, data=pload, timeout=30)
+			print ('oled-service: returned msg from server is '),
+			print (response.status_code)
+			print (response.reason)
+		
+			if 200 <= response.status_code < 300:
+				print ('oled-service: POST success')
+				print (response.text)
+			else:
+				print ('oled-service: bad request')
+				print (response.text)			
+			
+		except requests.exceptions.RequestException as e:
+			print (e)
+			print ('oled-service: requests command failed')
+			
+		print ('=========================================')
+
+	##TODO check that value_index_iiwa is a recent value, in case IIWA is not running anymore			
+	if key_device.get_value_index_from_local_database:
+		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
+		try:
+			response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
+			print ('oled-service: returned msg from server is '),
+			print (response.status_code)
+			print (response.reason)
+		
+			if 200 <= response.status_code < 300:
+				print ('oled-service: GET success')
+				print (response.text)
+				device_json=json.loads(response.text)
+				
+				if "value_index_iiwa" in response.text:
+					value_index_tensiometer=device_json["meta"]["value_index_iiwa"]
+					print('oled-service: using value_index_iiwa')
+					print(value_index_tensiometer)
+			else:
+				print ('oled-service: bad request')
+				print (response.text)			
+			
+		except requests.exceptions.RequestException as e:
+			print (e)
+			print ('oled-service: requests command failed')
+		
+		print ('=========================================')	
+						
 	global tensiometer_soil_condition
 	if value_index_tensiometer==-1:
 		tensiometer_soil_condition='no sensor'

@@ -2,10 +2,10 @@
 device_id_for_oled='62286d72f06c4c0001eba943'
 
 get_sensor_type_from_local_database=True
-#set to True to use value_index computed from an external application, such as IIWA for instance
-#set to False to have this value_index computed by oled_service, mainly for testing
+#set to True to use value_index_iiwa computed from IIWA WaziApp when available
+#set to False to have this value_index computed by oled_service, mainly for testing when IIWA is not available yet
 get_value_index_from_local_database=False
-#set to False to let value_index managed by an external application, such as IIWA for instance
+#set to True to write value_index in sensor's meta data (oled-service will not write to value_index_iiwa)
 set_value_index_in_local_database=True
 
 use_irrometer_interval_for_tensiometer=True
