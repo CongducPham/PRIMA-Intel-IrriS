@@ -644,9 +644,13 @@ def get_last_raw_value(device_id):
 
 			fmt1 = '%Y-%m-%dT%H:%M:%S.%f'
 			fmt2 = '%Y-%m-%dT%H:%M:%S.%fZ'
+			fmt3 = '%Y-%m-%dT%H:%M:%SZ'
 			d1 = datetime.strptime(datetime.utcnow().isoformat(), fmt1)
 			#here time stored in database is in UTC
-			d2 = datetime.strptime(device_json["time"], fmt2)
+			if "." in device_json["time"]:
+				d2 = datetime.strptime(device_json["time"], fmt2)
+			else:
+				d2 = datetime.strptime(device_json["time"], fmt3)
 
 			diff = d1-d2
 			global last_raw_value_days
