@@ -68,7 +68,7 @@
 // uncomment to have 1 soil temperature sensor ST
 // using a one-wire DS18B20 sensor
 //#define SOIL_TEMP_SENSOR
-//#define LINK_SOIL_TEMP_TO_CENTIBAR
+#define LINK_SOIL_TEMP_TO_CENTIBAR
 
 ////////////////////////////////////////////////////////////////////
 // WAZISENSE and WAZIDEV v1.4 boards have
@@ -1442,8 +1442,16 @@ void loop(void)
 #endif
 
 #else
+
+#ifdef SOIL_TEMP_SENSOR
+              //the soil temperature sensor
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST",2)==0) {
+                //we always use channel 5 for soil temperature
+                ch=5;
+              }
+#endif
               //tmp_value=250.0; // for testing              
-              lpp.addTemperature(ch, tmp_value);
+              lpp.addTemperature(ch, tmp_value);    
 #endif
 #endif
               
