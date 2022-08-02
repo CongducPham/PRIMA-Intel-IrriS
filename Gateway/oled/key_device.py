@@ -20,6 +20,15 @@ sensor_model='SEN0308'
 #change to 'en' for english
 lang='fr'
 
+#for clay soil (argileux) capacitive_sensor_dry_max=400
+#for sandy soil (sableux)?
+#for silty soil ()
+#for peaty soil (tourbeux)?
+#for chalky soil (calcaire)?
+#for loamy soil (limoneux) capacitive_sensor_dry_max=500
+#
+##but IIWA will set value_index_iiwa accordingly
+
 capacitive_sensor_dry_max=800
 capacitive_sensor_wet_max=0
 capacitive_sensor_n_interval=6

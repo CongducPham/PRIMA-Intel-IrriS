@@ -147,7 +147,7 @@ image_bw = image_r.convert("1")
 #-------------------------------------------------------------------------
 
 #set to 0 to disable wifi qrcode
-oled_wifi_qrcode_display_duration=10
+oled_wifi_qrcode_display_duration=8
 
 if key_device.cyclic_show_all_device:
 	#duration of screen saver mode
@@ -168,7 +168,8 @@ last_raw_value_days=0
 value_index_capacitive=key_device.capacitive_sensor_n_interval-1
 value_index_tensiometer=key_device.tensiometer_sensor_n_interval-1
 capacitive_soil_condition=key_device.capacitive_sensor_soil_condition[key_device.capacitive_sensor_n_interval-1]
-tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[key_device.tensiometer_sensor_n_interval-1]		
+tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[key_device.tensiometer_sensor_n_interval-1]
+value_index_from_iiwa=False		
 
 #-------------------------------------------------------------------------
 # check if default device id is valid
@@ -545,7 +546,7 @@ def screen_saver(duration):
 	min_x=2*BORDER
 	max_x=oled.width - 7*font_saver_size
 	min_y=2*BORDER
-	max_y=oled.height - 4*font_saver_size
+	max_y=oled.height - 5*font_saver_size
 	
 	# Get drawing object to draw on image.
 	#draw = ImageDraw.Draw(image)	
@@ -586,6 +587,9 @@ def screen_saver(duration):
 				draw.text((x, ytop), tensiometer_soil_condition, font=font_saver, fill=255)	
 
 			ytop=ytop+font_saver_size
+			
+			if value_index_from_iiwa==True:
+				draw.text((x, ytop), "IIWA", font=font_saver, fill=255)	
 			
 			# Draw a white rectangle
 			draw.rectangle((x+67, y+14, x+67+15, y+4+3*visual_bar_height), outline=255, fill=0)
@@ -640,7 +644,7 @@ def get_last_raw_value(device_id):
 			device_json=json.loads(response.text)
 			global last_raw_value
 			last_raw_value=device_json["value"]
-			print(last_raw_value)
+			print(last_raw_value, device_json["time"])
 
 			fmt1 = '%Y-%m-%dT%H:%M:%S.%f'
 			fmt2 = '%Y-%m-%dT%H:%M:%S.%fZ'
@@ -679,6 +683,9 @@ def get_last_raw_value(device_id):
 def get_capacitive_soil_condition(device_id, raw_value):
 
 	global value_index_capacitive
+	global value_index_from_iiwa
+	
+	value_index_from_iiwa=False
 	
 	#we first compute value_index on our own
 	value_interval=int(key_device.capacitive_sensor_dry_max/key_device.capacitive_sensor_n_interval)
@@ -739,8 +746,7 @@ def get_capacitive_soil_condition(device_id, raw_value):
 			print ('oled-service: requests command failed')
 			
 		print ('=========================================')
-	
-	##TODO check that value_index_iiwa is a recent value, in case IIWA is not running anymore		
+		
 	if key_device.get_value_index_from_local_database:
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 		try:
@@ -755,9 +761,19 @@ def get_capacitive_soil_condition(device_id, raw_value):
 				device_json=json.loads(response.text)
 				
 				if "value_index_iiwa" in response.text:
-					value_index_capacitive=device_json["meta"]["value_index_iiwa"]
-					print('oled-service: using value_index_iiwa')
-					print(value_index_capacitive)					
+					d_value = datetime.strptime(device_json["time"], '%Y-%m-%dT%H:%M:%S.%fZ')
+					d_iiwa = datetime.strptime(device_json["meta"]["value_index_iiwa_time"], '%Y-%m-%dT%H:%M:%S.%fZ')
+					
+					#check that value_index_iiwa is a recent value, in case IIWA is not running anymore	
+					if d_iiwa >= d_value:
+						print('oled-service: value_index_iiwa date is newer than last value date')
+						value_index_capacitive=device_json["meta"]["value_index_iiwa"]
+						print('oled-service: using value_index_iiwa')
+						value_index_from_iiwa=True
+						print(value_index_capacitive)
+					else:
+						print('oled-service: value_index_iiwa date is older than last value date')
+						print('oled-service: IIWA may not be running')						
 			else:
 				print ('oled-service: bad request')
 				print (response.text)			
@@ -778,6 +794,9 @@ def get_capacitive_soil_condition(device_id, raw_value):
 def get_tensiometer_soil_condition(device_id, raw_value): 
 
 	global value_index_tensiometer
+	global value_index_from_iiwa
+	
+	value_index_from_iiwa=False	
 	
 	#we first compute value_index on our own
 	if key_device.use_irrometer_interval_for_tensiometer:
@@ -863,8 +882,7 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 			print ('oled-service: requests command failed')
 			
 		print ('=========================================')
-
-	##TODO check that value_index_iiwa is a recent value, in case IIWA is not running anymore			
+		
 	if key_device.get_value_index_from_local_database:
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 		try:
@@ -879,9 +897,19 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 				device_json=json.loads(response.text)
 				
 				if "value_index_iiwa" in response.text:
-					value_index_tensiometer=device_json["meta"]["value_index_iiwa"]
-					print('oled-service: using value_index_iiwa')
-					print(value_index_tensiometer)
+					d_value = datetime.strptime(device_json["time"], '%Y-%m-%dT%H:%M:%S.%fZ')
+					d_iiwa = datetime.strptime(device_json["meta"]["value_index_iiwa_time"], '%Y-%m-%dT%H:%M:%S.%fZ')
+					
+					#check that value_index_iiwa is a recent value, in case IIWA is not running anymore	
+					if d_iiwa >= d_value:
+						print('oled-service: value_index_iiwa date is newer than last value date')
+						value_index_tensiometer=device_json["meta"]["value_index_iiwa"]
+						print('oled-service: using value_index_iiwa')
+						value_index_from_iiwa=True
+						print(value_index_tensiometer)
+					else:
+						print('oled-service: value_index_iiwa date is older than last value date')
+						print('oled-service: IIWA may not be running')
 			else:
 				print ('oled-service: bad request')
 				print (response.text)			
