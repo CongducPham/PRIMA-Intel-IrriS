@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: June 20th, 2022 by C. Pham
+ * last update: August 20th, 2022 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -48,12 +48,16 @@
 #define BAND433
 
 ////////////////////////////////////////////////////////////////////
+#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – 20/08/2022\n"
+
+////////////////////////////////////////////////////////////////////
 // Test device
 //#define TEST_DEVICE_RANDOM
 
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
 //#define WITH_WATERMARK
+// only for watermark sensors, not relevant for capacitive sensors
 #define WM_REF_TEMPERATURE 28.0
 
 ////////////////////////////////////////////////////////////////////
@@ -68,13 +72,14 @@
 // uncomment to have 1 soil temperature sensor ST
 // using a one-wire DS18B20 sensor
 //#define SOIL_TEMP_SENSOR
+// only for watermark sensors, not relevant for capacitive sensors
 #define LINK_SOIL_TEMP_TO_CENTIBAR
 
 ////////////////////////////////////////////////////////////////////
 // WAZISENSE and WAZIDEV v1.4 boards have
 //  - an embedded SI7021 sensor
 // WAZISENSE has an integrated solar panel level monitoring circuit 
-//  - input voltage comming from solar panel is exposed on pin A2
+//  - input voltage coming from solar panel is exposed on pin A2
 // WAZIDEV has a battery voltage level monitoring circuit
 //  - exposed on pin A7, and D7 must then be at LOW level
 ////////////////////////////////////////////////////////////////////
@@ -121,6 +126,15 @@
 #define LOW_POWER
 #define LOW_POWER_HIBERNATE
 //#define SHOW_LOW_POWER_CYCLE //uncomment only for debugging and testing
+//monitor battery voltage without additional hardware: // https://github.com/Yveaux/arduino_vcc
+//if low voltage detected, then multiply by 2 the transmission time interval before measure & transmission
+#define MONITOR_BAT_VOLTAGE
+//enable transmission of bat voltage in (X)LPP messages
+#define TRANSMIT_VOLTAGE
+//always transmit bat voltage, otherwise only on low bat
+#define ALWAYS_TRANSMIT_VOLTAGE
+//force normal measure and transmission even if low voltage detected
+//#define BYPASS_LOW_BAT
 ////////////////////////////
 //Use native LoRaWAN packet format to send to LoRaWAN gateway - beware it does not mean you device is a full LoRaWAN device
 #ifndef TO_WAZIGATE
@@ -268,7 +282,7 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #else
 #ifdef WAZIDEV14
 //uncomment to transmit data related to battery voltage level 
-//#define BAT_LEVEL
+//#define WAZIDEV_BAT_VOLTAGE
 #endif
 //this is how you need to connect the analog soil humidity sensor
 #define SH1_ANALOG_PIN A0
@@ -367,7 +381,7 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
     bool foundSI7021=false;
     uint8_t si7021_temp_index;
     uint8_t si7021_hum_index;
-    #if defined SOLAR_PANEL_LEVEL || defined BAT_LEVEL
+    #if defined SOLAR_PANEL_LEVEL || defined WAZIDEV_BAT_VOLTAGE
       //soil sensor(s) + SI7021 temp/hum + solar|battery level
       #ifdef SOIL_TEMP_SENSOR
         const int number_of_sensors = 5;
@@ -383,7 +397,7 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
       #endif
     #endif
   #else
-    #if defined SOLAR_PANEL_LEVEL || defined BAT_LEVEL
+    #if defined SOLAR_PANEL_LEVEL || defined WAZIDEV_BAT_VOLTAGE
       //soil sensor(s) + solar|battery level
       #ifdef SOIL_TEMP_SENSOR
         const int number_of_sensors = 3;
@@ -472,6 +486,33 @@ uint32_t TXPacketCount=0;
 
 #define FORCE_DEFAULT_VALUE
 ///////////////////////////////////////////////////////////////////
+
+#ifdef MONITOR_BAT_VOLTAGE
+// https://github.com/Yveaux/arduino_vcc
+#include <Vcc.h>                     
+//Measured Vcc by multimeter divided by reported Vcc
+//Set to 1.0 for calibrate and then change for specific hardware         
+const float VccCorrection = 3.3/3.3;            
+// Measured Vcc by multimeter divided by reported Vcc for sensor 4
+//const float VccCorrection = 3.37/3.36;        
+Vcc vcc(VccCorrection);
+
+//to test low bat 
+//#define VCC_LOW               3.6 
+
+#ifndef VCC_LOW
+#ifdef WITH_WATERMARK
+//we could set to 2.65 which is approximately the threshold for the board to reboot
+#define VCC_LOW                 2.75
+#else
+//capacitive sensors can be impacted by low voltage, especially for very dry conditions
+#define VCC_LOW                 2.85
+#endif
+#endif
+
+uint8_t low_bat_counter = 0;             
+float last_vcc = 0.0;
+#endif
 
 /*****************************
  _____           _      
@@ -877,7 +918,7 @@ void setup() {
   sensor_ptrs[sensor_index]->set_n_sample(1);
   sensor_index++;  
 #endif
-#if defined WAZIDEV14 && defined BAT_LEVEL
+#if defined WAZIDEV14 && defined WAZIDEV_BAT_VOLTAGE
   sensor_ptrs[sensor_index] = new rawAnalog("BAT", IS_ANALOG, IS_CONNECTED, IS_NOT_LOWPOWER, (uint8_t) A7, -1 /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(1);
   sensor_index++;  
@@ -923,7 +964,7 @@ void setup() {
 #endif  
   
   // Print a start message
-  PRINT_CSTSTR("LoRa soil humidity sensor, extended version\n");
+  PRINT_CSTSTR(BOOT_START_MSG);
 
 #ifdef WAZISENSE
   PRINT_CSTSTR("WaziSense board\n");
@@ -936,7 +977,7 @@ void setup() {
 #ifdef WAZIDEV14
   PRINT_CSTSTR("WaziDev v1.4 board\n");
   pinMode(7, OUTPUT);
-#ifdef BAT_LEVEL  
+#ifdef WAZIDEV_BAT_VOLTAGE  
   //for the bat level monitoring circuit
   pinMode(A7, INPUT);
   //need to put D7 low to activate the monitoring circuit
@@ -1225,40 +1266,28 @@ void setup() {
   // Print a success message
   PRINT_CSTSTR(" successfully configured\n");
 
+#ifdef MONITOR_BAT_VOLTAGE
+  // check batterie first time
+  last_vcc = vcc.Read_Volts();
+  PRINT_CSTSTR("Measured battery voltage is ");
+  PRINTLN_VALUE("%f", last_vcc); 
+#endif
+  
   //printf_begin();
   //delay(500);
 }
 
-
-/*****************************
- _                       
-| |                      
-| |     ___   ___  _ __  
-| |    / _ \ / _ \| '_ \ 
-| |___| (_) | (_) | |_) |
-\_____/\___/ \___/| .__/ 
-                  | |    
-                  |_|    
-*****************************/
-
-void loop(void)
+//////////////////////////////////////////////////////////////
+// called by loop
+//
+void measure_and_send( void)
 {
   long startSend;
   long endSend;
   uint8_t app_key_offset=0;
   int e;
   float sensor_value;
-  
-#ifndef LOW_POWER
-  // 600000+random(15,60)*1000
-  if (millis() > nextTransmissionTime) {
-#else
-      //time for next wake up
-      nextTransmissionTime=millis()+((idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
-      //PRINTLN_VALUE("%ld",nextTransmissionTime);
-      //PRINTLN_VALUE("%ld",(idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
-#endif      
-      
+
 #if defined WITH_APPKEY && not defined LORAWAN
       app_key_offset = sizeof(my_appKey);
       // set the app key in the payload
@@ -1325,7 +1354,7 @@ void loop(void)
       //we just inject the data into the corresponding sensor object
       sensor_ptrs[si7021_temp_index]->set_data((double)temperature);
       sensor_ptrs[si7021_hum_index]->set_data((double)humidity);            
-#endif
+#endif     
 
       for (int i=0; i<number_of_sensors; i++) {
         //there might be specific pre-init operations for some sensors
@@ -1475,6 +1504,20 @@ void loop(void)
         sensor_ptrs[i]->post_init();   
       }      
 
+#ifdef MONITOR_BAT_VOLTAGE
+      last_vcc = vcc.Read_Volts();
+
+#if defined USE_XLPP || defined USE_LPP
+#if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE      
+      lpp.addTemperature(6, last_vcc);
+#elif defined TRANSMIT_VOLTAGE
+      if (last_vcc < VCC_LOW) {
+        lpp.addTemperature(6, last_vcc);  
+      }
+#endif      
+#endif
+#endif
+
 #ifdef OLED
 #ifdef LOW_POWER
       if (TXPacketCount == 0 || (TXPacketCount % 20) == 19) {
@@ -1516,7 +1559,7 @@ void loop(void)
       // indicate that we have an appkey
       p_type = p_type | PKT_FLAG_DATA_WAPPKEY;
 #endif     
-      
+
 /**********************************  
   ___   _____ _____ 
  / _ \ |  ___/  ___|
@@ -1568,7 +1611,7 @@ void loop(void)
       if (LT.transmitAddressed(message, pl, p_type, DEFAULT_DEST_ADDR, node_addr, 10000, MAX_DBM, WAIT_TX))  
 #endif
       {
-        endSend = millis();                                          
+        endSend = millis();                                                  
         TXPacketCount++;
         uint16_t localCRC = LT.CRCCCITT(message, pl, 0xFFFF);
         PRINT_CSTSTR("CRC,");
@@ -1584,7 +1627,7 @@ void loop(void)
       }
       else
       {
-        endSend=millis();
+        endSend=millis();       
         //if here there was an error transmitting packet
         uint16_t IRQStatus;
         IRQStatus = LT.readIrqStatus();
@@ -1859,6 +1902,60 @@ void loop(void)
       }
       else
         PRINT_CSTSTR("No downlink\n");
+#endif         
+}  
+
+/*****************************
+ _                       
+| |                      
+| |     ___   ___  _ __  
+| |    / _ \ / _ \| '_ \ 
+| |___| (_) | (_) | |_) |
+\_____/\___/ \___/| .__/ 
+                  | |    
+                  |_|    
+*****************************/
+
+void loop(void)
+{
+#ifndef LOW_POWER
+  // 600000+random(15,60)*1000
+  if (millis() > nextTransmissionTime) {
+#else
+      //time for next wake up
+      nextTransmissionTime=millis()+((idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);      
+      //PRINTLN_VALUE("%ld",nextTransmissionTime);
+      //PRINTLN_VALUE("%ld",(idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
+
+#ifdef MONITOR_BAT_VOLTAGE
+
+      last_vcc = vcc.Read_Volts();
+
+#ifdef BYPASS_LOW_BAT
+      measure_and_send();
+#else      
+      if (last_vcc < VCC_LOW) {
+        PRINT_CSTSTR("!LOW BATTERY! ");
+        PRINTLN_VALUE("%f", last_vcc);
+
+        PRINTLN_CSTSTR("Double nextTransmissionTime");
+        //increase transmission time when low battery
+        nextTransmissionTime = nextTransmissionTime * 2;
+
+        low_bat_counter++;
+      }
+
+      if (last_vcc > VCC_LOW || low_bat_counter==3) {
+        if (low_bat_counter==3) {
+          PRINTLN_CSTSTR("Force measure and transmission");
+          low_bat_counter=0;
+        }  
+        measure_and_send();
+      }
+#endif
+#else
+      measure_and_send();
+#endif
 #endif
 
 ///////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Ex: create_only_temperature_sensor.sh 1
+# Ex: create_only_temperature_sensor.sh 62286d72f06c4c0001eba943
 # this script creates a temperature sensor attached to a given device
 # the temperature sensor is always temperatureSensor_5
 

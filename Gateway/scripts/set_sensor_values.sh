@@ -9,7 +9,7 @@ if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
     echo "Need the data file and the target device id"
-    echo "e.g. set_sensor_values 62c7c657127dbd00011540a6.data.json 62de65dd127dbd00013fd78b"
+    echo "e.g. set_sensor_values 62c7c657127dbd00011540a6.data.json 62de65dd127dbd00013fd78b temperatureSensor_0"
     exit
 fi
 
@@ -19,5 +19,5 @@ TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -
 echo "--> Get sensor's values from $1"
 DATA=`cat $1`
 
-echo "--> Set sensor's values to device $2"
-curl -X POST "http://localhost/devices/$2/sensors/temperatureSensor_0/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
+echo "--> Set sensor's values to device $2 sensor $3"
+curl -X POST "http://localhost/devices/$2/sensors/$3/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
