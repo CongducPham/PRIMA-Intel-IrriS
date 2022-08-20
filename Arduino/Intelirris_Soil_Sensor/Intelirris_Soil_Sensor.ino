@@ -490,11 +490,15 @@ uint32_t TXPacketCount=0;
 #ifdef MONITOR_BAT_VOLTAGE
 // https://github.com/Yveaux/arduino_vcc
 #include <Vcc.h>                     
-//Measured Vcc by multimeter divided by reported Vcc
-//Set to 1.0 for calibrate and then change for specific hardware         
-const float VccCorrection = 3.3/3.3;            
-// Measured Vcc by multimeter divided by reported Vcc for sensor 4
-//const float VccCorrection = 3.37/3.36;        
+//Set to 1.0 for calibrate, be sure to transmit when not powered by USB      
+//then get reported Vcc for specific hardware    
+//const float VccCorrection = 3.3/3.3;
+//finally set VccCorrection to measured Vcc by multimeter divided by reported Vcc
+//Measure on real INTEL-IRRIS soil devices
+const float VccCorrection = 3.0/2.9;   
+//other measures on real INTEL-IRRIS soil devices
+//const float VccCorrection = 3.64/3.54; //with 3.6 lithium battery
+//const float VccCorrection = 3.24/3.18; //with 2 AA alkaline batteries  
 Vcc vcc(VccCorrection);
 
 //to test low bat 
@@ -1509,10 +1513,10 @@ void measure_and_send( void)
 
 #if defined USE_XLPP || defined USE_LPP
 #if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE      
-      lpp.addTemperature(6, last_vcc);
+      lpp.addAnalogInput(6, last_vcc);
 #elif defined TRANSMIT_VOLTAGE
       if (last_vcc < VCC_LOW) {
-        lpp.addTemperature(6, last_vcc);  
+        lpp.addAnalogInput(6, last_vcc);  
       }
 #endif      
 #endif

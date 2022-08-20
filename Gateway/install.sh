@@ -21,7 +21,7 @@ cd oled
 ./install.sh
 
 cd ..
-./scripts/create_full_capacitive_device.sh
+./boot/create-default-capacitive/intel-irris-auto-config.sh
 
 ##see https://www.raspberryme.com/ajout-dune-horloge-temps-reel-ds3231-au-raspberry-pi/
 
