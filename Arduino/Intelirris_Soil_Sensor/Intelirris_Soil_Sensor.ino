@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: August 20th, 2022 by C. Pham
+ * last update: August 22th, 2022 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -48,11 +48,7 @@
 #define BAND433
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – 20/08/2022\n"
-
-////////////////////////////////////////////////////////////////////
-// Test device
-//#define TEST_DEVICE_RANDOM
+#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – 22/08/2022\n"
 
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
@@ -127,7 +123,8 @@
 #define LOW_POWER_HIBERNATE
 //#define SHOW_LOW_POWER_CYCLE //uncomment only for debugging and testing
 //monitor battery voltage without additional hardware: // https://github.com/Yveaux/arduino_vcc
-//if low voltage detected, then multiply by 2 the transmission time interval before measure & transmission
+//if low voltage detected, device will continue to measure and transmit normally 3 times
+//then, it will set transmission time interval to 4h
 #define MONITOR_BAT_VOLTAGE
 //enable transmission of bat voltage in (X)LPP messages
 #define TRANSMIT_VOLTAGE
@@ -152,6 +149,11 @@
 ////////////////////////////
 //normal behavior is to invert IQ for RX, the normal behavior at gateway is also to invert its IQ setting, only valid with WITH_RCVW
 #define INVERTIQ_ON_RX
+
+////////////////////////////////////////////////////////////////////
+// Test generation of random values from device
+//#define TEST_DEVICE_RANDOM
+
 ////////////////////////////
 //uncomment to use a customized frequency. TTN plan includes 868.1/868.3/868.5/867.1/867.3/867.5/867.7/867.9 for LoRa
 //#define MY_FREQUENCY 868100000
@@ -501,8 +503,14 @@ const float VccCorrection = 3.0/2.9;
 //const float VccCorrection = 3.24/3.18; //with 2 AA alkaline batteries  
 Vcc vcc(VccCorrection);
 
-//to test low bat 
+//to manually test low bat 
 //#define VCC_LOW               3.6 
+
+//to automatically test low bat
+//#define TEST_LOW_BAT
+
+//how many times we keep normal measure & transmission in low voltage mode
+#define MAX_LOW_VOLTAGE_INDICATION 3
 
 #ifndef VCC_LOW
 #ifdef WITH_WATERMARK
@@ -513,7 +521,7 @@ Vcc vcc(VccCorrection);
 #define VCC_LOW                 2.85
 #endif
 #endif
-
+uint8_t low_voltage_indication = 0;
 uint8_t low_bat_counter = 0;             
 float last_vcc = 0.0;
 #endif
@@ -655,7 +663,8 @@ struct sx1272config {
   uint8_t flag2;
   uint8_t seq;
   uint8_t addr;
-  unsigned int idle_period;  
+  unsigned int idle_period;
+  uint8_t low_voltage_indication;  
   uint8_t overwrite;
   // can add other fields such as LoRa mode,...
 };
@@ -1195,7 +1204,11 @@ void setup() {
     LT.setTXSeqNo(my_sx1272config.seq);
     PRINT_CSTSTR("Using packet sequence number of ");
     PRINT_VALUE("%d", LT.readTXSeqNo());
-    PRINTLN;    
+    PRINTLN;
+
+    //when low voltage is detected, the device will still measure and transmit to indicate the low voltage
+    //it will do so 3 times and this will be indicated in the low_voltage_indication variable saved in EEPROM
+    low_voltage_indication=my_sx1272config.low_voltage_indication;    
 
 #ifdef FORCE_DEFAULT_VALUE
     PRINT_CSTSTR("Forced to use default parameters\n");
@@ -1203,7 +1216,8 @@ void setup() {
     my_sx1272config.flag2=0x35;   
     my_sx1272config.seq=LT.readTXSeqNo(); 
     my_sx1272config.addr=node_addr;
-    my_sx1272config.idle_period=idlePeriodInMin;    
+    my_sx1272config.idle_period=idlePeriodInMin;
+    my_sx1272config.low_voltage_indication=low_voltage_indication;    
     my_sx1272config.overwrite=0;
     EEPROM.put(0, my_sx1272config);
 #else
@@ -1244,6 +1258,7 @@ void setup() {
     my_sx1272config.seq=LT.readTXSeqNo(); 
     my_sx1272config.addr=node_addr;
     my_sx1272config.idle_period=idlePeriodInMin;
+    my_sx1272config.low_voltage_indication=0;
     my_sx1272config.overwrite=0;
   }
 #endif
@@ -1271,12 +1286,32 @@ void setup() {
   PRINT_CSTSTR(" successfully configured\n");
 
 #ifdef MONITOR_BAT_VOLTAGE
+
+#ifdef TEST_LOW_BAT
+  //there will be 3 transmissions then low voltage will be introduced artificially
+  //for testing, we set idlePeriodInMin=1, transmission time interval in low voltage mode will be 4mins
+  //so debugging will not take to long
+  //WARNING: does not support manual reboot, use #define VCC_LOW 3.6 instead
+  idlePeriodInMin=1;
+#endif
+
   // check batterie first time
   last_vcc = vcc.Read_Volts();
   PRINT_CSTSTR("Measured battery voltage is ");
-  PRINTLN_VALUE("%f", last_vcc); 
+  PRINTLN_VALUE("%f", last_vcc);
+  if (last_vcc > VCC_LOW) {
+#ifdef WITH_EEPROM
+    // reset low_voltage_indication
+    low_voltage_indication=0;
+    my_sx1272config.low_voltage_indication=0;
+    EEPROM.put(0, my_sx1272config);
+#endif                 
+   }
+   
+   PRINT_CSTSTR("low_voltage_indication=");
+   PRINTLN_VALUE("%d", low_voltage_indication);  
 #endif
-  
+
   //printf_begin();
   //delay(500);
 }
@@ -1510,6 +1545,11 @@ void measure_and_send( void)
 
 #ifdef MONITOR_BAT_VOLTAGE
       last_vcc = vcc.Read_Volts();
+
+#ifdef TEST_LOW_BAT
+      if (TXPacketCount>=3)
+        last_vcc = VCC_LOW - 0.5;
+#endif      
 
 #if defined USE_XLPP || defined USE_LPP
 #if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE      
@@ -1934,26 +1974,72 @@ void loop(void)
 #ifdef MONITOR_BAT_VOLTAGE
 
       last_vcc = vcc.Read_Volts();
+      
+#ifdef TEST_LOW_BAT
+      if (TXPacketCount>=3)
+        last_vcc = VCC_LOW - 0.5;
+#endif        
 
 #ifdef BYPASS_LOW_BAT
       measure_and_send();
 #else      
       if (last_vcc < VCC_LOW) {
-        PRINT_CSTSTR("!LOW BATTERY! ");
+        PRINT_CSTSTR("!LOW BATTERY-->");
         PRINTLN_VALUE("%f", last_vcc);
 
-        PRINTLN_CSTSTR("Double nextTransmissionTime");
-        //increase transmission time when low battery
-        nextTransmissionTime = nextTransmissionTime * 2;
+        PRINT_CSTSTR("low_voltage_indication=");
+        PRINTLN_VALUE("%d", low_voltage_indication);
+    
+        if (low_voltage_indication < MAX_LOW_VOLTAGE_INDICATION) {
+          //we will still measure and transmit 3 times to warn end-user as soon as possible
+          //and overcome possible packet transmission losses
+          low_voltage_indication++;
+#ifdef WITH_EEPROM
+          // save new low_voltage_indication
+          my_sx1272config.low_voltage_indication=low_voltage_indication;
+          EEPROM.put(0, my_sx1272config);
+#endif          
+        }
+        else {
 
-        low_bat_counter++;
+          if (low_bat_counter++==0) {  
+            PRINTLN_CSTSTR("Set nextTransmissionTime to 4h");
+            //increase transmission time when low battery            
+            if (idlePeriodInMin < 240)
+#ifdef TEST_LOW_BAT            
+              nextTransmissionTime = millis() + (4 - (unsigned long)idlePeriodInMin) * 60 * 1000;
+#else
+              nextTransmissionTime = millis() + (4 * 60 - (unsigned long)idlePeriodInMin) * 60 * 1000;
+#endif
+            PRINT_CSTSTR("low_bat_counter=");
+            PRINTLN_VALUE("%d", low_bat_counter);   
+          }       
+        }
       }
 
-      if (last_vcc > VCC_LOW || low_bat_counter==3) {
-        if (low_bat_counter==3) {
+      if (last_vcc > VCC_LOW || low_bat_counter==2 || low_voltage_indication <= MAX_LOW_VOLTAGE_INDICATION) {
+        if (low_bat_counter==2) {
           PRINTLN_CSTSTR("Force measure and transmission");
           low_bat_counter=0;
-        }  
+        }
+
+        //disable low_voltage_indication
+        if (low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {
+          low_voltage_indication = MAX_LOW_VOLTAGE_INDICATION+1;
+#ifdef WITH_EEPROM
+          // set new low_voltage_indication
+          my_sx1272config.low_voltage_indication=low_voltage_indication;
+          EEPROM.put(0, my_sx1272config);
+#endif          
+        }          
+        
+        if (last_vcc > VCC_LOW) {
+#ifdef WITH_EEPROM
+          // reset low_voltage_indication
+          my_sx1272config.low_voltage_indication=0;
+          EEPROM.put(0, my_sx1272config);
+#endif                 
+        }
         measure_and_send();
       }
 #endif
