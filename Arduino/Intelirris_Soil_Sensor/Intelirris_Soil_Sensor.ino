@@ -1445,7 +1445,7 @@ void measure_and_send( void)
 
 #if defined USE_XLPP || defined USE_LPP
               //TODO
-              //there is an issue with current XLPP so we use addTemperature() for all values
+              //there is an issue with current XLPP so we use addTemperature() for all values, except for voltage
 #ifdef TEST_DEVICE_RANDOM              
               randomSeed(analogRead(2));
 #ifdef WITH_WATERMARK
@@ -1497,10 +1497,8 @@ void measure_and_send( void)
                 //we always use channel 5 for soil temperature
                 lpp.addTemperature(5, tmp_value);
 #ifdef LINK_SOIL_TEMP_TO_CENTIBAR
-#ifdef WITH_WATERMARK
                 //TODO: the channel index is hardcoded
                 lpp.addTemperature(0, sensor_ptrs[wm1_sensor_index]->convert_value(sensor_ptrs[wm1_sensor_index]->get_data(), tmp_value, -1.0));
-#endif
 #ifdef TWO_WATERMARK
                 //TODO: the channel index is hardcoded
                 lpp.addTemperature(2, sensor_ptrs[wm2_sensor_index]->convert_value(sensor_ptrs[wm2_sensor_index]->get_data(), tmp_value, -1.0));
@@ -1518,6 +1516,7 @@ void measure_and_send( void)
                 ch=5;
               }
 #endif
+              //the soil capacitive sensor
               //tmp_value=250.0; // for testing              
               lpp.addTemperature(ch, tmp_value);    
 #endif
