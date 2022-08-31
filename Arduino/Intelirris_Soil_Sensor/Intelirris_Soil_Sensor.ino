@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: August 25th, 2022 by C. Pham
+ * last update: August 31st, 2022 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -44,11 +44,11 @@
 ////////////////////////////////////////////////////////////////////
 // Frequency band - do not change in SX127X_RadioSettings.h anymore
 //#define BAND868
-//#define BAND900
+//#define BAND900 
 #define BAND433
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – 25/08/2022\n"
+#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – 31/08/2022\n"
 
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
@@ -517,9 +517,7 @@ Vcc vcc(VccCorrection);
 //DOES support reboot but DOES NOT HAVE normal operation mode 
 //#define VCC_LOW               3.6 
 
-//to automatically test low bat
-//DOES NOT support reboot but HAVE normal operation mode before going to low voltage mode
-//there will be 3 normal transmissions then low voltage will be introduced artificially
+//to configure for test low bat
 //in test mode, idlePeriodInMin is set to 1min, so transmission time interval in low voltage mode
 //will be increased to 4mins so that debugging will not take to long
 //#define TEST_LOW_BAT
@@ -532,11 +530,11 @@ Vcc vcc(VccCorrection);
 
 #ifndef VCC_LOW
 #ifdef WITH_WATERMARK
-//we could set to 2.65 which is approximately the threshold for the board to reboot
-#define VCC_LOW                 2.8
+//the ATMega328P reboots at about 2.65 - 2.75
+#define VCC_LOW                 2.85
 #else
 //capacitive sensors can be impacted by low voltage, especially for very dry soil conditions
-#define VCC_LOW                 2.8
+#define VCC_LOW                 2.85
 #endif
 #endif
 uint8_t low_voltage_indication = 0;
@@ -1228,7 +1226,7 @@ void setup() {
     //when low voltage is detected, the device will still measure and transmit to indicate the low voltage
     //it will do so MAX_LOW_VOLTAGE_INDICATION times and this will be indicated in the low_voltage_indication
     //variable saved in EEPROM
-    low_voltage_indication=my_sx1272config.low_voltage_indication;    
+    low_voltage_indication=my_sx1272config.low_voltage_indication;     
 
 #ifdef FORCE_DEFAULT_VALUE
     PRINT_CSTSTR("Forced to use default parameters\n");
@@ -1671,12 +1669,7 @@ void measure_and_send( void)
 #ifdef MONITOR_BAT_VOLTAGE
         //not 100% reliable because the board can reboot right after transmission because of
         //low voltage, so last_vcc = vcc.Read_Volts(); is not executed
-        last_vcc = vcc.Read_Volts();
-
-#ifdef TEST_LOW_BAT
-        if (TXPacketCount>=3)
-          last_vcc = VCC_LOW - 0.7;
-#endif         
+        last_vcc = vcc.Read_Volts();     
 #endif                
         endSend = millis();                                                  
         TXPacketCount++;
@@ -1697,12 +1690,7 @@ void measure_and_send( void)
 #ifdef MONITOR_BAT_VOLTAGE
         //not 100% reliable because the board can reboot right after transmission because of
         //low voltage, so last_vcc = vcc.Read_Volts(); is not executed
-        last_vcc = vcc.Read_Volts();
-        
-#ifdef TEST_LOW_BAT
-        if (TXPacketCount>=3)
-          last_vcc = VCC_LOW - 0.7;
-#endif        
+        last_vcc = vcc.Read_Volts();     
 #endif        
         endSend=millis();       
         //if here there was an error transmitting packet
@@ -2012,11 +2000,6 @@ void loop(void)
       PRINT_VALUE("%f", current_vcc);
       PRINT_CSTSTR(" | ");
       PRINTLN_VALUE("%f", last_vcc);      
-      
-#ifdef TEST_LOW_BAT
-      if (TXPacketCount>=3)
-        current_vcc = VCC_LOW - 0.7;
-#endif 
 
 #ifdef BYPASS_LOW_BAT
       measure_and_send();
@@ -2043,14 +2026,18 @@ void loop(void)
         else {
 
           if (low_bat_counter++==0) { 
-            //increase transmission time to 4 hours when low voltage, if is smaller than 4 hours            
+            //increase transmission time to 4 hours when low voltage, if it is smaller than 4 hours            
             if (idlePeriodInMin < 240)
               PRINTLN_CSTSTR("Set nextTransmissionTime to 4h");             
 #ifdef TEST_LOW_BAT
-              //for testing, we use idlePeriodInMin=1min so new transmission time interval is 4mins            
+              //for testing, we use idlePeriodInMin=1min so new transmission time interval is 4mins
+              //if the board reboots righ after transmission, then it will actually be 3mins
+              //as the initial idlePeriodInMin would be missing                          
               nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR - (unsigned long)idlePeriodInMin) * 60 * 1000;
 #else
               //otherwise, it is increased to 4 hours
+              //if the board reboots righ after transmission, then it will actually be 3h
+              //as the initial idlePeriodInMin would be missing
               nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR * 60 - (unsigned long)idlePeriodInMin) * 60 * 1000;
 #endif
             PRINT_CSTSTR("low_bat_counter=");
