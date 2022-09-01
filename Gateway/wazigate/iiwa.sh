@@ -1,8 +1,7 @@
 #!/bin/sh
 
 echo "copy intel-irris-waziapp to /var/lib/wazigate/apps/"
-sudo cp -r intel-irris-waziapp/* /var/lib/wazigate/apps/intel-irris-waziapp/
-
+sudo cp -r /home/pi/intel-irris-waziapp /var/lib/wazigate/apps
 
 IID=`docker images --format='{{.ID}}' | head -1`
 
