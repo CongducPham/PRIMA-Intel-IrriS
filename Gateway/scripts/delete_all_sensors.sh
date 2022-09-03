@@ -18,7 +18,7 @@ do
   
   sizeDEVICE=${#DEVICE}
   
-  #we do not want to delete the gateway as it is also considered as a device
+  #we do not want to delete a gateway as it is also considered as a device
   if [ $sizeDEVICE -gt 12 ]
   then
     echo "Delete device ${DEVICE}"

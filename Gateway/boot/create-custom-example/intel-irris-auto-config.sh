@@ -18,3 +18,6 @@ DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`
 #add the voltage monitor sensor
 DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`
 ./create_only_voltage_monitor_sensor.sh $DEVICE
+
+#remove LAST_CREATED_DEVICE.txt
+rm /home/pi/scripts/LAST_CREATED_DEVICE.txt

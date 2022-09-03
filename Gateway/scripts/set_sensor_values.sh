@@ -1,15 +1,14 @@
 #!/bin/bash
 
-# Ex: set_sensor_values
+# Ex: set_sensor_values.sh 62c7c657127dbd00011540a6.data.json 62de65dd127dbd00013fd78b temperatureSensor_0
 # this script push data from a file as device sensor's values
 # it is recommended to push to an empty device
-# use for instance create_full_* scripts to create an empty device
 
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
     echo "Need the data file and the target device id"
-    echo "e.g. set_sensor_values 62c7c657127dbd00011540a6.data.json 62de65dd127dbd00013fd78b temperatureSensor_0"
+    echo "e.g. set_sensor_values.sh 62c7c657127dbd00011540a6.data.json 62de65dd127dbd00013fd78b temperatureSensor_0"
     exit
 fi
 

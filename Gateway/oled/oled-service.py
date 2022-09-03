@@ -761,7 +761,11 @@ def get_capacitive_soil_condition(device_id, raw_value):
 				device_json=json.loads(response.text)
 				
 				if "value_index_iiwa" in response.text:
-					d_value = datetime.strptime(device_json["time"], '%Y-%m-%dT%H:%M:%S.%fZ')
+					if "." in device_json["time"]:
+						d_value = datetime.strptime(device_json["time"], '%Y-%m-%dT%H:%M:%S.%fZ')
+					else:
+						d_value = datetime.strptime(device_json["time"], '%Y-%m-%dT%H:%M:%SZ')
+
 					d_iiwa = datetime.strptime(device_json["meta"]["value_index_iiwa_time"], '%Y-%m-%dT%H:%M:%S.%fZ')
 					
 					#check that value_index_iiwa is a recent value, in case IIWA is not running anymore	
@@ -897,7 +901,10 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 				device_json=json.loads(response.text)
 				
 				if "value_index_iiwa" in response.text:
-					d_value = datetime.strptime(device_json["time"], '%Y-%m-%dT%H:%M:%S.%fZ')
+					if "." in device_json["time"]:
+						d_value = datetime.strptime(device_json["time"], '%Y-%m-%dT%H:%M:%S.%fZ')
+					else:
+						d_value = datetime.strptime(device_json["time"], '%Y-%m-%dT%H:%M:%SZ')
 					d_iiwa = datetime.strptime(device_json["meta"]["value_index_iiwa_time"], '%Y-%m-%dT%H:%M:%S.%fZ')
 					
 					#check that value_index_iiwa is a recent value, in case IIWA is not running anymore	

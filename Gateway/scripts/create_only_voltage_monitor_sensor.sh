@@ -15,13 +15,13 @@ fi
 echo "--> Get token"
 TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
 
-DATE=`date +"%Y-%m-%dT%H:%M:%S.%3NZ"`
+DATE=`date +"%Y-%m-%dT06:00:00.001Z"`
 
-echo "--> date is $DATE" 
+echo "--> Use date of $DATE"
 echo "--> Use device ${1}"
 echo "--> Create voltage monitor sensor"
 
-curl -X POST "http://localhost/devices/${1}/sensors" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"id\":\"analogInput_6\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"volt, low battery when < 2.85\"},\"name\":\"Battery voltage\",\"quantity\":\"\",\"time\":\"2022-04-06T14:39:45.205Z\",\"unit\":\"\",\"value\":-1}"
+curl -X POST "http://localhost/devices/${1}/sensors" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"id\":\"analogInput_6\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"volt, low battery when lower than 2.85V\"},\"name\":\"Battery voltage\",\"quantity\":\"\",\"time\":\"$DATE\",\"unit\":\"\",\"value\":-1}"
 
 echo "device $1"
 echo "		with voltage monitor displaying volt"
