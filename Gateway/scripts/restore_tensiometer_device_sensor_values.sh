@@ -38,17 +38,25 @@ curl -X POST "http://localhost/devices/${DEVICE}/sensors" -H "accept: applicatio
 echo "device $DEVICE"
 echo "		with voltage monitor displaying volt"
 
+#####
+
+## /home/pi/scripts/set_sensor_values.sh $3.temperatureSensor_0.data.json $DEVICE temperatureSensor_0
 echo "--> Get temperatureSensor_0 sensor's values from $3.temperatureSensor_0.data.json"
 DATA=`cat $3.temperatureSensor_0.data.json`
 
 echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_0"
 curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
 
+#####
+
+## /home/pi/scripts/set_sensor_values.sh $3.temperatureSensor_1.data.json $DEVICE temperatureSensor_1
 echo "--> Get temperatureSensor_1 sensor's values from $3.temperatureSensor_1.data.json"
 DATA=`cat $3.temperatureSensor_1.data.json`
 
 echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_1"
 curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_1/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
+
+#####
 
 #if there are data from temperatureSensor_5 then we create temperatureSensor_5 sensor
 if [ -f "$3.temperatureSensor_5.data.json" ]; then
@@ -60,6 +68,7 @@ if [ -f "$3.temperatureSensor_5.data.json" ]; then
 	echo "device $DEVICE"
 	echo "		with soil temperature displaying degree Celsius"
 
+	## /home/pi/scripts/set_sensor_values.sh $3.temperatureSensor_5.data.json $DEVICE temperatureSensor_5
 	echo "--> Get temperatureSensor_5 sensor's values from $3.temperatureSensor_5.data.json"
 	DATA=`cat $3.temperatureSensor_5.data.json`
 
@@ -69,8 +78,11 @@ else
   echo "no $3.temperatureSensor_5.data.json"
 fi
 
+#####
+
 #as we always create analogInput_6, if there are no data from analogInput_6 then we put value -1
 if [ -f "$3.analogInput_6.data.json" ]; then
+	## /home/pi/scripts/set_sensor_values.sh $3.analogInput_6.data.json $DEVICE analogInput_6
 	echo "--> Get analogInput_6 sensor's values from $3.analogInput_6.data.json"
 	DATA=`cat $3.analogInput_6.data.json`
 
@@ -81,6 +93,8 @@ else
 	echo "--> Add value -1"
 	curl -X POST "http://localhost/devices/${DEVICE}/sensors/analogInput_6/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-1, \"time\":\"$DATE\"}"    
 fi
+
+#####
 
 echo "Done"
 

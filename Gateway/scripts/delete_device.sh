@@ -3,10 +3,9 @@
 if [ $# -eq 0 ]
 	then
 		echo "No arguments supplied"
-		echo "Taking default device id"
-		DEVICE="62286d72f06c4c0001eba943"
-	else
-		DEVICE=$1
+    echo "Need the device id"
+    echo "e.g. delete_device.sh 62c7c657127dbd00011540a6"
+		exit
 fi
 
 echo "Get token"
