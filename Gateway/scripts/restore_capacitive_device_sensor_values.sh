@@ -30,13 +30,6 @@ echo "--> Make it LoRaWAN"
 echo "		device addr: 26011D${2}"
 curl -X POST "http://localhost/devices/${DEVICE}/meta" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d  "{\"codec\":\"application/x-xlpp\",\"lorawan\":{\"appSKey\":\"23158D3BBC31E6AF670D195B5AED5525\",\"devAddr\":\"26011D${2}\",\"devEUI\":\"AA555A0026011D${2}\",\"nwkSEncKey\":\"23158D3BBC31E6AF670D195B5AED5525\",\"profile\":\"WaziDev\"}}"
 
-echo "--> Create voltage monitor sensor"
-
-curl -X POST "http://localhost/devices/${DEVICE}/sensors" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"id\":\"analogInput_6\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"volt, low battery when lower than 2.85V\"},\"name\":\"Battery voltage\",\"quantity\":\"\",\"time\":\"$DATE\",\"unit\":\"\"}"
-
-echo "device $DEVICE"
-echo "		with voltage monitor displaying volt"
-
 #####
 
 ## /home/pi/scripts/set_sensor_values.sh $3.temperatureSensor_0.data.json $DEVICE temperatureSensor_0
@@ -67,6 +60,15 @@ if [ -f "$3.temperatureSensor_5.data.json" ]; then
 else 
   echo "no $3.temperatureSensor_5.data.json"
 fi
+
+#####
+
+echo "--> Create voltage monitor sensor"
+
+curl -X POST "http://localhost/devices/${DEVICE}/sensors" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"id\":\"analogInput_6\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"volt, low battery when lower than 2.85V\"},\"name\":\"Battery voltage\",\"quantity\":\"\",\"time\":\"$DATE\",\"unit\":\"\"}"
+
+echo "device $DEVICE"
+echo "		with voltage monitor displaying volt"
 
 #####
 
