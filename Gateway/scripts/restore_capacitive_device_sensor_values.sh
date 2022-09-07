@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Ex: restore_capacitive_device_sensor_values.sh 62c7c657127dbd00011540a6
-# this script push data backup from a capacitive device to a new created device
+# this script push data backup from a capacitive device to a new created capacitive device
 
 if [ $# -eq 0 ]
   then
@@ -17,7 +17,7 @@ TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -
 DATE=`date +"%Y-%m-%dT06:00:00.001Z"`
 
 echo "--> Use date of $DATE"
-echo "--> Create new device"
+echo "--> Create new capactive device"
 
 DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"actuators\":[],\"name\":\"SOIL-AREA-${1}\",\"sensors\":[{\"id\":\"temperatureSensor_0\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"Raw value from SEN0308\",\"model\":\"SEN0308\",\"type\":\"capacitive\",\"sensor_dry_max\":800,\"sensor_wet_max\":0,\"sensor_n_interval\":6,\"value_index\":0},\"name\":\"Soil Humidity Sensor\",\"quantity\":\"\",\"time\":\"$DATE\",\"unit\":\"\"}]}" | tr -d '\"'`
 
@@ -32,9 +32,9 @@ curl -X POST "http://localhost/devices/${DEVICE}/meta" -H "accept: application/j
 
 #####
 
-## /home/pi/scripts/set_sensor_values.sh $3.temperatureSensor_0.data.json $DEVICE temperatureSensor_0
-echo "--> Get temperatureSensor_0 sensor's values from $3.temperatureSensor_0.data.json"
-DATA=`cat $3.temperatureSensor_0.data.json`
+## /home/pi/scripts/set_sensor_values.sh $3.capacitive.temperatureSensor_0.data.json $DEVICE temperatureSensor_0
+echo "--> Get temperatureSensor_0 sensor's values from $3.capacitive.temperatureSensor_0.data.json"
+DATA=`cat $3.capacitive.temperatureSensor_0.data.json`
 
 echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_0"
 curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
@@ -42,7 +42,7 @@ curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/val
 #####
 
 #if there are data from temperatureSensor_5 then we create temperatureSensor_5 sensor
-if [ -f "$3.temperatureSensor_5.data.json" ]; then
+if [ -f "$3.capacitive.temperatureSensor_5.data.json" ]; then
 
 	echo "--> Create temperature sensor"
 
@@ -51,14 +51,14 @@ if [ -f "$3.temperatureSensor_5.data.json" ]; then
 	echo "device $DEVICE"
 	echo "		with soil temperature displaying degree Celsius"
 
-	## /home/pi/scripts/set_sensor_values.sh $3.temperatureSensor_5.data.json $DEVICE temperatureSensor_5
-	echo "--> Get temperatureSensor_5 sensor's values from $3.temperatureSensor_5.data.json"
-	DATA=`cat $3.temperatureSensor_5.data.json`
+	## /home/pi/scripts/set_sensor_values.sh $3.capacitive.temperatureSensor_5.data.json $DEVICE temperatureSensor_5
+	echo "--> Get temperatureSensor_5 sensor's values from $3.capacitive.temperatureSensor_5.data.json"
+	DATA=`cat $3.capacitive.temperatureSensor_5.data.json`
 
 	echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_5"
 	curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_5/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
 else 
-  echo "no $3.temperatureSensor_5.data.json"
+  echo "no $3.capacitive.temperatureSensor_5.data.json"
 fi
 
 #####
@@ -73,15 +73,15 @@ echo "		with voltage monitor displaying volt"
 #####
 
 #as we always create analogInput_6, if there are no data from analogInput_6 then we put value -1
-if [ -f "$3.analogInput_6.data.json" ]; then
+if [ -f "$3.capacitive.analogInput_6.data.json" ]; then
 	## /home/pi/scripts/set_sensor_values.sh $3.analogInput_6.data.json $DEVICE analogInput_6
-	echo "--> Get analogInput_6 sensor's values from $3.analogInput_6.data.json"
-	DATA=`cat $3.analogInput_6.data.json`
+	echo "--> Get analogInput_6 sensor's values from $3.capacitive.analogInput_6.data.json"
+	DATA=`cat $3.capacitive.analogInput_6.data.json`
 
 	echo "--> Set sensor's values to device $DEVICE sensor analogInput_6"
 	curl -X POST "http://localhost/devices/${DEVICE}/sensors/analogInput_6/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
 else 
-  echo "no $3.analogInput_6.data.json"
+  echo "no $3.capacitive.analogInput_6.data.json"
 	echo "--> Add value -1"
 	curl -X POST "http://localhost/devices/${DEVICE}/sensors/analogInput_6/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":-1, \"time\":\"$DATE\"}"    
 fi

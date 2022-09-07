@@ -16,9 +16,9 @@ Example:
 
 Produces:
 
-- 62c7c657127dbd00011540a6.temperatureSensor_0.data.json
-- 62c7c657127dbd00011540a6.temperatureSensor_5.data.json, if soil temperature connected
-- 62c7c657127dbd00011540a6.analogInput_6.data.json
+- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_0.data.json
+- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_5.data.json, if soil temperature connected
+- 62c7c657127dbd00011540a6.capacitive.analogInput_6.data.json
 
 
 **For a tensiometer sensor device:**
@@ -31,15 +31,15 @@ Example:
 
 Produces:
 
-- 62c7c657127dbd00011540a6.temperatureSensor_0.data.json
-- 62c7c657127dbd00011540a6.temperatureSensor_1.data.json
-- 62c7c657127dbd00011540a6.temperatureSensor_5.data.json, if soil temperature connected
-- 62c7c657127dbd00011540a6.analogInput_6.data.json
+- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_0.data.json
+- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_1.data.json
+- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_5.data.json, if soil temperature connected
+- 62c7c657127dbd00011540a6.tensiometer.analogInput_6.data.json
 
 Restore: to restore to a new device
 -------
 
-The restore process automatically creates a new device where sensor's data previously backup will be restored.
+The restore process **automatically creates a new device** where sensor's data previously backup will be restored.
 
 
 **For a capacitive sensor device:**
@@ -57,9 +57,9 @@ Creates a new & empty capacitive sensor device with:
 
 Restore sensor's data from:
 
-- 62c7c657127dbd00011540a6.temperatureSensor_0.data.json
-- 62c7c657127dbd00011540a6.temperatureSensor_5.data.json, if file exists
-- 62c7c657127dbd00011540a6.analogInput_6.data.json
+- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_0.data.json
+- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_5.data.json, if file exists
+- 62c7c657127dbd00011540a6.capacitive.analogInput_6.data.json
 
 **For a tensiometer sensor device:**
 
@@ -76,10 +76,10 @@ Creates a new & empty tensiometer sensor device:
 
 Restore sensor's data from:
 
-- 62c7c657127dbd00011540a6.temperatureSensor_0.data.json
-- 62c7c657127dbd00011540a6.temperatureSensor_1.data.json
-- 62c7c657127dbd00011540a6.temperatureSensor_5.data.json, if file exists
-- 62c7c657127dbd00011540a6.analogInput_6.data.json
+- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_0.data.json
+- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_1.data.json
+- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_5.data.json, if file exists
+- 62c7c657127dbd00011540a6.tensiometer.analogInput_6.data.json
 
 
 Enjoy!
