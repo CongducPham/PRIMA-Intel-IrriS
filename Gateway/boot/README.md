@@ -33,6 +33,14 @@ This is how the auto-configuration mechanism works:
 - it means that if auto-configuration mechanism has been realized, the INTEL-IRRIS WaziGate will need more time to be operational as it needs to boot twice.
 
 
+The default configuration on the INTEL-IRRIS WaziGate SD card image
+-----------
+
+The default configuration is to have the `Gateway/boot/` `create-default-capacitive/intel-irris-auto-config.sh` configuration in the `/boot` partition of the SD card. When you insert the SD card in a Raspberry Pi, it will automatically configure the INTEL-IRRIS WaziGate with the configuration matching the INTEL-IRRIS default soil humidity device sensor (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino)).
+
+Other available configuration examples
+===
+
 Example 1: set INTEL-IRRIS WaziGate in 868MHz version
 -----------
 

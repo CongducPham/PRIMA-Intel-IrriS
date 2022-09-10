@@ -71,7 +71,7 @@ To have the WaziGate in EU868 frequency band:
 	
 The script updates the RaspberryOS, installs `pip3` for `python3`, installs the `adafruit-circuitpython-ssd1306` and `python3-pil` packages for the OLED then installs the OLED service as a system service.
 
-The last step is to configure the WaziGate with a pre-configured device matching the configuration of the INTEL-IRRIS soil sensor device Arduino program (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino/Intelirris_Soil_Sensor](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino/Intelirris_Soil_Sensor)).
+The last step is to configure the WaziGate with a pre-configured device matching the configuration of the INTEL-IRRIS soil sensor device Arduino program (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway/boot](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway/boot)).
 
 Enjoy!
 C. Pham
