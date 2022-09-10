@@ -34,6 +34,7 @@ Default configuration for INTEL-IRRIS project (works out-of-the box with the INT
 - `temperatureSensor_5` is the internal default logical sensor for soil temperature data if an DS18B20 is connected
 - `analogInput_6` is the internal default logical sensor for battery voltage
 
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/dashboard-voltage.png" width="400">
 
 Enjoy!
 C. Pham
