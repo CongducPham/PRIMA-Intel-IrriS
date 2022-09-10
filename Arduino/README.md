@@ -30,9 +30,9 @@ Default configuration for INTEL-IRRIS project (works out-of-the box with the INT
 - Device address is 26011DAA
 - 1 measure and transmission every 1 hour
 - Battery voltage is included in transmitted messages
-- `temperatureSensor_0` is the internal default logical sensor for soil humidity data
-- `temperatureSensor_5` is the internal default logical sensor for soil temperature data if an DS18B20 is connected
-- `analogInput_6` is the internal default logical sensor for battery voltage
+- LPP channel 0 is used for soil humidity data, resulting in `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data
+- LPP channel 5 is used for the soil temperature data if an DS18B20 is connected resulting in `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data
+- LPP channel 6 is used for battery voltage resulting in `analogInput_6` as the internal default logical sensor for battery voltage
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/dashboard-voltage.png" width="400">
 

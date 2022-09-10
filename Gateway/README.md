@@ -73,6 +73,20 @@ The script updates the RaspberryOS, installs `pip3` for `python3`, installs the 
 
 The last step is to configure the WaziGate with a pre-configured device matching the configuration of the INTEL-IRRIS soil sensor device Arduino program (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway/boot](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway/boot)).
 
+Default configuration for INTEL-IRRIS project (works out-of-the box with the INTEL-IRRIS `Intelirris_Soil_Sensor Arduino` code)
+===
+
+- LoRaWAN mode (single channel)
+- Cayenne LPP data format
+- EU433 band (for Algeria and Morocco)
+- One pre-configured device with address 26011DAA
+- Device name is `SOIL-AREA-1`
+- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
+- `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
+- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/dashboard-voltage.png" width="400">
+
 Enjoy!
 C. Pham
 Coordinator of PRIMA Intel-IrriS
