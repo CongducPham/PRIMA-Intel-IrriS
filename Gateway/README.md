@@ -5,13 +5,13 @@ The INTEL-IRRIS gateway is based on the [WaziGate framework](https://www.waziup.
 
 INTEL-IRRIS is providing a customized WaziGate distribution so that the starter-kit can work out-of-the-box.
 
-Check on [INTEL-IRRIS web site](http://intel-irris.eu/results) for the SD card image in either EU433 or EU868 frequency band.
+Check on [INTEL-IRRIS web site](http://intel-irris.eu/results) for the SD card image.
 
 Just get the SD card image, flash it on an 8GB SD card class 10 and plug it into a Raspberry Pi (3B/3B+/4B, although 3B is recommended) with a LoRa hat.
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/wazigate.jpg" width="300">
 
-The additional code on top of the generic WaziGate framework is provided in this folder, although the SD card image has already everything installed.
+The additional code on top of the generic WaziGate framework is provided in this folder, **although the SD card image has already everything installed**.
 
 Check for the following tutorials/videos on the gateway part:
 
@@ -24,6 +24,8 @@ Check for the following tutorials/videos on the gateway part:
 
 Manual installation on top of generic WaziGate distribution
 ===========================================================
+
+**The SD card image has already everything installed. Manual installation procedure is provided for information only.**
 
 The customized WaziGate distribution consists in a pre-configured WaziGate with 1 device and either a capacitive SEN0308 sensor or a Watermark water tension sensor.
 
@@ -80,10 +82,13 @@ Default configuration for INTEL-IRRIS project (works out-of-the box with the INT
 - Cayenne LPP data format
 - EU433 band (for Algeria and Morocco)
 - One pre-configured device with address 26011DAA
+- Soil humidity sensor is the capacitive SEN0308
 - Device name is `SOIL-AREA-1`
 - `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
 - `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
 - `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
+
+**Note: The default capacitive device is created on first boot with the auto-configuration mechanism. Therefore, for the first boot, and only the first one, the gateway will take more time to start as it needs to boot twice. Consider 5-6mins as normal.**
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/dashboard-voltage.png" width="400">
 

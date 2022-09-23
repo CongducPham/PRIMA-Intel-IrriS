@@ -14,11 +14,30 @@ Quick start
 
 The [Arduino sketch](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino/Intelirris_Soil_Sensor) for the soil sensor device is in the [Arduino folder](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino).
 
-The general gateway part will either be the [LowCostLoRaGw](https://github.com/CongducPham/LowCostLoRaGw) framework or the [WaziGate](https://github.com/Waziup/WaziGate) framework.
+The INTEL-IRRIS gateway part is based on the [WaziGate](https://github.com/Waziup/WaziGate) framework.
 
-These based framework will be enhanced with INTEL-IRRIS specific AI features and UI. These additional contributions will be put in the Gateway folder.
+The WaziGate generic framework is enhanced with INTEL-IRRIS specific UI and irrigation data processing. These additional contributions are in the `Gateway` folder **but the SD card image has already everything installed**.
 
-**The INTEL-IRRIS WaziGate SD card images are available on [http://intel-irris.eu/results](http://intel-irris.eu/results). Select EU433 or EU868 version.**
+The INTEL-IRRIS WaziGate SD card image is available on [http://intel-irris.eu/results](http://intel-irris.eu/results). It is configured by default for 433MHz frequency band. To use 868MHz frequency band, see the [868MHz auto-configuration mechanism](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway/boot#example-1-set-intel-irris-wazigate-in-868mhz-version).
+
+Default configuration for the gateway
+---
+
+- LoRaWAN mode (single channel)
+- Cayenne LPP data format
+- EU433 band (for Algeria and Morocco)
+- One pre-configured device with address 26011DAA
+- Soil humidity sensor is the capacitive SEN0308
+- Device name is `SOIL-AREA-1`
+- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
+- `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
+- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
+
+Insert the SD card in the Raspberry Pi and then power the RPI. The INTEL-IRRIS WaziGate is ready when the main INTEL-IRRIS screen appears on the OLED.
+
+**Note: The default capacitive device is created on first boot with the auto-configuration mechanism. Therefore, for the first boot, and only the first one, the gateway will take more time to start as it needs to boot twice. Consider 5-6mins as normal.**
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/dashboard-voltage.png" width="400">
 
 Tutorials
 ---------

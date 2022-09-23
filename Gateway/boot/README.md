@@ -30,13 +30,23 @@ This is how the auto-configuration mechanism works:
 
 - if frequency band configuration has been realized or if `/boot/intel-irris-auto-config.sh` has been executed, `/home/pi/intel-irris-auto-config-main.sh` creates `/boot/intel-irris-auto-config.done` to indicate that the auto-configuration has been performed. The WaziGate is then rebooted.
 
-- it means that if auto-configuration mechanism has been realized, the INTEL-IRRIS WaziGate will need more time to be operational as it needs to boot twice.
+- **it means that if auto-configuration mechanism has been realized, the INTEL-IRRIS WaziGate will need more time to be operational as it needs to boot twice. Consider 5-6mins as normal.**
 
 
 The default configuration on the INTEL-IRRIS WaziGate SD card image
 -----------
 
 The default configuration is to have the `Gateway/boot/` `create-default-capacitive/intel-irris-auto-config.sh` configuration in the `/boot` partition of the SD card. When you insert the SD card in a Raspberry Pi, it will automatically configure the INTEL-IRRIS WaziGate with the configuration matching the INTEL-IRRIS default soil humidity device sensor (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino)).
+
+- LoRaWAN mode (single channel)
+- Cayenne LPP data format
+- EU433 band (for Algeria and Morocco)
+- One pre-configured device with address 26011DAA
+- Soil humidity sensor is the capacitive SEN0308
+- Device name is `SOIL-AREA-1`
+- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
+- `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
+- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
 
 Other available configuration examples
 ===
