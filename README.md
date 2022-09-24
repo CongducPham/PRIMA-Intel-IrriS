@@ -33,9 +33,9 @@ Default configuration for the gateway
 - `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
 - `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
 
-Insert the SD card in the Raspberry Pi and then power the RPI. The INTEL-IRRIS WaziGate is ready when the main INTEL-IRRIS screen appears on the OLED.
+Insert the SD card in the Raspberry Pi and then power the RPI. The INTEL-IRRIS WaziGate is ready when the main INTEL-IRRIS screen appears on the OLED indicating `SOIL-AREA-1` device. You may see a succession of `[ Internet NO ]` and/or `[ Internet OK ]` and black screen before the main INTEL-IRRIS screen appears on the OLED.
 
-**Note: The default capacitive device is created on first boot with the auto-configuration mechanism. Therefore, for the first boot, and only the first one, the gateway will take more time to start as it needs to boot twice. Consider 5-6mins as normal.**
+**Note: The default capacitive device is created on first boot with the auto-configuration mechanism. Therefore, for the first boot, and only the first one, the gateway will take more time to start as it needs to boot twice. Consider 5mins as normal for each boot. Therefore 10mins would be needed for first start to have the main INTEL-IRRIS screen on the OLED indicating `SOIL-AREA-1` device.**
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/dashboard-voltage.png" width="400">
 

@@ -30,7 +30,7 @@ This is how the auto-configuration mechanism works:
 
 - if frequency band configuration has been realized or if `/boot/intel-irris-auto-config.sh` has been executed, `/home/pi/intel-irris-auto-config-main.sh` creates `/boot/intel-irris-auto-config.done` to indicate that the auto-configuration has been performed. The WaziGate is then rebooted.
 
-- **it means that if auto-configuration mechanism has been realized, the INTEL-IRRIS WaziGate will need more time to be operational as it needs to boot twice. Consider 5-6mins as normal.**
+- **it means that if auto-configuration mechanism has been realized, the INTEL-IRRIS WaziGate will need more time to be operational as it needs to boot twice. Consider 5mins as normal for each boot. Therefore 10mins would be needed for first start to have the main INTEL-IRRIS screen on the OLED indicating `SOIL-AREA-1` device.**
 
 
 The default configuration on the INTEL-IRRIS WaziGate SD card image
