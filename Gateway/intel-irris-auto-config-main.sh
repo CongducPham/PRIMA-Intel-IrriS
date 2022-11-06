@@ -1,61 +1,62 @@
 #!/bin/bash
 
+# Wait for WaziGate to be started
+# Is service active? = active and is wazigate-system docker container is healthy 
+#SYSTEM_STATUS="unhealthy"
+#while [ "$(systemctl is-active wazigate)" != "active" ] && [ "$(SYSTEM_STATUS)" != "healthy" ];
+#do
+#  SYSTEM_STATUS=`docker inspect -f {{.State.Health.Status}} waziup.wazigate-system`
+#  sleep 5
+#done
+
 # Wait for starting
-EDGE_STATUS=`docker inspect -f {{.State.Health.Status}} waziup.wazigate-edge`
-
-while [ "$EDGE_STATUS" != "healthy" ]
-do
-  echo -n "."
-  sleep 5
-  EDGE_STATUS=`docker inspect -f {{.State.Health.Status}} waziup.wazigate-edge`
-done
-
-logger -t intel-irris-auto-config "Edge container is now active and healthy"
+#EDGE_STATUS=`docker inspect -f {{.State.Health.Status}} waziup.wazigate-system`
+#
+#while [ "$EDGE_STATUS" != "healthy" ]
+#do
+#  echo -n "."
+#  sleep 5
+#  EDGE_STATUS=`docker inspect -f {{.State.Health.Status}} waziup.wazigate-system`
+#done
 
 cd /home/pi/
-logger -t intel-irris-auto-config "Running INTEL-IRRIS WaziGate auto-configuration script"
+echo `date` >> /boot/intel-irris-auto-config.log 
+echo "Running INTEL-IRRIS WaziGate auto-configuration script" >> /boot/intel-irris-auto-config.log
 
 if [ -f /boot/intel-irris-auto-config.done ]
 then
-	logger -t intel-irris-auto-config "detected previous auto-configuration – skip"
-	echo "detected previous auto-configuration – skip"
-	logger -t intel-irris-auto-config "delete /boot/intel-irris-auto-config.done to restart auto-configuration"
-	echo "delete /boot/intel-irris-auto-config.done to restart auto-configuration"		
+	echo "detected previous auto-configuration – skip" >> /boot/intel-irris-auto-config.log
+	echo "delete /boot/intel-irris-auto-config.done to restart auto-configuration" >> /boot/intel-irris-auto-config.log
+	echo "-----------------------------------------------------------------------" >> /boot/intel-irris-auto-config.log
 else
 
-	logger -t intel-irris-auto-config "Looking for frequency band"
+	echo "Looking for frequency band" >> /boot/intel-irris-auto-config.log
 	if [ -f /boot/intel-irris-band.txt ]
 	then
 		cd /home/pi/scripts	
 		BAND=`cat /boot/intel-irris-band.txt`
-		logger -t intel-irris-auto-config "Configuring for $BAND"
+		echo "Configuring for $BAND" >> /boot/intel-irris-auto-config.log
 		./config_band.sh $BAND
-		logger -t intel-irris-auto-config "create /boot/intel-irris-auto-config.done"
-		echo "auto-configuration done" > /boot/intel-irris-auto-config.done
-		logger -t intel-irris-auto-config "reboot to take configuration into account"		
+		echo "auto-configuration for frequency band done" >> /boot/intel-irris-auto-config.done	
 		REBOOT="yes"
 	else
-		logger -t intel-irris-auto-config "Keep default frequency band"
-		echo "keep default frequency band"
+		echo "keep default frequency band" >> /boot/intel-irris-auto-config.log
 	fi
 
-	logger -t intel-irris-auto-config "Looking for /boot/intel-irris-auto-config.sh"	
+	echo "Looking for /boot/intel-irris-auto-config.sh"	>> /boot/intel-irris-auto-config.log
 	if [ -f /boot/intel-irris-auto-config.sh ]
 	then
-		logger -t intel-irris-auto-config "/boot/intel-irris-auto-config.sh found"			
-		logger -t intel-irris-auto-config "running /boot auto-configuration script"
+		echo "/boot/intel-irris-auto-config.sh found"	>> /boot/intel-irris-auto-config.log		
+		echo "running /boot auto-configuration script" >> /boot/intel-irris-auto-config.log
 		/boot/intel-irris-auto-config.sh
 		
-		logger -t intel-irris-auto-config "create /boot/intel-irris-auto-config.done"
-		echo "auto-configuration done" > /boot/intel-irris-auto-config.done
-		logger -t intel-irris-auto-config "reboot to take configuration into account"
+		echo "auto-configuration for device/sensor done" >> /boot/intel-irris-auto-config.done
 		REBOOT="yes"
 	else
-		logger -t intel-irris-auto-config "no /boot/intel-irris-auto-config.sh found"
-		logger -t intel-irris-auto-config "nothing to be done in addition to the default configuration"
-		echo "nothing to be done in addition to the default configuration"
+		echo "no /boot/intel-irris-auto-config.sh found" >> /boot/intel-irris-auto-config.log
+		echo "nothing to be done in addition to the default configuration" >> /boot/intel-irris-auto-config.log
 	fi
-	
+		
 	if [ "$REBOOT" = "yes" ]
 	then
 		# the script can be launched from a terminal, i.e.
@@ -64,9 +65,13 @@ else
 		# sudo /home/pi/intel-irris-auto-config.sh no-reboot
 		if [ $# -eq 0 ]
 		then
+			echo "WaziGate will reboot to take auto-config into account" >> /boot/intel-irris-auto-config.log		
+			echo "next log will show detected previous auto-configuration – skip" >> /boot/intel-irris-auto-config.log
+			echo "-----------------------------------------------------------------------" >> /boot/intel-irris-auto-config.log
 			reboot
 		else
 			echo "should reboot here but script is forced to not reboot"	
 		fi
-	fi			
+	fi
+	echo "-----------------------------------------------------------------------" >> /boot/intel-irris-auto-config.log			
 fi

@@ -8,9 +8,7 @@
 dsn="postgres://chirpstack_ns:chirpstack_ns@postgresql/chirpstack_ns?sslmode=disable"
 
 [redis]
-servers=[
-  "/var/run/redis/redis.sock",
-]
+url="redis://redis:6379"
 
 [network_server]
 net_id="000000"
@@ -22,11 +20,11 @@ name="EU868"
 # 
 #   [[network_server.network_settings.extra_channels]]
 #   frequency=867100000
-#  min_dr=0
-#   max_dr=5
-# 
+#  min_dr=0                 
+#   max_dr=5                
+#                           
 #   [[network_server.network_settings.extra_channels]]
-#   frequency=867300000
+#   frequency=867300000     
 #   min_dr=0
 #   max_dr=5
 # 

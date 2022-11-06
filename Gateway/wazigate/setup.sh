@@ -93,5 +93,5 @@ log 4 "Starting docker containers"
 # Create containers
 docker-compose up -d
 
-#added for INTEL-IRRIS oled service
+#added for INTEL-IRRIS auto-configuration mechanism
 /home/pi/intel-irris-auto-config-main.sh

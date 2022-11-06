@@ -1,7 +1,7 @@
 """
 Based on example from Adafruit.
 
-INTEL-IRRIS oled service. Author: C. Pham. Last update Oct 19th, 2022 (for WaziGate v2).
+INTEL-IRRIS oled service. Author: C. Pham. Last update April 16th, 2022.
 
 Called by /etc/systemd/system/intel-irris-oled-service.service
 
@@ -171,37 +171,6 @@ capacitive_soil_condition=key_device.capacitive_sensor_soil_condition[key_device
 tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[key_device.tensiometer_sensor_n_interval-1]
 value_index_from_iiwa=False		
 
-
-#-------------------------------------------------------------------------
-# check if default device id is valid
-#-------------------------------------------------------------------------
-
-def get_token():
-	token="hello"
-	#get the token first
-	WaziGate_url='http://localhost/auth/token'
-	try:
-		pload = '{"username":"admin","password":"loragateway"}'
-		response = requests.post(WaziGate_url, headers=WaziGate_headers, data=pload, timeout=30)
-		print ('oled-service: returned msg from server is '),
-		print (response.status_code)
-		print (response.reason)
-	
-		if 200 <= response.status_code < 300:
-			print ('oled-service: token POST success')
-			print (response.text)
-			token=response.text
-		else:
-			print ('oled-service: token bad request')
-			print (response.text)			
-		
-	except requests.exceptions.RequestException as e:
-		print (e)
-		print ('oled-service: token requests command failed')
-		
-	print ('=token===================================')		
-	return(token)
-			
 #-------------------------------------------------------------------------
 # check if default device id is valid
 #-------------------------------------------------------------------------
@@ -210,13 +179,9 @@ def check_for_device(device_id):
 	global has_found_device
 	has_found_device=False
 	print ('oled-service: check for device '+device_id)
-	
-	my_token=get_token()
-	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
-		
 	WaziGate_url='http://localhost/devices/'+device_id
 	try:
-		response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
+		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 		print ('oled-service: returned msg from server is '),
 		print (response.status_code)
 		print (response.reason)
@@ -248,10 +213,31 @@ def check_for_device(device_id):
 #-------------------------------------------------------------------------
 
 def set_meta_data(device_id):
-	my_token=get_token()
-	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
+	my_token="hello"
+	#get the token first
+	WaziGate_url='http://localhost/auth/token'
+	try:
+		pload = '{"username":"admin","password":"loragateway"}'
+		response = requests.post(WaziGate_url, headers=WaziGate_headers, data=pload, timeout=30)
+		print ('oled-service: returned msg from server is '),
+		print (response.status_code)
+		print (response.reason)
+	
+		if 200 <= response.status_code < 300:
+			print ('oled-service: POST success')
+			print (response.text)
+			my_token=response.text
+		else:
+			print ('oled-service: bad request')
+			print (response.text)			
+		
+	except requests.exceptions.RequestException as e:
+		print (e)
+		print ('oled-service: requests command failed')
 
-	WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'	
+	print ('=========================================')
+				
+	WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'
 	try:
 		if sensor_model=="WM200":
 			#pload = '{"model":"WM200","sensor_dry_max":8000,"sensor_n_interval":6,"sensor_wet_max":0,"type":"tensiometer","value_index":0}'
@@ -260,6 +246,7 @@ def set_meta_data(device_id):
 			#pload = '{"model":"SEN0308","sensor_dry_max":800,"sensor_n_interval":6,"sensor_wet_max":0,"type":"capacitive","value_index":0}'
 			pload = '{"model":"SEN0308","sensor_dry_max":800,"sensor_n_interval":6,"sensor_wet_max":0,"type":"capacitive"}'
 		
+		WaziGate_headers_auth['Authorization']='Bearer'+my_token[1:-2]
 		response = requests.post(WaziGate_url, headers=WaziGate_headers_auth, data=pload, timeout=30)
 		print ('oled-service: returned msg from server is '),
 		print (response.status_code)
@@ -291,13 +278,10 @@ def get_all_devices_id_list():
 	all_devices_id_list=[]
 	global sensor_type
 	global sensor_model	
-
-	my_token=get_token()
-	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
-		
+	
 	WaziGate_url='http://localhost/devices'
 	try:
-		response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
+		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 		print ('oled-service: returned msg from server is '),
 		print (response.status_code)
 		print (response.reason)
@@ -373,15 +357,10 @@ def find_new_default_device():
 	has_found_device=False
 	global sensor_type
 	global sensor_model
-
-	my_token=get_token()
-	print(my_token[1:-1])
-	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
-	print(WaziGate_headers_auth['Authorization'])	
 	
 	WaziGate_url='http://localhost/devices'
 	try:
-		response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
+		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 		print ('oled-service: returned msg from server is '),
 		print (response.status_code)
 		print (response.reason)
@@ -451,13 +430,10 @@ def find_new_default_device():
 def get_sensor_type_from_local_database(device_id):
 	global sensor_type
 	global sensor_model
-
-	my_token=get_token()
-	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
-		
+	
 	WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 	try:
-		response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
+		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 		print ('oled-service: returned msg from server is '),
 		print (response.status_code)
 		print (response.reason)
@@ -655,12 +631,9 @@ def screen_saver(duration):
 #--------------------------------------------------------------------------		
 						
 def get_last_raw_value(device_id):
-	my_token=get_token()
-	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
-	
 	WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 	try:
-		response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
+		response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 		print ('oled-service: returned msg from server is '),
 		print (response.status_code)
 		print (response.reason)
@@ -727,13 +700,35 @@ def get_capacitive_soil_condition(device_id, raw_value):
 	
 	print ('oled-service: value_index_capacitive is ', value_index_capacitive)	
 
-	my_token=get_token()
-	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
-		
 	if key_device.set_value_index_in_local_database:
+		my_token="hello"
+		#get the token first
+		WaziGate_url='http://localhost/auth/token'
+		try:
+			pload = '{"username":"admin","password":"loragateway"}'
+			response = requests.post(WaziGate_url, headers=WaziGate_headers, data=pload, timeout=30)
+			print ('oled-service: returned msg from server is '),
+			print (response.status_code)
+			print (response.reason)
+		
+			if 200 <= response.status_code < 300:
+				print ('oled-service: POST success')
+				print (response.text)
+				my_token=response.text
+			else:
+				print ('oled-service: bad request')
+				print (response.text)			
+			
+		except requests.exceptions.RequestException as e:
+			print (e)
+			print ('oled-service: requests command failed')
+		
+		print ('=========================================')	
+				
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'
 		try:
 			pload = '{"value_index":' + str(value_index_capacitive)+'}'
+			WaziGate_headers_auth['Authorization']='Bearer'+my_token[1:-2]
 			response = requests.post(WaziGate_url, headers=WaziGate_headers_auth, data=pload, timeout=30)
 			print ('oled-service: returned msg from server is '),
 			print (response.status_code)
@@ -755,7 +750,7 @@ def get_capacitive_soil_condition(device_id, raw_value):
 	if key_device.get_value_index_from_local_database:
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 		try:
-			response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
+			response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 			print ('oled-service: returned msg from server is '),
 			print (response.status_code)
 			print (response.reason)
@@ -845,13 +840,35 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 		
 	print ('oled-service: value_index_tensiometer is ', value_index_tensiometer)	
 
-	my_token=get_token()
-	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
+	if key_device.set_value_index_in_local_database:
+		my_token="hello"
+		#get the token first
+		WaziGate_url='http://localhost/auth/token'
+		try:
+			pload = '{"username":"admin","password":"loragateway"}'
+			response = requests.post(WaziGate_url, headers=WaziGate_headers, data=pload, timeout=30)
+			print ('oled-service: returned msg from server is '),
+			print (response.status_code)
+			print (response.reason)
 		
-	if key_device.set_value_index_in_local_database:				
+			if 200 <= response.status_code < 300:
+				print ('oled-service: POST success')
+				print (response.text)
+				my_token=response.text
+			else:
+				print ('oled-service: bad request')
+				print (response.text)			
+			
+		except requests.exceptions.RequestException as e:
+			print (e)
+			print ('oled-service: requests command failed')
+		
+		print ('=========================================')	
+				
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'
 		try:
 			pload = '{"value_index":' + str(value_index_tensiometer)+'}'
+			WaziGate_headers_auth['Authorization']='Bearer'+my_token[1:-2]
 			response = requests.post(WaziGate_url, headers=WaziGate_headers_auth, data=pload, timeout=30)
 			print ('oled-service: returned msg from server is '),
 			print (response.status_code)
@@ -873,7 +890,7 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 	if key_device.get_value_index_from_local_database:
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 		try:
-			response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
+			response = requests.get(WaziGate_url, headers=WaziGate_headers, timeout=30)
 			print ('oled-service: returned msg from server is '),
 			print (response.status_code)
 			print (response.reason)
