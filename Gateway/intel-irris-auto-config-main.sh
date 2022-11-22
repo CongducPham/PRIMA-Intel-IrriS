@@ -23,6 +23,16 @@ cd /home/pi/
 echo `date` >> /boot/intel-irris-auto-config.log 
 echo "Running INTEL-IRRIS WaziGate auto-configuration script" >> /boot/intel-irris-auto-config.log
 
+wget -q --spider http://google.com
+
+if [ $? -eq 0 ]; then
+        echo "Online" >> /boot/intel-irris-auto-config.log
+else
+        echo "Offline" >> /boot/intel-irris-auto-config.log
+        echo "Get time from RTC" >> /boot/intel-irris-auto-config.log
+        hwclock -s
+fi
+
 if [ -f /boot/intel-irris-auto-config.done ]
 then
 	echo "detected previous auto-configuration – skip" >> /boot/intel-irris-auto-config.log
