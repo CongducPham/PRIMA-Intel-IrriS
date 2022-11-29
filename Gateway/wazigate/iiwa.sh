@@ -9,4 +9,5 @@ echo "tagging image $IID as waziup/intel-irris-waziapp:latest"
 docker tag $IID waziup/intel-irris-waziapp:latest
 
 echo "last step: cd /var/lib/wazigate/apps/intel-irris-waziapp/"
-echo "last step: docker-compose up" 
+echo "last step, testing: docker-compose up" 
+echo "last step, release: docker-compose up -d"

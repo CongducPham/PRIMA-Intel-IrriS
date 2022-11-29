@@ -61,7 +61,8 @@ else
 		/boot/intel-irris-auto-config.sh
 		
 		echo "auto-configuration for device/sensor done" >> /boot/intel-irris-auto-config.done
-		REBOOT="yes"
+		#finally we do not need to reboot when we create the new device
+		#REBOOT="yes"
 	else
 		echo "no /boot/intel-irris-auto-config.sh found" >> /boot/intel-irris-auto-config.log
 		echo "nothing to be done in addition to the default configuration" >> /boot/intel-irris-auto-config.log
