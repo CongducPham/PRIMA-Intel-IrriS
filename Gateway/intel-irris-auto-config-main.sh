@@ -27,6 +27,8 @@ wget -q --spider http://google.com
 
 if [ $? -eq 0 ]; then
         echo "Online" >> /boot/intel-irris-auto-config.log
+        echo "Set time to RTC" >> /boot/intel-irris-auto-config.log
+        hwclock -w        
 else
         echo "Offline" >> /boot/intel-irris-auto-config.log
         echo "Get time from RTC" >> /boot/intel-irris-auto-config.log
