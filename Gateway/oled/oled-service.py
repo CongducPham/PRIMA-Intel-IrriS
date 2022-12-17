@@ -47,15 +47,15 @@ import adafruit_ssd1306
 # information related to the soil sensor device
 #-------------------------------------------------------------------------
 
-if os.path.isfile('/boot/new_key_device.py'):
+if os.path.isfile('/boot/new_oled_config.py'):
 	sys.path.append('/boot')
-	import new_key_device as key_device
+	import new_oled_config as oled_config
 else:	
-	import key_device
+	import oled_config
 #use default at beginning
-sensor_type=key_device.sensor_type
-sensor_model=key_device.sensor_model
-device_id_for_oled=key_device.device_id_for_oled
+sensor_type=oled_config.sensor_type
+sensor_model=oled_config.sensor_model
+device_id_for_oled=oled_config.device_id_for_oled
 sensor_id_for_oled='temperatureSensor_0'
 has_found_device=False
 
@@ -71,7 +71,7 @@ WaziGate_headers_auth = {'accept':'application/json','content-type':'application
 # OLED configuration
 #-------------------------------------------------------------------------
 
-lang=key_device.lang
+lang=oled_config.lang
 
 #uncomment to overwrite
 #lang='fr'
@@ -149,7 +149,7 @@ image_bw = image_r.convert("1")
 #set to 0 to disable wifi qrcode
 oled_wifi_qrcode_display_duration=8
 
-if key_device.cyclic_show_all_device:
+if oled_config.cyclic_show_all_device:
 	#duration of screen saver mode
 	oled_display_timer=12
 	#duration of the full information screen
@@ -165,10 +165,10 @@ all_devices_id_list=[]
 last_raw_value=0
 last_raw_value_minutes=0
 last_raw_value_days=0
-value_index_capacitive=key_device.capacitive_sensor_n_interval-1
-value_index_tensiometer=key_device.tensiometer_sensor_n_interval-1
-capacitive_soil_condition=key_device.capacitive_sensor_soil_condition[key_device.capacitive_sensor_n_interval-1]
-tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[key_device.tensiometer_sensor_n_interval-1]
+value_index_capacitive=oled_config.capacitive_sensor_n_interval-1
+value_index_tensiometer=oled_config.tensiometer_sensor_n_interval-1
+capacitive_soil_condition=oled_config.capacitive_sensor_soil_condition[oled_config.capacitive_sensor_n_interval-1]
+tensiometer_soil_condition=oled_config.tensiometer_sensor_soil_condition[oled_config.tensiometer_sensor_n_interval-1]
 value_index_from_iiwa=False		
 
 
@@ -493,18 +493,18 @@ def set_sensor_intervals():
 	global tensiometer_soil_condition
 	
 	if sensor_type=='capacitive':
-		last_raw_value=key_device.capacitive_sensor_dry_max
+		last_raw_value=oled_config.capacitive_sensor_dry_max
 	else:
-		last_raw_value=key_device.tensiometer_sensor_wet_max	
+		last_raw_value=oled_config.tensiometer_sensor_wet_max	
 
 	last_raw_value_minutes=0
 	last_raw_value_days=0
 
-	value_index_capacitive=key_device.capacitive_sensor_n_interval-1
-	value_index_tensiometer=key_device.tensiometer_sensor_n_interval-1
+	value_index_capacitive=oled_config.capacitive_sensor_n_interval-1
+	value_index_tensiometer=oled_config.tensiometer_sensor_n_interval-1
 
-	capacitive_soil_condition=key_device.capacitive_sensor_soil_condition[key_device.capacitive_sensor_n_interval-1]
-	tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[key_device.tensiometer_sensor_n_interval-1]			
+	capacitive_soil_condition=oled_config.capacitive_sensor_soil_condition[oled_config.capacitive_sensor_n_interval-1]
+	tensiometer_soil_condition=oled_config.tensiometer_sensor_soil_condition[oled_config.tensiometer_sensor_n_interval-1]			
 
 #-------------------------------------------------------------------------
 # init sensor data for OLED
@@ -517,31 +517,31 @@ else:
 	find_new_default_device()
 	
 if has_found_device:	
-	if key_device.get_sensor_type_from_local_database:
+	if oled_config.get_sensor_type_from_local_database:
 		print ('oled-service: get sensor type and model from local database')
 		get_sensor_type_from_local_database(device_id_for_oled)
 	else:
-		print ('oled-service: get sensor type and model from key_device.py')
-		sensor_type=key_device.sensor_type
-		sensor_model=key_device.sensor_model			
+		print ('oled-service: get sensor type and model from oled_config.py')
+		sensor_type=oled_config.sensor_type
+		sensor_model=oled_config.sensor_model			
 
 print(sensor_model, sensor_type)
 
 if sensor_type=='capacitive':
-	last_raw_value=key_device.capacitive_sensor_dry_max
+	last_raw_value=oled_config.capacitive_sensor_dry_max
 if sensor_type=='tensiometer':
-	last_raw_value=key_device.tensiometer_sensor_wet_max
+	last_raw_value=oled_config.tensiometer_sensor_wet_max
 else:		
-	last_raw_value=key_device.capacitive_sensor_dry_max
+	last_raw_value=oled_config.capacitive_sensor_dry_max
 
 last_raw_value_minutes=0
 last_raw_value_days=0
 
-value_index_capacitive=key_device.capacitive_sensor_n_interval-1
-value_index_tensiometer=key_device.tensiometer_sensor_n_interval-1
+value_index_capacitive=oled_config.capacitive_sensor_n_interval-1
+value_index_tensiometer=oled_config.tensiometer_sensor_n_interval-1
 
-capacitive_soil_condition=key_device.capacitive_sensor_soil_condition[key_device.capacitive_sensor_n_interval-1]
-tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[key_device.tensiometer_sensor_n_interval-1]		
+capacitive_soil_condition=oled_config.capacitive_sensor_soil_condition[oled_config.capacitive_sensor_n_interval-1]
+tensiometer_soil_condition=oled_config.tensiometer_sensor_soil_condition[oled_config.tensiometer_sensor_n_interval-1]		
 
 #-------------------------------------------------------------------------
 # Interruption handler
@@ -651,7 +651,7 @@ def screen_saver(duration):
 		end_time = time.time()
 		
 #--------------------------------------------------------------------------
-#get last stored value for a given device id: key_device.device_id_for_oled
+#get last stored value for a given device id: oled_config.device_id_for_oled
 #--------------------------------------------------------------------------		
 						
 def get_last_raw_value(device_id):
@@ -715,22 +715,25 @@ def get_capacitive_soil_condition(device_id, raw_value):
 	value_index_from_iiwa=False
 	
 	#we first compute value_index on our own
-	value_interval=int(key_device.capacitive_sensor_dry_max/key_device.capacitive_sensor_n_interval)
-	value_index_capacitive=int(raw_value/value_interval)	
-	#in case the sensed value is greater than the maximum value defined
-	if value_index_capacitive >= key_device.capacitive_sensor_n_interval:
-		value_index_capacitive = key_device.capacitive_sensor_n_interval-1	
+	if raw_value == -1:
+		value_index_capacitive=-1
+	else:	
+		value_interval=int(oled_config.capacitive_sensor_dry_max/oled_config.capacitive_sensor_n_interval)
+		value_index_capacitive=int(raw_value/value_interval)	
+		#in case the sensed value is greater than the maximum value defined
+		if value_index_capacitive >= oled_config.capacitive_sensor_n_interval:
+			value_index_capacitive = oled_config.capacitive_sensor_n_interval-1	
 			
-	#we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-saturated
-	#so for capacitive we need to invert the index
-	value_index_capacitive=key_device.capacitive_sensor_n_interval-1-value_index_capacitive
+		#we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-saturated
+		#so for capacitive we need to invert the index
+		value_index_capacitive=oled_config.capacitive_sensor_n_interval-1-value_index_capacitive
 	
 	print ('oled-service: value_index_capacitive is ', value_index_capacitive)	
 
 	my_token=get_token()
 	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
 		
-	if key_device.set_value_index_in_local_database:
+	if oled_config.set_value_index_in_local_database:
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'
 		try:
 			pload = '{"value_index":' + str(value_index_capacitive)+'}'
@@ -752,7 +755,7 @@ def get_capacitive_soil_condition(device_id, raw_value):
 			
 		print ('=========================================')
 		
-	if key_device.get_value_index_from_local_database:
+	if oled_config.get_value_index_from_local_database:
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 		try:
 			response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
@@ -794,7 +797,13 @@ def get_capacitive_soil_condition(device_id, raw_value):
 		print ('=========================================')	
 					
 	global capacitive_soil_condition
-	capacitive_soil_condition=key_device.capacitive_sensor_soil_condition[value_index_capacitive]
+	if value_index_capacitive==-1:
+		if lang=='fr':
+			capacitive_soil_condition='pas de capteur!'
+		else:	
+			capacitive_soil_condition='no sensor!'		
+	else:			
+		capacitive_soil_condition=oled_config.capacitive_sensor_soil_condition[value_index_capacitive]
 
 #--------------------------------------------------------------------------
 #determine the soil condition string indication for tensiometer
@@ -808,7 +817,7 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 	value_index_from_iiwa=False	
 	
 	#we first compute value_index on our own
-	if key_device.use_irrometer_interval_for_tensiometer:
+	if oled_config.use_irrometer_interval_for_tensiometer:
 		#from irrometer: https://www.irrometer.com/basics.html
 		#0-10 Centibars = Saturated soil
 		#10-30 Centibars = Soil is adequately wet (except coarse sands, which are drying)
@@ -833,22 +842,22 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 		else:
 			value_index_tensiometer=5												
 	else:
-		value_interval=int(key_device.tensiometer_sensor_dry_max/key_device.tensiometer_sensor_n_interval)
+		value_interval=int(oled_config.tensiometer_sensor_dry_max/oled_config.tensiometer_sensor_n_interval)
 		value_index_tensiometer=int(raw_value/value_interval)
 		#in case the sensed value is greater than the maximum value defined
-		if value_index_tensiometer >= key_device.tensiometer_sensor_n_interval:
-			value_index_tensiometer = key_device.tensiometer_sensor_n_interval-1		
+		if value_index_tensiometer >= oled_config.tensiometer_sensor_n_interval:
+			value_index_tensiometer = oled_config.tensiometer_sensor_n_interval-1		
 		
 		#we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-very wet/saturated
 		#so for tensiometer we need to invert the index
-		value_index_tensiometer=key_device.tensiometer_sensor_n_interval-1-value_index_tensiometer	
+		value_index_tensiometer=oled_config.tensiometer_sensor_n_interval-1-value_index_tensiometer	
 		
 	print ('oled-service: value_index_tensiometer is ', value_index_tensiometer)	
 
 	my_token=get_token()
 	WaziGate_headers_auth['Authorization']='Bearer '+my_token[1:-1]
 		
-	if key_device.set_value_index_in_local_database:				
+	if oled_config.set_value_index_in_local_database:				
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0/meta'
 		try:
 			pload = '{"value_index":' + str(value_index_tensiometer)+'}'
@@ -870,7 +879,7 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 			
 		print ('=========================================')
 		
-	if key_device.get_value_index_from_local_database:
+	if oled_config.get_value_index_from_local_database:
 		WaziGate_url='http://localhost/devices/'+device_id+'/sensors/temperatureSensor_0'
 		try:
 			response = requests.get(WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
@@ -912,11 +921,17 @@ def get_tensiometer_soil_condition(device_id, raw_value):
 						
 	global tensiometer_soil_condition
 	if value_index_tensiometer==-1:
-		tensiometer_soil_condition='no sensor'
+		if lang=='fr':
+			tensiometer_soil_condition='pas de capteur!'
+		else:	
+			tensiometer_soil_condition='no sensor!'
 	elif value_index_tensiometer==-2:
-		tensiometer_soil_condition='err'
+		if lang=='fr':	
+			tensiometer_soil_condition='erreur!'
+		else:
+			tensiometer_soil_condition='error!'
 	else:			
-		tensiometer_soil_condition=key_device.tensiometer_sensor_soil_condition[value_index_tensiometer]	
+		tensiometer_soil_condition=oled_config.tensiometer_sensor_soil_condition[value_index_tensiometer]	
 										
 #------------------------------------------------------------
 #main loop
@@ -937,7 +952,15 @@ while True:
 	# Draw a white background
 	draw.rectangle((0, 0, oled.width, oled.height), outline=255, fill=255)
 	
-	if oled_wifi_qrcode_display_duration: 
+	if oled_config.cyclic_show_all_device:
+		get_all_devices_id_list()
+		
+		if has_found_device:
+			if device_index >= len(all_devices_id_list):
+				device_index=0
+			device_id_for_oled=all_devices_id_list[device_index]	
+	
+	if device_index==0 and oled_wifi_qrcode_display_duration: 
 		for x in range(oled.height):
 			for y in range(oled.height):
 				draw.point((x+32,y),fill=int(image_bw.getpixel((x,y))))
@@ -945,13 +968,16 @@ while True:
 		# Display image
 		oled.image(image)
 		oled.show()
-		time.sleep(oled_wifi_qrcode_display_duration)	
+		time.sleep(oled_wifi_qrcode_display_duration)
 		# Clear display.
 		oled.fill(0)
 		oled.show()
 		# Draw a white background
 		draw.rectangle((0, 0, oled.width, oled.height), outline=255, fill=255)		
-
+	else:
+		#currently it is not necessary to have additional timing, but in case...
+		time.sleep(0)
+			
 	# Draw a smaller inner rectangle
 	draw.rectangle(
 			(BORDER, BORDER, oled.width - BORDER - 1, oled.height - BORDER - 1),
@@ -973,15 +999,7 @@ while True:
 	ttop=ttop+font_size
 
 	draw.text((x, ttop), "INTEL-IRRIS WaziGate", font=font, fill=255)
-	ttop=ttop+font_size
-	
-	if key_device.cyclic_show_all_device:
-		get_all_devices_id_list()
-		
-		if has_found_device:
-			if device_index >= len(all_devices_id_list):
-				device_index=0
-			device_id_for_oled=all_devices_id_list[device_index]	
+	ttop=ttop+font_size	
 
 	if check_for_device(device_id_for_oled):
 		print ('oled-service: found device')
@@ -990,13 +1008,13 @@ while True:
 		find_new_default_device()	
 			
 	if has_found_device:
-		if key_device.get_sensor_type_from_local_database:
+		if oled_config.get_sensor_type_from_local_database:
 			print ('oled-service: get sensor type and model from local database')
 			get_sensor_type_from_local_database(device_id_for_oled)
 		else:
-			print ('oled-service: get sensor type and model from key_device.py')
-			sensor_type=key_device.sensor_type
-			sensor_model=key_device.sensor_model
+			print ('oled-service: get sensor type and model from oled_config.py')
+			sensor_type=oled_config.sensor_type
+			sensor_model=oled_config.sensor_model
 
 		print(sensor_model, sensor_type)
 			
@@ -1030,26 +1048,42 @@ while True:
 	
 		if sensor_type=='capacitive':
 			get_capacitive_soil_condition(device_id_for_oled, last_raw_value)
-			text_to_display=main_screen_str_5+str(capacitive_soil_condition)
+			if value_index_capacitive==-1:
+				text_to_display=str(capacitive_soil_condition)
+			else:
+				text_to_display=main_screen_str_5+str(capacitive_soil_condition)
 		else:
 			get_tensiometer_soil_condition(device_id_for_oled, last_raw_value)
-			text_to_display=main_screen_str_5+str(tensiometer_soil_condition)	
+			if value_index_tensiometer<0:
+				text_to_display=str(tensiometer_soil_condition)
+			else:		
+				text_to_display=main_screen_str_5+str(tensiometer_soil_condition)	
 
 		draw.text((x, ttop), text_to_display, font=font, fill=255)
 		ttop=ttop+font_size
 	else:
-		draw.text((x, ttop), "no device with", font=font, fill=255)
-		ttop=ttop+font_size
-		draw.text((x, ttop), "SEN0308 or", font=font, fill=255)
-		ttop=ttop+font_size
-		draw.text((x, ttop), "WM200 sensor", font=font, fill=255)
-		ttop=ttop+font_size
-		draw.text((x, ttop), "need to create one", font=font, fill=255)
+		if lang=='fr':
+			draw.text((x, ttop), "aucun device avec", font=font, fill=255)
+			ttop=ttop+font_size
+			draw.text((x, ttop), "SEN0308 ou", font=font, fill=255)
+			ttop=ttop+font_size
+			draw.text((x, ttop), "WM200", font=font, fill=255)
+			ttop=ttop+font_size
+			draw.text((x, ttop), "merci d'en créer", font=font, fill=255)		
+		else:
+			draw.text((x, ttop), "no device with", font=font, fill=255)
+			ttop=ttop+font_size
+			draw.text((x, ttop), "SEN0308 or", font=font, fill=255)
+			ttop=ttop+font_size
+			draw.text((x, ttop), "WM200 sensor", font=font, fill=255)
+			ttop=ttop+font_size
+			draw.text((x, ttop), "need to create one", font=font, fill=255)
 		
 	# Display image
 	oled.image(image)
 	oled.show()
 	
+	#adjust display timer according to number of devices
 	if len(all_devices_id_list)>1:
 		#duration of screen saver mode
 		oled_display_timer=12
@@ -1059,10 +1093,21 @@ while True:
 		#duration of screen saver mode
 		oled_display_timer=30
 		#duration of the full information screen
-		oled_display_duration=6			
+		oled_display_duration=5			
+
+	#if there are not relevant data from device's sensor, then re-adjust display timer		
+	if sensor_type=='capacitive':
+		if value_index_capacitive==-1:
+			oled_display_timer=0
+			oled_display_duration=3
+	else:
+		if value_index_tensiometer==-1:
+			oled_display_timer=0
+			oled_display_duration=3	 	
 	
 	time.sleep(oled_display_duration)
 	
-	screen_saver(oled_display_timer)
+	if oled_display_timer>0:
+		screen_saver(oled_display_timer)
 	
 	device_index=device_index+1	

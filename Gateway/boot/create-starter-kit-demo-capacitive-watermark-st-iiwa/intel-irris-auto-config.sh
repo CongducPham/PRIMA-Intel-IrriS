@@ -1,0 +1,53 @@
+#!/bin/bash
+
+logger -t intel-irris-auto-config "create-starter-kit-demo-capacitive-watermark-st"
+
+cd /home/pi/scripts
+
+#delete all devices, except gateway devices
+./delete_all_devices.sh
+
+#create capacitive SOIL-AREA-1 and device with address 26011DAA
+./create_full_capacitive_device.sh
+
+#add the voltage monitor sensor
+DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`
+./create_only_voltage_monitor_sensor.sh $DEVICE
+
+#first, duplicate the template files
+cd /home/pi/intel-irris-waziapp/config
+cp templates/starter-kit/*.json .
+
+#replace first capacitive device id
+sed -i "s/XXX1/$DEVICE/g" intel-irris-devices.json
+sed -i "s/XXX1/$DEVICE/g" intel-irris-conf.json
+#and make it the active device
+sed -i "s/XXX1/$DEVICE/g" intel-irris-active-device.json
+
+cd /home/pi/scripts
+
+#create tensiometer SOIL-AREA-2 and device with address 26011DB2
+./create_full_tensiometer_device_with_dev_addr.sh 2 B1
+
+DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`
+#add the temperature sensor
+./create_only_temperature_sensor.sh $DEVICE
+#add the voltage monitor sensor
+./create_only_voltage_monitor_sensor.sh $DEVICE
+
+#then replace second tensiometer device id
+cd /home/pi/intel-irris-waziapp/config
+
+sed -i "s/XXX2/$DEVICE/g" intel-irris-devices.json
+sed -i "s/XXX2/$DEVICE/g" intel-irris-conf.json
+
+#remove LAST_CREATED_DEVICE.txt
+rm /home/pi/scripts/LAST_CREATED_DEVICE.txt
+
+#finally, copy IIWA config file into container
+docker cp intel-irris-devices.json waziup.intel-irris-waziapp:/root/src/config
+docker cp intel-irris-active-device.json waziup.intel-irris-waziapp:/root/src/config
+docker cp intel-irris-conf.json waziup.intel-irris-waziapp:/root/src/config
+
+
+

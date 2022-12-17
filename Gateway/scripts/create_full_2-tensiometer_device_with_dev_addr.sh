@@ -34,17 +34,17 @@ echo "--> Make it LoRaWAN"
 echo "	device id: 26011D$2"
 curl -X POST "http://localhost/devices/${DEVICE}/meta" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d  "{\"codec\":\"application/x-xlpp\",\"lorawan\":{\"appSKey\":\"23158D3BBC31E6AF670D195B5AED5525\",\"devAddr\":\"26011D$2\",\"devEUI\":\"AA555A0026011D$2\",\"nwkSEncKey\":\"23158D3BBC31E6AF670D195B5AED5525\",\"profile\":\"WaziDev\"}}"
 
-echo "--> Add value 0"
-curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":0, \"time\":\"$DATE\"}"
+echo "--> Add value 255"
+curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":255, \"time\":\"$DATE\"}"
 
-echo "--> Add value 0"
-curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_1/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":0, \"time\":\"$DATE\"}"
+echo "--> Add value 3276"
+curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_1/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":3276, \"time\":\"$DATE\"}"
 
-echo "--> Add value 0"
-curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_2/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":0, \"time\":\"$DATE\"}"
+echo "--> Add value 255"
+curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_2/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":255, \"time\":\"$DATE\"}"
 
-echo "--> Add value 0"
-curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_3/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":0, \"time\":\"$DATE\"}"
+echo "--> Add value 3276"
+curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_3/value" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"value\":3276, \"time\":\"$DATE\"}"
 
 #we adopt the following rule: 0:very dry; 1:dry; 2:dry-wet 3-wet-dry; 4-wet; 5-saturated
 echo "--> Change humidity index to max value - 5:very wet"

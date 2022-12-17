@@ -25,3 +25,7 @@ DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`
 
 #remove LAST_CREATED_DEVICE.txt
 rm /home/pi/scripts/LAST_CREATED_DEVICE.txt
+
+
+
+

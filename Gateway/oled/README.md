@@ -30,7 +30,7 @@ The INTEL-IRRIS OLED service
 How the OLED service works?
 ---------------------------
 
-The OLED service (`intel-irris-oled-service.service.txt`) takes some configuration definitions from `key_device.py`. Then, it will try to discover all devices with either "SEN0308" or "WM200" in their sensor name or sensor kind.
+The OLED service (`intel-irris-oled-service.service.txt`) takes some configuration definitions from `oled_config.py`. Then, it will try to discover all devices with either "SEN0308" or "WM200" in their sensor name or sensor kind.
 
 It will display a main screen then a screen saver	by cycling sequentially through all discovered devices. It will display in the screen saver a visual interface to indicate the soil humidity level.
 
