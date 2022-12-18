@@ -13,8 +13,8 @@ if [ $# -eq 0 ]
 		exit
 fi  
 
-echo "Showing device with name containing $1"
+#echo "Showing device with name containing $1"
 
 JQC=".[] | select( .name | contains(\"$1\"))"
 
-curl -X GET "http://localhost/devices" -H  "accept: application/json" | jq "$JQC" | jq ."$2"
+echo `curl -X GET "http://localhost/devices" -H  "accept: application/json" | jq "$JQC" | jq ."$2"`
