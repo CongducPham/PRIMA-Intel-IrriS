@@ -6,9 +6,12 @@ echo "create-starter-kit-demo-capacitive-watermark-st-iiwa" >> /boot/intel-irris
 
 cd /home/pi/scripts
 
+if [ $# -eq 0 ]
+then
 #delete all devices, except gateway devices
 echo "--> delete all devices" >> /boot/intel-irris-auto-config.log
 ./delete_all_devices.sh
+fi
 
 #create capacitive SOIL-AREA-1 and device with address 26011DAA
 echo "--> calling create_full_capacitive_device.sh" >> /boot/intel-irris-auto-config.log

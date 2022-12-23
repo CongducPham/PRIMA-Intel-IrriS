@@ -4,8 +4,11 @@ logger -t intel-irris-auto-config "create-4-watermark"
 
 cd /home/pi/scripts
 
+if [ $# -eq 0 ]
+then
 #delete all devices, except gateway devices
 ./delete_all_devices.sh
+fi
 
 #create SOIL-AREA-1 and device with address 26011DB1
 ./create_full_tensiometer_device_with_dev_addr.sh 1 B1

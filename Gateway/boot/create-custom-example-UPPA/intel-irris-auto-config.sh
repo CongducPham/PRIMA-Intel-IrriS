@@ -4,8 +4,11 @@ logger -t intel-irris-auto-config "create-custom-example-UPPA"
 
 cd /home/pi/scripts
 
+if [ $# -eq 0 ]
+then
 #delete all devices, except gateway devices
 ./delete_all_devices.sh
+fi
 
 #create capacitive SOIL-AREA-1 and device with address 26011DAA
 ./create_full_capacitive_device.sh
