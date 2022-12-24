@@ -34,4 +34,6 @@ else
 	/home/pi/scripts/get_sensor_values.sh capacitive $1 analogInput_6
 fi
 
+/home/pi/scripts/split_capacitive_device_sensor_values.sh $1
+
 echo "Done"

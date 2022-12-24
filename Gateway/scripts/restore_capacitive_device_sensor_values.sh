@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Ex: restore_capacitive_device_sensor_values.sh 62c7c657127dbd00011540a6
+# Ex: restore_capacitive_device_sensor_values.sh 1 AA 62c7c657127dbd00011540a6
 # this script push data backup from a capacitive device to a new created capacitive device
 
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
     echo "Need the original device id"
-    echo "e.g. restore_capacitive_device_sensor_values.sh 1 B2 62c7c657127dbd00011540a6"
+    echo "e.g. restore_capacitive_device_sensor_values.sh 1 AA 62c7c657127dbd00011540a6"
     exit
 fi
 
@@ -32,12 +32,16 @@ curl -X POST "http://localhost/devices/${DEVICE}/meta" -H "accept: application/j
 
 #####
 
-## /home/pi/scripts/set_sensor_values.sh $3.capacitive.temperatureSensor_0.data.json $DEVICE temperatureSensor_0
-echo "--> Get temperatureSensor_0 sensor's values from $3.capacitive.temperatureSensor_0.data.json"
-DATA=`cat $3.capacitive.temperatureSensor_0.data.json`
+NFILE=`ls -l $3.capacitive.temperatureSensor_0.data_split* | wc -l`
 
-echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_0"
-curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
+for (( i = 0; i < $NFILE; i++ ))
+do
+	echo "--> Get temperatureSensor_0 sensor's values from $3.capacitive.temperatureSensor_0.data_split_${i}.json"
+	DATA=`cat $3.capacitive.temperatureSensor_0.data_split_${i}.json`
+
+	echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_0"
+	curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
+done
 
 #####
 
@@ -51,12 +55,16 @@ if [ -f "$3.capacitive.temperatureSensor_5.data.json" ]; then
 	echo "device $DEVICE"
 	echo "		with soil temperature displaying degree Celsius"
 
-	## /home/pi/scripts/set_sensor_values.sh $3.capacitive.temperatureSensor_5.data.json $DEVICE temperatureSensor_5
-	echo "--> Get temperatureSensor_5 sensor's values from $3.capacitive.temperatureSensor_5.data.json"
-	DATA=`cat $3.capacitive.temperatureSensor_5.data.json`
+	NFILE=`ls -l $3.capacitive.temperatureSensor_5.data_split* | wc -l`
 
-	echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_5"
-	curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_5/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
+	for (( i = 0; i < $NFILE; i++ ))
+	do
+		echo "--> Get temperatureSensor_5 sensor's values from $3.capacitive.temperatureSensor_5.data_split_${i}.json"
+		DATA=`cat $3.capacitive.temperatureSensor_5.data_split_${i}.json`
+
+		echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_5"
+		curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_5/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
+	done
 else 
   echo "no $3.capacitive.temperatureSensor_5.data.json"
 fi
@@ -74,12 +82,17 @@ echo "		with voltage monitor displaying volt"
 
 #as we always create analogInput_6, if there are no data from analogInput_6 then we put value -1
 if [ -f "$3.capacitive.analogInput_6.data.json" ]; then
-	## /home/pi/scripts/set_sensor_values.sh $3.analogInput_6.data.json $DEVICE analogInput_6
-	echo "--> Get analogInput_6 sensor's values from $3.capacitive.analogInput_6.data.json"
-	DATA=`cat $3.capacitive.analogInput_6.data.json`
 
-	echo "--> Set sensor's values to device $DEVICE sensor analogInput_6"
-	curl -X POST "http://localhost/devices/${DEVICE}/sensors/analogInput_6/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"
+	NFILE=`ls -l $3.capacitive.analogInput_6.data_split* | wc -l`
+
+	for (( i = 0; i < $NFILE; i++ ))
+	do
+		echo "--> Get analogInput_6 sensor's values from $3.capacitive.analogInput_6.data_split_${i}.json"
+		DATA=`cat $3.capacitive.analogInput_6.data_split_${i}.json`
+
+		echo "--> Set sensor's values to device $DEVICE sensor analogInput_6"
+		curl -X POST "http://localhost/devices/${DEVICE}/sensors/analogInput_6/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
+	done
 else 
   echo "no $3.capacitive.analogInput_6.data.json"
 	echo "--> Add value -1"

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Ex: backup_tensiometer_device_sensor_values.sh 62c7c657127dbd00011540a6
-# this script backups a tensiometer w/soil temperature device
+# this script backups a tensiometer device
 
 if [ $# -eq 0 ]
   then
@@ -36,5 +36,7 @@ else
 	echo "--> Get sensor's values from device $1 sensor analogInput_6"
 	/home/pi/scripts/get_sensor_values.sh tensiometer $1 analogInput_6
 fi
+
+/home/pi/scripts/split_tensiometer_device_sensor_values.sh $1
 
 echo "Done"

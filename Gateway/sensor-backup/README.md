@@ -1,13 +1,14 @@
 Tool scripts to backup and restore device sensor's data
 =======================================================
 
-You can use this folder for your device sensor backup/restore tasks.
+You can use this folder for your device sensor backup/restore tasks. The scripts are executed in command line mode on the WaziGate.
 
 Backup: to backup a given device
 ------
 
 **For a capacitive sensor device:**
 
+	> cd sensor_backup
 	> /home/pi/scripts/backup_capacitive_device_sensor_values.sh <device_id>
 	
 Example:
@@ -20,21 +21,35 @@ Produces:
 - 62c7c657127dbd00011540a6.capacitive.temperatureSensor_5.data.json, if soil temperature connected
 - 62c7c657127dbd00011540a6.capacitive.analogInput_6.data.json
 
+Then, each sensor data file (e.g. temperatureSensor_0.data.json) is further split into several files of 1000 lines:
+
+- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_0.data_split_0.json
+- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_0.data_split_1.json
+- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_0.data_split_2.json
+- ...
 
 **For a tensiometer sensor device:**
 
+	> cd sensor_backup
 	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh <device_id>
 	
 Example:
 
-	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh 62c7c657127dbd00011540a6	
+	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh 62c7c657127dbd0001154bbc	
 
 Produces:
 
-- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_0.data.json
-- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_1.data.json
-- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_5.data.json, if soil temperature connected
-- 62c7c657127dbd00011540a6.tensiometer.analogInput_6.data.json
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_0.data.json
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_1.data.json
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_5.data.json, if soil temperature connected
+- 62c7c657127dbd0001154bbc.tensiometer.analogInput_6.data.json
+
+Then, each sensor data file (e.g. temperatureSensor_0.data.json) is further split into several files of 1000 lines:
+
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_0.data_split_0.json
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_0.data_split_1.json
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_0.data_split_2.json
+- ...
 
 Restore: to restore to a new device
 -------
@@ -44,6 +59,7 @@ The restore process **automatically creates a new device** where sensor's data p
 
 **For a capacitive sensor device:**
 
+	> cd sensor_backup
 	> /home/pi/scripts/restore_capacitive_device_sensor_values.sh <new_device_index> <new_device_addr> <from_device_id>
 	
 Example:
@@ -55,11 +71,11 @@ Creates a new & empty capacitive sensor device with:
 - device's name: SOIL-AREA-1
 - device's address: 26011DAA
 
-Restore sensor's data from:
+Restore sensor's data from the various split files:
 
-- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_0.data.json
-- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_5.data.json, if file exists
-- 62c7c657127dbd00011540a6.capacitive.analogInput_6.data.json
+- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_0.data_split_X.json
+- 62c7c657127dbd00011540a6.capacitive.temperatureSensor_5.data_split_X.json, if file exists
+- 62c7c657127dbd00011540a6.capacitive.analogInput_6.data_split_X.json
 
 **For a tensiometer sensor device:**
 
@@ -67,19 +83,29 @@ Restore sensor's data from:
 	
 Example:
 
-	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh 1 AA 62c7c657127dbd00011540a6	
+	> cd sensor_backup
+	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh 2 B1 62c7c657127dbd00011540a6	
 
 Creates a new & empty tensiometer sensor device:
 
-- device's name: SOIL-AREA-1
-- device's address: 26011DAA
+- device's name: SOIL-AREA-2
+- device's address: 26011DB1
 
 Restore sensor's data from:
 
-- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_0.data.json
-- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_1.data.json
-- 62c7c657127dbd00011540a6.tensiometer.temperatureSensor_5.data.json, if file exists
-- 62c7c657127dbd00011540a6.tensiometer.analogInput_6.data.json
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_0.data_split_X.json
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_1.data_split_X.json
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_5.data_split_X.json, if file exists
+- 62c7c657127dbd0001154bbc.tensiometer.analogInput_6.data_split_X.json
+
+To copy backup file stored on WaziGate to host computer
+-------
+
+On host computer:
+
+> scp pi@192.168.3.5:/home/pi/sensor-backup/*.json .
+
+Replace `192.168.3.5` by the IP address assigned to the WaziGate. If you are connecting to the WaziGate by the WaziGate's WiFi, use the static `10.42.0.1` IP address.
 
 
 Enjoy!
