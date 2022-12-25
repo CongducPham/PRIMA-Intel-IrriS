@@ -107,6 +107,19 @@ On host computer:
 
 Replace `192.168.3.5` by the IP address assigned to the WaziGate. If you are connecting to the WaziGate by the WaziGate's WiFi, use the static `10.42.0.1` IP address.
 
+Sensor data samples
+-------
+
+The provided sensor data example samples in the `example` folder are taken from real INTEL-IRRIS devices deployed from June to December 2022 during the summer heat wave. There were no supplied water apart from rain. The soil type is mostly clay. There are one capacitive and one tensiometer INTEL-IRRIS devices close to each other. The tensiometer is buried at about 30cm deep.
+
+You can restore these sensor data example samples on the INTEL-IRRIS WaziGate as follows:
+
+	> cd sensor-backup
+	> /home/pi/scripts/restore_capacitive_device_sensor_values.sh 3 AB 63a7191a68f3190886639cc7
+	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh 4 B2 63a71aa368f319088663dc85
+
+These commands will create 2 new devices, a capacitive as SOIL-AREA-3 and a tensiometer as SOIL-AREA-4, with addresses 26011DAB and 26011DB2, that will come in addition to the 2 default devices configured with the starter-kit. If you want to replace the default devices in order to be able to receive real sensor data from your devices, replace `3 AB` and `4 B2` by respectively `1 AA` and `2 B1`.
+
 
 Enjoy!
 C. Pham
