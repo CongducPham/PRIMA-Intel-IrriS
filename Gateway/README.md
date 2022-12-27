@@ -27,7 +27,7 @@ Default configuration for INTEL-IRRIS project (works out-of-the box with the INT
 - LoRaWAN mode (single channel)
 - Cayenne LPP data format
 - EU433 band (for Algeria and Morocco)
-- 2 pre-configured device with address 26011DAA and 26011DB1
+- 2 pre-configured devices with address 26011DAA and 26011DB1
 - 26011DAA is a soil humidity device with the capacitive SEN0308 sensor
 	- Device name is `SOIL-AREA-1`
 	- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
