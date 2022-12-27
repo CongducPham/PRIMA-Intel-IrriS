@@ -41,9 +41,9 @@ Default configuration for the gateway
 
 Insert the SD card in the Raspberry Pi and then power the RPI. The INTEL-IRRIS WaziGate is ready when the main INTEL-IRRIS screen appears on the OLED indicating `SOIL-AREA-1` and `SOIL-AREA-2` devices. You may see a succession of `[ Internet NO ]` and/or `[ Internet OK ]` and black screen before the main INTEL-IRRIS screen appears on the OLED.
 
-**Note: The 2 default devices are created on first boot with the auto-configuration mechanism. Consider about 5mins as normal for boot time. If you change the frequency band, the gateway will take more time to start as it needs to boot twice. Therefore 10mins would be needed for first start to have the main INTEL-IRRIS screen on the OLED.**
+More information in the `[Gateway](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway)` folder.
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/dashboard-voltage.png" width="400">
+**Note: The 2 default devices are created on first boot with the auto-configuration mechanism. Consider about 5mins as normal for boot time. If you change the frequency band, the gateway will take more time to start as it needs to boot twice. Therefore 10mins would be needed for first start to have the main INTEL-IRRIS screen on the OLED.**
 
 Tutorials
 ---------
