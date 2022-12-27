@@ -44,7 +44,7 @@ Insert the SD card in the Raspberry Pi and then power the RPI. The INTEL-IRRIS W
 
 **Note: The 2 default devices are created on first boot with the auto-configuration mechanism. Consider about 5mins as normal for boot time. If you change the frequency band, the gateway will take more time to start as it needs to boot twice. Therefore 10mins would be needed for first start to have the main INTEL-IRRIS screen on the OLED.**
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/default-dashboard" width="700">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/default-dashboard.png" width="700">
 
 Manual installation on top of generic WaziGate distribution
 ===========================================================
