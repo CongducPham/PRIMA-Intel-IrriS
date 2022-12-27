@@ -51,17 +51,15 @@ Manual installation on top of generic WaziGate distribution
 
 **The SD card image has already everything installed. Manual installation procedure is provided for information only.**
 
-The customized WaziGate distribution consists in a pre-configured WaziGate with 1 device and either a capacitive SEN0308 sensor or a Watermark water tension sensor.
+The customized INTEL-IRRIS WaziGate distribution consists in a pre-configured WaziGate ready to receive data from 1 capacitive SEN0308 sensor device and 1 Watermark water tension sensor device. The starter-kit will be shipped with only one version of the soil humidity device (either capacitive SEN0308 or Watermark water tension sensor).
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-dashboard.png" width="500">
-
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-sensor-data.png" width="300">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-dashboard.png" width="700">
 
 It also adds an OLED screen which will quickly display sensor information to the user, without having to log in the WaziGate dashboard for the full and advanced user interface.
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/oled-cycling.png" width="500">
 
-The distribution therefore provides various tools to install and configure the generic WaziGate distribution to produce the INTEL-IRRIS WaziGate distribution that is used in the starter-kit and that should be similar to the distributed SD card image. The default soil device will then work out-of-the-box with the INTEL-IRRIS WaziGate.
+The distribution therefore provides various tools to install and configure the generic WaziGate distribution to produce the INTEL-IRRIS WaziGate distribution that is used in the starter-kit and that should be similar to the distributed SD card image. The default soil device (either capacitive SEN0308 or Watermark water tension sensor) will then work out-of-the-box with the INTEL-IRRIS WaziGate.
 
 Start with the generic WaziGate distribution
 --------------------------------------------
