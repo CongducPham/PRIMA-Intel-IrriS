@@ -17,9 +17,22 @@ TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -
 DATE=`date +"%Y-%m-%dT06:00:00.001Z"`
 
 echo "--> Use date of $DATE"
+
+if [ $# -eq 4 ]
+then
+
+# a specific device id has been given
+echo "--> Create new capacitive device with specific device id $4"
+
+DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"actuators\":[],\"id\":\"${4}\",\"name\":\"SOIL-AREA-${1}\",\"sensors\":[{\"id\":\"temperatureSensor_0\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"Raw value from SEN0308\",\"model\":\"SEN0308\",\"type\":\"capacitive\",\"sensor_dry_max\":800,\"sensor_wet_max\":0,\"sensor_n_interval\":6,\"value_index\":0},\"name\":\"Soil Humidity Sensor\",\"quantity\":\"\",\"time\":\"$DATE\",\"unit\":\"\"}]}" | tr -d '\"'`
+
+else
+
 echo "--> Create new capactive device"
 
 DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"actuators\":[],\"name\":\"SOIL-AREA-${1}\",\"sensors\":[{\"id\":\"temperatureSensor_0\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"Raw value from SEN0308\",\"model\":\"SEN0308\",\"type\":\"capacitive\",\"sensor_dry_max\":800,\"sensor_wet_max\":0,\"sensor_n_interval\":6,\"value_index\":0},\"name\":\"Soil Humidity Sensor\",\"quantity\":\"\",\"time\":\"$DATE\",\"unit\":\"\"}]}" | tr -d '\"'`
+
+fi
 
 echo $DEVICE > /home/pi/scripts/LAST_CREATED_DEVICE.txt
 echo "device $DEVICE"

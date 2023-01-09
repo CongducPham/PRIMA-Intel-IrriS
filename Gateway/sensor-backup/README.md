@@ -54,7 +54,7 @@ Then, each sensor data file (e.g. temperatureSensor_0.data.json) is further spli
 Restore: to restore to a new device
 -------
 
-The restore process **automatically creates a new device** where sensor's data previously backup will be restored.
+The default behavior is to **automatically creates a new device** where sensor's data previously backup will be restored.
 
 
 **For a capacitive sensor device:**
@@ -84,7 +84,7 @@ Restore sensor's data from the various split files:
 Example:
 
 	> cd sensor_backup
-	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh 2 B1 62c7c657127dbd00011540a6	
+	> /home/pi/scripts/restore_tensiometer_device_sensor_values.sh 2 B1 62c7c657127dbd0001154bbc	
 
 Creates a new & empty tensiometer sensor device:
 
@@ -97,6 +97,13 @@ Restore sensor's data from:
 - 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_1.data_split_X.json
 - 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_5.data_split_X.json, if file exists
 - 62c7c657127dbd0001154bbc.tensiometer.analogInput_6.data_split_X.json
+
+For both capacitive and tensiometer, it is possible to indicate a specific device id so that the restore script will create a device with the indicated id. This may be useful if your backup devices are also on the WaziCloud and you want to continue synchronisation with the same device id. In order to do so, you need to add a paramater indicating the device id you want to use. It can be the same than the one you backup from:
+
+	> cd sensor_backup
+	> /home/pi/scripts/restore_tensiometer_device_sensor_values.sh 2 B1 62c7c657127dbd0001154bbc 62c7c657127dbd0001154bbc
+	
+**However, make sure that on the WaziGate you are restoring the sensor data, there are no conflicting devices with same ids or same LoRaWAN DevAddr.**		
 
 To copy backup file stored on WaziGate to host computer
 -------
