@@ -70,8 +70,14 @@ Copy/Paste the content of `/home/pi/homeassistant/default_view.yaml` into the co
 
 You should now have a more fancy dashboard that looks like this one below.
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ha_default_view.png" width="500">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ha_default_view.png" width="700">
 
+Use the Home Assistant mobile app
+----
+
+You can install the Home Assistant mobile app on your Android and iOS smartphone. Then, with your smartphone, connect to the WaziGate' WiFi (WAZIGATE_XXXXXXXXXXXX). Then with your smartphone brower, open `http://10.42.0.1:8123`. You will be asked to login (use the `intelirris` user). You may also need to add a server in which case, select `Enter Address Manually`, enter `http://10.42.0.1:8123` and click on `Connect`. You may then need to select the INTEL-IRRIS server and click on `Activate` to connect to the HA server.
+  
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ha_mobile_app.png" width="300">
 
 Enjoy!
 C. Pham
