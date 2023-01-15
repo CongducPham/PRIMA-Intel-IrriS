@@ -1,9 +1,13 @@
 Installing Home Assistant on top of INTEL-IRRIS WaziGate
 =======================================================
 
-The additional installation on top of the INTEL-IRRIS WaziGate framework is provided in this folder, **although the specific INTEL-IRRIS w/HA SD card image has already everything installed for the starter-kit**. If you don't have the specific INTEL-IRRIS w/HA SD card image, proceed as follows on the latest INTEL-IRRIS SD card image.
+The additional installation of procedure for Home Assistant on top of the INTEL-IRRIS WaziGate framework is provided in this folder, **although the specific INTEL-IRRIS w/HA SD card image has already everything installed for the starter-kit**. 
 
-To get the latest INTEL-IRRIS WaziGate distrib from our GitHub on your INTEL-IRRIS WaziGate, log on your INTEL-IRRIS WaziGate which is must be connected to Internet (so you need to share your computer Internet connection):
+Download the [INTEL-IRRIS w/HA SD card image](https://drive.google.com/uc?export=download&id=1vkiS7wKT--hK8nTkrEd4KzP_GeD0DLu0).
+
+If you don't have the specific INTEL-IRRIS w/HA SD card image, proceed as follows on the latest INTEL-IRRIS SD card image.
+
+In order to get the latest INTEL-IRRIS WaziGate distribution code from our GitHub installed your INTEL-IRRIS WaziGate, log on your INTEL-IRRIS WaziGate which is must be connected to Internet (so you need to share your computer Internet connection):
 
 	> sudo apt-get install subversion
 	> cd /home/pi
@@ -40,11 +44,11 @@ On the WaziGate dashboard, copy the device id of your capacitive SOIL-AREA-1 dev
 
 	> cd /home/pi/homeassistant
 	> cp configuration_template.yaml configuration.yaml
-	> sed -i sed -i "s/XXX1/63b886f568f3190a8faaaaaa/g" configuration.yaml
+	> sed -i "s/XXX1/63b886f568f3190a8faaaaaa/g" configuration.yaml
 	
 On the WaziGate dashboard, copy the device id of your tensiometer SOIL-AREA-2 device. Assuming it is `63b886f568f3190a8fbbbbbb`.	
 
-	> sed -i sed -i "s/XXX1/63b886f568f3190a8fbbbbbb/g" configuration.yaml
+	> sed -i "s/XXX1/63b886f568f3190a8fbbbbbb/g" configuration.yaml
 	
 Then,
 
