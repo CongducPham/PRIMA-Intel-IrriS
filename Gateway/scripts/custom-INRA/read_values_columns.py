@@ -127,7 +127,11 @@ with open('extracted_2.csv', 'w') as f:
 
         f.write("secondes depuis le début")
         f.write(',')
-        starttime=datetime.fromisoformat(device["temperatureSensor_0"][2]["time"])        
+        if len(device["temperatureSensor_0"])>2:
+            starttime=datetime.fromisoformat(device["temperatureSensor_0"][2]["time"])
+        else:
+            starttime=datetime.fromisoformat(device["temperatureSensor_0"][-1]["time"])
+
         for timevalpair in device["temperatureSensor_0"][2:-1]:
             f.write(str(int((datetime.fromisoformat(timevalpair["time"])-starttime).total_seconds())))
             f.write(',')
