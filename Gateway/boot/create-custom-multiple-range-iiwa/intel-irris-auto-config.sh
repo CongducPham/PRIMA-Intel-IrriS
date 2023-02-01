@@ -61,7 +61,7 @@ do
   echo "{\"device_id\": \"$DEVICE\", \"device_name\": \"SOIL-AREA-$i\", \"sensors_structure\": \"1_capacitive\"}," >> /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
 
   echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
-  cp /home/pi/IIWA-templates/IIWA-capa.json IIWA-temp.json
+  cp IIWA-templates/IIWA-capa.json IIWA-temp.json
   sed -i "s/XXX1/$DEVICE/g" IIWA-temp.json
   cat IIWA-temp.json >> /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
 
@@ -95,7 +95,7 @@ do
   echo "{\"device_id\": \"$DEVICE\", \"device_name\": \"SOIL-AREA-$(($1 + $i))\", \"sensors_structure\": \"1_watermark\"}," >> /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
 
   echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
-  cp /home/pi/IIWA-templates/IIWA-wm-st.json IIWA-temp.json
+  cp IIWA-templates/IIWA-wm-st.json IIWA-temp.json
   sed -i "s/XXX2/$DEVICE/g" IIWA-temp.json
   cat IIWA-temp.json >> /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
 
