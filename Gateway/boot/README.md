@@ -28,25 +28,31 @@ This is how the auto-configuration mechanism works:
 
 - `/home/pi/intel-irris-auto-config-main.sh` then looks for `/boot/intel-irris-auto-config.sh`. If the script exists, it will be launched. `/boot/intel-irris-auto-config.sh` typically calls some utility scripts that are in the `scripts` folder to create pre-configured devices with sensors for the INTEL-IRRIS WaziGate. You can add your additional configuration tasks in this `/boot/intel-irris-auto-config.sh` script. 
 
-- if frequency band configuration has been realized or if `/boot/intel-irris-auto-config.sh` has been executed, `/home/pi/intel-irris-auto-config-main.sh` creates `/boot/intel-irris-auto-config.done` to indicate that the auto-configuration has been performed. The WaziGate is then rebooted.
+- if frequency band configuration has been realized the WaziGate will need to reboot.
 
-- **it means that if auto-configuration mechanism has been realized, the INTEL-IRRIS WaziGate will need more time to be operational as it needs to boot twice. Consider 5mins as normal for each boot. Therefore 10mins would be needed for first start to have the main INTEL-IRRIS screen on the OLED indicating `SOIL-AREA-1` device.**
+- **it means that if frequency band is changed the INTEL-IRRIS WaziGate will need more time to be operational as it needs to boot twice. Consider 5mins as normal for each boot. Therefore 10mins would be needed for first start to have the main INTEL-IRRIS screen on the OLED indicating `SOIL-AREA-1` device.**
 
 
 The default configuration on the INTEL-IRRIS WaziGate SD card image
 -----------
 
-The default configuration is to have the `Gateway/boot/` `create-default-capacitive/intel-irris-auto-config.sh` configuration in the `/boot` partition of the SD card. When you insert the SD card in a Raspberry Pi, it will automatically configure the INTEL-IRRIS WaziGate with the configuration matching the INTEL-IRRIS default soil humidity device sensor (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino)).
+The default configuration is to have the `Gateway/boot/create-starter-kit-demo-capacitive-watermark-st-iiwa/intel-irris-auto-config.sh` configuration in the `/boot` partition of the SD card. When you insert the SD card in a Raspberry Pi, it will automatically configure the INTEL-IRRIS WaziGate with the starter-kit configuration (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino)).
 
 - LoRaWAN mode (single channel)
 - Cayenne LPP data format
 - EU433 band (for Algeria and Morocco)
-- One pre-configured device with address 26011DAA
-- Soil humidity sensor is the capacitive SEN0308
-- Device name is `SOIL-AREA-1`
-- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
-- `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
-- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
+- 2 pre-configured devices with address 26011DAA and 26011DB1
+- 26011DAA is a soil humidity device with the capacitive SEN0308 sensor
+	- Device name is `SOIL-AREA-1`
+	- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. Display will show `Soil Humidity Sensor/Raw value from SEN0308`
+	- `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
+	- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
+- 26011DB1 is a soil humidity device with the Watermark WM200 tensiometer sensor
+	- Device name is `SOIL-AREA-2`
+	- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. It provides the converted resistance value in centibar, Taking into account the soil temperature data. Display will show `Soil Humidity Sensor/centibars from WM200`
+	- `temperatureSensor_1` as the internal default logical sensor on the WaziGate for soil humidity data. It provides the raw resistance value measured from the Watermark sensor. The value is scaled down by 10, so to get the real resistance value one must multiply by 10. Display will show `Soil Humidity Sensor/scaled value from WM200 real=x10`	
+	- `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
+	- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
 
 Other available configuration examples
 ===
