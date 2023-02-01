@@ -42,7 +42,7 @@ Default configuration for INTEL-IRRIS project (works out-of-the box with the INT
 
 Insert the SD card in the Raspberry Pi and then power the RPI. The INTEL-IRRIS WaziGate is ready when the main INTEL-IRRIS screen appears on the OLED indicating `SOIL-AREA-1` and `SOIL-AREA-2` devices. You may see a succession of `[ Internet NO ]` and/or `[ Internet OK ]` and black screen before the main INTEL-IRRIS screen appears on the OLED.
 
-**Note: The 2 default devices are created on first boot with the auto-configuration mechanism. Consider about 5mins as normal for boot time. If you change the frequency band, the gateway will take more time to start as it needs to boot twice. Therefore 10mins would be needed for first start to have the main INTEL-IRRIS screen on the OLED.**
+**Note: The 2 default devices are created on first boot with the auto-configuration mechanism. Consider about 5mins as normal for boot time. If you change the frequency band, the gateway will take more time to start as it needs to boot twice. In this case, 10mins would be needed for first start to have the main INTEL-IRRIS screen on the OLED.**
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/default-dashboard.png" width="700">
 
@@ -77,9 +77,14 @@ With the WaziGate is connected to your laptop/desktop which shares its Internet 
 First step: copy everything to the WaziGate
 -------------------------------------------
 
-Assuming you downloaded the whole repo on your laptop/desktop computer:
+You can get the whole repository from [PRIMA INTEL-IRRIS GitHub](https://github.com/CongducPham/PRIMA-Intel-IrriS) by downloading the .zip on your laptop/desktop computer. Then, assuming you downloaded and unzipped the whole repo on your laptop/desktop computer, just go to the `Gateway` folder:
 
-	> cd Gateway
+	> cd PRIMA-Intel-IrriS-main/Gateway
+	> scp -r * pi@wazigate.local:/home/pi
+	
+Alternatively, you can go to [https://download-directory.github.io/](https://download-directory.github.io/), copy/paste the `Gateway` folder url `https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway` and press Enter to only get the `Gateway` folder. You will get an `CongducPham PRIMA-Intel-IrriS main Gateway.zip` zip file that you can then unzip.	
+
+	> cd CongducPham\ PRIMA-Intel-IrriS\ main\ Gateway
 	> scp -r * pi@wazigate.local:/home/pi
 	
 Second step: install the additional packages and the tools
