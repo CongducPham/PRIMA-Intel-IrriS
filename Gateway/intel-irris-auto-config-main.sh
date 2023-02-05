@@ -35,6 +35,16 @@ else
         hwclock -s
 fi
 
+if [ -f /boot/Gateway.zip ]
+then
+	echo "detected /boot/Gateway.zip: unzipping new files to /home/pi" >> /boot/intel-irris-auto-config.log
+	unzip -o /boot/Gateway.zip
+	echo "setting ownership to pi:pi " >> /boot/intel-irris-auto-config.log
+	chown -R pi:pi .
+	echo "renaming /boot/Gateway.zip to /boot/Gateway.zip.done" >> /boot/intel-irris-auto-config.log
+	mv /boot/Gateway.zip /boot/Gateway.zip.done 
+fi
+
 if [ -f /boot/intel-irris-auto-config.done ]
 then
 	echo "detected previous auto-configuration – skip" >> /boot/intel-irris-auto-config.log
@@ -63,7 +73,7 @@ else
 		/boot/intel-irris-auto-config.sh
 		
 		echo "auto-configuration for device/sensor done" >> /boot/intel-irris-auto-config.done
-		#finally we do not need to reboot when we create the new device
+		#finally we do not need to reboot when we create the new devices
 		#REBOOT="yes"
 	else
 		echo "no /boot/intel-irris-auto-config.sh found" >> /boot/intel-irris-auto-config.log

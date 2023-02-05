@@ -1,0 +1,3 @@
+Sun  5 Feb 18:03:39 CET 2023
+----------------------------
+- if /boot/Gateway.zip then unzip -o /boot/Gateway.zip to /home/pi to update the whole distribution
