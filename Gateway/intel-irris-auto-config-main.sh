@@ -35,14 +35,14 @@ else
         hwclock -s
 fi
 
-if [ -f /boot/Gateway.zip ]
+if [ -f /boot/gateway.zip ]
 then
-	echo "detected /boot/Gateway.zip: unzipping new files to /home/pi" >> /boot/intel-irris-auto-config.log
-	unzip -o /boot/Gateway.zip
+	echo "detected /boot/gateway.zip: unzipping new files to /home/pi" >> /boot/intel-irris-auto-config.log
+	unzip -o /boot/gateway.zip
 	echo "setting ownership to pi:pi " >> /boot/intel-irris-auto-config.log
 	chown -R pi:pi .
-	echo "renaming /boot/Gateway.zip to /boot/Gateway.zip.done" >> /boot/intel-irris-auto-config.log
-	mv /boot/Gateway.zip /boot/Gateway.zip.done 
+	echo "renaming /boot/gateway.zip to /boot/gateway.zip.done" >> /boot/intel-irris-auto-config.log
+	mv /boot/gateway.zip /boot/gateway.zip.done 
 fi
 
 if [ -f /boot/intel-irris-auto-config.done ]

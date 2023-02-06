@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#only if no argument is provided
-if [ $# -eq 0 ]
+#only if first argument is "i" 
+if [ "$1" = "i" ]
 then
 	echo "apt-get update"
 	sudo apt-get update
@@ -16,12 +16,7 @@ then
 
 	##see https://www.raspberryme.com/ajout-dune-horloge-temps-reel-ds3231-au-raspberry-pi/
 	echo "adding support for additional DS3231 RTC module"
-
 	sudo apt install -y i2c-tools
-
-	echo "configure for frequency band $1"
-	./scripts/config_band.sh $1
-	./scripts/show_band.sh
 
 	echo "configure support for RTC"
 	#current procedure
@@ -53,6 +48,13 @@ then
 	#sudo apt-get -y remove fake-hwclock
 	#sudo update-rc.d -f fake-hwclock remove
 	#sudo systemctl disable fake-hwclock
+	
+	if [ "$2" = "eu433" ] | [ "$2" = "eu868" ]
+		then
+			echo "configure for frequency band $1"
+			./scripts/config_band.sh $1
+			./scripts/show_band.sh
+	fi	
 
 	if [ -f /var/lib/wazigate/setup.sh ]
 	then
@@ -71,7 +73,7 @@ then
 fi
 
 cd /home/pi
-
+	
 echo "default crontab is"
 cat scripts/crontab.backup
 echo "Programming crontab for sensor backup on USB drive"
