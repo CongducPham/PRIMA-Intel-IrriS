@@ -23,13 +23,27 @@ then
 	./scripts/config_band.sh $1
 	./scripts/show_band.sh
 
+	echo "configure support for RTC"
 	#current procedure
-	cp /etc/modules ./tmp-etc-modules
-	echo "rtc-ds1307" >> ./tmp-etc-modules
-	sudo cp ./tmp-etc-modules /etc/modules
-	rm ./tmp-etc-modules
-	sudo sed -i 's/^exit 0/echo ds1307 0x68 > \/sys\/class\/i2c-adapter\/i2c-1\/new_device\nhwclock -s\nexit 0/g' /etc/rc.local	
-
+	ds1307=`grep rtc-ds1307 /etc/modules`
+	if [ "$ds1307" = "" ]
+		then	
+			cp /etc/modules ./tmp-etc-modules
+			echo "rtc-ds1307" >> ./tmp-etc-modules
+			sudo cp ./tmp-etc-modules /etc/modules
+			rm ./tmp-etc-modules
+		else
+			echo "rtc-ds1307 already found in /etc/modules"	
+	fi
+	
+	ds1307=`grep ds1307 /etc/rc.local`
+	if [ "$ds1307" = "" ]
+		then			
+			sudo sed -i 's/^exit 0/echo ds1307 0x68 > \/sys\/class\/i2c-adapter\/i2c-1\/new_device\nhwclock -s\nexit 0/g' /etc/rc.local
+		else
+			echo "ds1307 already found in /etc/rc.local"	
+	fi
+	
 	#new procedure
 	#to https://learn.adafruit.com/adding-a-real-time-clock-to-raspberry-pi/set-rtc-time
 	#cp /boot/config ./tmp-boot-config
@@ -55,6 +69,8 @@ then
 	cd oled
 	./install.sh
 fi
+
+cd /home/pi
 
 echo "default crontab is"
 cat scripts/crontab.backup
