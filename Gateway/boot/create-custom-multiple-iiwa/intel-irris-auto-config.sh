@@ -36,10 +36,9 @@ cd /home/pi/scripts
 echo "--> delete all devices" >> /boot/intel-irris-auto-config.log
 ./delete_all_devices.sh
 
-#IIWA
-echo "[{\"device_id\": \"default\", \"device_name\": \"default\"}, " > /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
-echo "{\"globals\": {\"soil_salinity\": \"disabled\", \"soil_bulk_density\": \"disabled\"}, \"sensors\": [" > /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
-
+#IIWA, first, duplicate the template files
+echo "--> copy empty IIWA configuration files from /home/pi/intel-irris-waziapp/config/empty" >> /boot/intel-irris-auto-config.log
+cp /home/pi/intel-irris-waziapp/config/empty/*.json .
 
 # iterate over devices
 arg_id=0
@@ -72,18 +71,17 @@ do
             echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE" >> /boot/intel-irris-auto-config.log 
             ./create_only_voltage_monitor_sensor.sh $DEVICE
 
-            #replace first capacitive device id
+            #IIWA, add first capacitive device id
             echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
-            echo "{\"device_id\": \"$DEVICE\", \"device_name\": \"SOIL-AREA-$DEVID\", \"sensors_structure\": \"1_capacitive\"}," >> /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
-
+            ./add_to_iiwa_devices.sh $DEVICE $DEVID capacitive
             echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
-            cp IIWA-templates/IIWA-capa.json IIWA-temp.json
-            sed -i "s/XXX1/$DEVICE/g" IIWA-temp.json
-            cat IIWA-temp.json >> /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
+            ./add_to_iiwa_config.sh $DEVICE capacitive
 
             #and make it the active device
             echo "--> make $DEVICE the active device for IIWA" >> /boot/intel-irris-auto-config.log
-            echo "[{\"device_id\": \"$DEVICE\", \"sensor_id\": \"temperatureSensor_0\"}]" >  /home/pi/intel-irris-waziapp/config/intel-irris-active-device.json
+            echo "[]" >> intel-irris-active-device.json
+            tmpfile=$(mktemp)
+            jq ". += [{\"device_id\":\"${DEVICE}\",\"sensor_id\":\"temperatureSensor_0\"}]" intel-irris-active-device.json > "$tmpfile" && mv -- "$tmpfile" intel-irris-active-device.json
 
           elif [ "$DEVTYPE" = "WT" ]; then
             #create tensiometer SOIL-AREA-2 (after capas) and device with address 26011DB1, b2, b3,...
@@ -99,13 +97,20 @@ do
             echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE" >> /boot/intel-irris-auto-config.log
             ./create_only_voltage_monitor_sensor.sh $DEVICE
 
-            echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
-            echo "{\"device_id\": \"$DEVICE\", \"device_name\": \"SOIL-AREA-$DEVID\", \"sensors_structure\": \"1_watermark\"}," >> /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
+            # echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
+            # echo "{\"device_id\": \"$DEVICE\", \"device_name\": \"SOIL-AREA-$DEVID\", \"sensors_structure\": \"1_watermark\"}," >> /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
 
+            # echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
+            # cp IIWA-templates/IIWA-wm-st.json IIWA-temp.json
+            # sed -i "s/XXX2/$DEVICE/g" IIWA-temp.json
+            # cat IIWA-temp.json >> /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
+
+            #IIWA, then add second tensiometer device id
+            echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
+            ./add_to_iiwa_devices.sh $DEVICE $DEVID tensiometer
             echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
-            cp IIWA-templates/IIWA-wm-st.json IIWA-temp.json
-            sed -i "s/XXX2/$DEVICE/g" IIWA-temp.json
-            cat IIWA-temp.json >> /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
+            ./add_to_iiwa_config.sh $DEVICE tensiometer
+
           else
               echo "Device type not recognized, skipping."
           fi
@@ -117,18 +122,16 @@ done
 #remove LAST_CREATED_DEVICE.txt
 rm /home/pi/scripts/LAST_CREATED_DEVICE.txt
 
-# remove ',' at end of enumeration
-sed -i "$ s/.$//" /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
-sed -i "$ s/.$//" /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
+#IIWA, finally, copy IIWA config file into /home/pi/intel-irris-waziapp/config/ for backup
+echo "--> copy new IIWA configuration files to /home/pi/intel-irris-waziapp/config/ for backup" >> /boot/intel-irris-auto-config.log
+cp intel-irris-devices.json intel-irris-active-device.json intel-irris-conf.json /home/pi/intel-irris-waziapp/config/
 
-# close lists
-echo "]}" >> /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
-echo "]" >> /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
-
-#finally, copy IIWA config file into container
+#IIWA, finally, copy IIWA config file into container
 echo "--> copy new IIWA configuration files to IIWA container" >> /boot/intel-irris-auto-config.log
-docker cp /home/pi/intel-irris-waziapp/config/intel-irris-devices.json waziup.intel-irris-waziapp:/root/src/config
-docker cp /home/pi/intel-irris-waziapp/config/intel-irris-active-device.json waziup.intel-irris-waziapp:/root/src/config
-docker cp /home/pi/intel-irris-waziapp/config/intel-irris-conf.json waziup.intel-irris-waziapp:/root/src/config
+docker cp intel-irris-devices.json waziup.intel-irris-waziapp:/root/src/config
+docker cp intel-irris-active-device.json waziup.intel-irris-waziapp:/root/src/config
+docker cp intel-irris-conf.json waziup.intel-irris-waziapp:/root/src/config
 
+echo "--> removing IIWA configuration files" >> /boot/intel-irris-auto-config.log
+rm -rf intel-irris-devices.json intel-irris-active-device.json intel-irris-conf.json
 

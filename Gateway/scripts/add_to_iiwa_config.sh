@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Ex: add_to_iiwa_config.sh 63c04492ca473d6e95aaa220 capacitive
+# Ex: add_to_iiwa_config.sh 63c04493ca473d6e95aaa224 tensiometer
+
+
 tmpfile=$(mktemp)
 
 if [ $2 == 'capacitive' ]
