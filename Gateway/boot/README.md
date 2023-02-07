@@ -4,23 +4,26 @@ Auto-configuration on boot for the INTEL-IRRIS WaziGate
 What is it?
 -----------
 
-The INTEL-IRRIS WaziGate provides a simple auto-configuration mechanism to automatically configure the gateway on boot for specific deployment settings using the base INTEL-IRRIS WaziGate SD card image: set frequency band, create pre-configured devices with pre-configured sensors,... For instance, the 433MHz version SD card image with a default pre-configured capacitive-based sensor device is now the only SD card image for download. If you need to have the INTEL-IRRIS WaziGate in 868MHz version or have pre-configuration for Watermark-based sensor devices, then you can use this simple auto-configuration mechanism.
+The INTEL-IRRIS WaziGate provides a simple auto-configuration mechanism to automatically update and/or configure the gateway on boot for specific deployment settings using the base INTEL-IRRIS WaziGate SD card image: set frequency band, create pre-configured devices with pre-configured sensors,... For instance, the 433MHz version SD card image with a default pre-configured capacitive-based sensor device is now the only SD card image for download. If you need to have the INTEL-IRRIS WaziGate in 868MHz version or have pre-configuration for Watermark-based sensor devices, then you can use this simple auto-configuration mechanism.
 
 How it works?
 -----------
 
-After flashing the INTEL-IRRIS WaziGate SD card image, you can insert the SD card in any computer (Windows, Linux, MacOS) to copy some configuration files in the `/boot` partition of the SD card that is in FAT32 format and therefore easily accessible from most operating system.
+After flashing the INTEL-IRRIS WaziGate SD card image, you can insert the SD card in any computer (Windows, Linux, MacOS) to copy some configuration files in the `/boot` partition of the SD card. The `/boot` partition is in FAT32 format and therefore can easily be accessed (including Copy/Paste operation) from most operating system without any additional software driver. 
 
-There are basically 2 configuration files you can put in this `/boot` partition:
+There are basically 3 configuration files you can put in this `/boot` partition:
 
+- `gateway.zip`: a .zip archive with the latest `Gateway` content from the [INTEL-IRRIS GitHub](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway)
 - `intel-irris-band.txt`: simply contains either `eu868` or `eu433`
-- `intel-irris-auto-config.sh`: runs a number of shell scripts to configure the WaziGate using its embedded REST API
+- `intel-irris-auto-config.sh`: a script that mainly configures the WaziGate using its embedded REST API to create devices and sensors
 
 This is how the auto-configuration mechanism works:
 
 - when booting, the INTEL-IRRIS WaziGate executes `/home/pi/intel-irris-auto-config-main.sh` after all containers have been launched. So DO NOT modify this file!
 
 - `/home/pi/intel-irris-auto-config-main.sh` waits for the `wazigate-edge` container to be up and running. 
+
+- if `/boot/gateway.zip` exists then the archive will be unzipped to the `/home/pi` folder, therefore updating (and overwriting) the whole INTEL-IRRIS WaziGate distribution. See `Get latest INTEL-IRRIS WaziGate distribution` section below.
 
 - if `/boot/intel-irris-auto-config.done` exists then no new configuration will be performed. If a new auto-configuration setting needs to be realized, then be sure to remove `/boot/intel-irris-auto-config.done`.
 
@@ -36,7 +39,7 @@ This is how the auto-configuration mechanism works:
 The default configuration on the INTEL-IRRIS WaziGate SD card image
 -----------
 
-The default configuration is to have the `Gateway/boot/create-starter-kit-demo-capacitive-watermark-st-iiwa/intel-irris-auto-config.sh` configuration in the `/boot` partition of the SD card. When you insert the SD card in a Raspberry Pi, it will automatically configure the INTEL-IRRIS WaziGate with the starter-kit configuration (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino)).
+The default configuration is to have the `Gateway/boot/create-starter-kit-demo-capacitive-watermark-st-iiwa-ha/intel-irris-auto-config.sh` configuration in the `/boot` partition of the SD card. When you insert the SD card in a Raspberry Pi, it will automatically configure the INTEL-IRRIS WaziGate with the starter-kit configuration (see [https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Arduino)).
 
 - LoRaWAN mode (single channel)
 - Cayenne LPP data format
@@ -52,7 +55,13 @@ The default configuration is to have the `Gateway/boot/create-starter-kit-demo-c
 	- `temperatureSensor_0` as the internal default logical sensor on the WaziGate for soil humidity data. It provides the converted resistance value in centibar, Taking into account the soil temperature data. Display will show `Soil Humidity Sensor/centibars from WM200`
 	- `temperatureSensor_1` as the internal default logical sensor on the WaziGate for soil humidity data. It provides the raw resistance value measured from the Watermark sensor. The value is scaled down by 10, so to get the real resistance value one must multiply by 10. Display will show `Soil Humidity Sensor/scaled value from WM200 real=x10`	
 	- `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data if a DS18B20 is connected. Display will show `Soil Temperature Sensor/degree Celcius`
-	- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery whebn lower than 2.85V`
+	- `analogInput_6` as the internal default logical sensor for battery voltage. Display will show `Battery voltage/volt, low battery when lower than 2.85V`
+
+
+Get latest INTEL-IRRIS WaziGate distribution as `gateway.zip`
+===
+
+To build the `gateway.zip` archive to update your INTEL-IRRIS WaziGate distribution without flashing a new SD card image, you can go to [https://download-directory.github.io/](https://download-directory.github.io/), copy/paste the `Gateway` folder url `https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway` and press Enter to only get the `Gateway` folder. You will get an `CongducPham PRIMA-Intel-IrriS main Gateway.zip` zip file that you can then rename in `gateway.zip`. Then, copy this `gateway.zip` archive to the SD card `/boot` partition from your laptop/computer.
 
 Other available configuration examples
 ===
@@ -63,7 +72,7 @@ Example 1: set INTEL-IRRIS WaziGate in 868MHz version
 - flash the INTEL-IRRIS WaziGate SD card image
 - insert the SD card in any computer (Windows, Linux, MacOS)
 - open the `boot` drive that should appear on your computer
-- download from INTEL-IRRIS GitHub (`Gateway/boot`) `intel-irris-band-868.txt` to be copied into the `boot` drive BUT RENAMED as `intel-irris-band.txt`
+- download from INTEL-IRRIS GitHub (`Gateway/boot`) `intel-irris-band-868.txt` to be copied into the `boot` drive **BUT RENAMED** as `intel-irris-band.txt`
 - be sure that there is no `intel-irris-auto-config.done` file in the `boot` drive, otherwise delete the file
 - safely eject the `boot` drive
 - insert the SD card in the RPI and power the RPI
