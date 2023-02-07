@@ -39,8 +39,10 @@ if [ -f /boot/gateway.zip ]
 then
 	echo "detected /boot/gateway.zip: unzipping new files to /home/pi" >> /boot/intel-irris-auto-config.log
 	unzip -o /boot/gateway.zip
-	echo "setting ownership to pi:pi " >> /boot/intel-irris-auto-config.log
+	echo "setting ownership to pi:pi" >> /boot/intel-irris-auto-config.log
 	chown -R pi:pi .
+	echo "restoring execute permission to .sh scripts" >> /boot/intel-irris-auto-config.log
+	find . -name "*.sh" -exec chmod +x {} \;
 	echo "renaming /boot/gateway.zip to /boot/gateway.zip.done" >> /boot/intel-irris-auto-config.log
 	mv /boot/gateway.zip /boot/gateway.zip.done 
 fi

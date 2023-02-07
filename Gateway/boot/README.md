@@ -9,11 +9,11 @@ The INTEL-IRRIS WaziGate provides a simple auto-configuration mechanism to autom
 How it works?
 -----------
 
-After flashing the INTEL-IRRIS WaziGate SD card image, you can insert the SD card in any computer (Windows, Linux, MacOS) to copy some configuration files in the `/boot` partition of the SD card. The `/boot` partition is in FAT32 format and therefore can easily be accessed (including Copy/Paste operation) from most operating system without any additional software driver. 
+After flashing the INTEL-IRRIS WaziGate SD card image, you can insert the SD card (you may need an SD card to USB adapter) in any computer (Windows, Linux, MacOS) to copy some configuration files in the `/boot` partition of the SD card. The `/boot` partition is in FAT32 format and therefore can easily be accessed (including Copy/Paste operation) from most operating system without any additional software driver. It will usually appear as an additional drive named `boot` on your operating system.
 
 There are basically 3 configuration files you can put in this `/boot` partition:
 
-- `gateway.zip`: a .zip archive with the latest `Gateway` content from the [INTEL-IRRIS GitHub](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway)
+- `gateway.zip`: a .zip archive with the latest `Gateway` content of the [INTEL-IRRIS GitHub](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway)
 - `intel-irris-band.txt`: simply contains either `eu868` or `eu433`
 - `intel-irris-auto-config.sh`: a script that mainly configures the WaziGate using its embedded REST API to create devices and sensors
 
@@ -23,7 +23,7 @@ This is how the auto-configuration mechanism works:
 
 - `/home/pi/intel-irris-auto-config-main.sh` waits for the `wazigate-edge` container to be up and running. 
 
-- if `/boot/gateway.zip` exists then the archive will be unzipped to the `/home/pi` folder, therefore updating (and overwriting) the whole INTEL-IRRIS WaziGate distribution. See `Get latest INTEL-IRRIS WaziGate distribution` section below.
+- if `/boot/gateway.zip` exists then the archive will be unzipped to the `/home/pi` folder, therefore updating (and overwriting) the whole INTEL-IRRIS WaziGate distribution. It is a good solution to update an **existing INTEL-IRRIS WaziGate** without having to re-flash an entire SD card. See `Get latest INTEL-IRRIS WaziGate distribution` section below.
 
 - if `/boot/intel-irris-auto-config.done` exists then no new configuration will be performed. If a new auto-configuration setting needs to be realized, then be sure to remove `/boot/intel-irris-auto-config.done`.
 
@@ -59,9 +59,13 @@ The default configuration is to have the `Gateway/boot/create-starter-kit-demo-c
 
 
 Get latest INTEL-IRRIS WaziGate distribution as `gateway.zip`
-===
+---
 
-To build the `gateway.zip` archive to update your INTEL-IRRIS WaziGate distribution without flashing a new SD card image, you can go to [https://download-directory.github.io/](https://download-directory.github.io/), copy/paste the `Gateway` folder url `https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway` and press Enter to only get the `Gateway` folder. You will get an `CongducPham PRIMA-Intel-IrriS main Gateway.zip` zip file that you can then rename in `gateway.zip`. Then, copy this `gateway.zip` archive to the SD card `/boot` partition from your laptop/computer.
+This procedure is for updating an **existing INTEL-IRRIS WaziGate** without having to re-flash an entire SD card. So, first, shutdown your INTEL-IRRIS WaziGate, then take the SD card out of the RaspberryPi and use an SD card to USB adapter to connect the SD card to your laptop/computer. In most operating system, the `/boot` partition will of the SD card will appear as a `boot` drive.
+
+Second, there are several methods to get only the `Gateway` folder of PRIMA INTEL-IRRIS GitHub: clone repository, use svn ckeckout, ... The simplest method to build the `gateway.zip` archive to update your INTEL-IRRIS WaziGate distribution is to go to [https://download-directory.github.io/](https://download-directory.github.io/), copy/paste this `Gateway` folder url `https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway` and hit Enter to only get the `Gateway` folder. Or simply click [here](https://download-directory.github.io?url=https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway) to start the download. You will get an `CongducPham PRIMA-Intel-IrriS main Gateway.zip` zip file in your download folder that you can then rename in `gateway.zip`. Then, copy this `gateway.zip` archive to the `boot` drive on your laptop/computer which is the `/boot` partition of the SD card.
+
+Then, simply eject the `boot` drive, remove the SD card, insert it in your RaspberryPi and power it. Your INTEL-IRRIS WaziGate will update itself on boot.
 
 Other available configuration examples
 ===
