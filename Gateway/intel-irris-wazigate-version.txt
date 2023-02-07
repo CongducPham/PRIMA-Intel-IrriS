@@ -4,7 +4,7 @@ see https://github.com/CongducPham/PRIMA-Intel-IrriS/commits/main for all commit
 
 Feb 5, 2023
 -----------
-- if /boot/Gateway.zip then unzip -o /boot/Gateway.zip to /home/pi to update the whole distribution
+- if /boot/gateway.zip then unzip -o /boot/gateway.zip to /home/pi to update the whole distribution
 
 Jan 9, 2023
 -----------
