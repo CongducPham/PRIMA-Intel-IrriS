@@ -19,7 +19,7 @@ do
   sizeDEVICE=${#DEVICE}
   
   #we do not want to delete a gateway as it is also considered as a device
-  if [ $sizeDEVICE -gt 12 ]
+  if [ $sizeDEVICE -gt 16 ]
   then
     echo "Delete device ${DEVICE}"
     curl -X DELETE "http://localhost/devices/${DEVICE}" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json"   
