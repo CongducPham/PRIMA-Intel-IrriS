@@ -75,9 +75,9 @@ fi
 cd /home/pi
 	
 echo "default crontab is"
-cat scripts/crontab.backup
-echo "Programming crontab for sensor backup on USB drive"
-crontab scripts/crontab.backup
+cat scripts/crontab.pi
+echo "Programming crontab for pi user – sensor backup on USB drive"
+crontab scripts/crontab.pi
 echo "checking with crontab -l"
 crontab -l
 

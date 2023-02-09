@@ -23,7 +23,7 @@ This is how the auto-configuration mechanism works:
 
 - `/home/pi/intel-irris-auto-config-main.sh` waits for the `wazigate-edge` container to be up and running. 
 
-- if `/boot/gateway.zip` exists then the archive will be unzipped to the `/home/pi` folder, therefore updating (and overwriting) the whole INTEL-IRRIS WaziGate distribution. It is a good solution to update an **existing INTEL-IRRIS WaziGate** without having to re-flash an entire SD card. See `Get latest INTEL-IRRIS WaziGate distribution` section below.
+- if `/boot/gateway.zip` exists then the archive will be unzipped to the `/home/pi` folder, therefore updating (and overwriting) the whole INTEL-IRRIS WaziGate distribution. It is a good solution to update an **existing INTEL-IRRIS WaziGate** without having to re-flash an entire SD card. See `Get latest INTEL-IRRIS WaziGate distribution` section below. **This feature is only available with SD card image from Feb, 2023**.
 
 - if `/boot/intel-irris-auto-config.done` exists then no new configuration will be performed. If a new auto-configuration setting needs to be realized, then be sure to remove `/boot/intel-irris-auto-config.done`.
 

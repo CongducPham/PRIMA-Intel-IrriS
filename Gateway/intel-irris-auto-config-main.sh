@@ -47,6 +47,10 @@ then
 	mv /boot/gateway.zip /boot/gateway.zip.done 
 fi
 
+echo "Set crontab from /home/pi/scripts/crontab.pi" >> /boot/intel-irris-auto-config.log
+crontab -u pi /home/pi/scripts/crontab.pi
+crontab -u pi -l >> /boot/intel-irris-auto-config.log
+
 if [ -f /boot/intel-irris-auto-config.done ]
 then
 	echo "detected previous auto-configuration – skip" >> /boot/intel-irris-auto-config.log
