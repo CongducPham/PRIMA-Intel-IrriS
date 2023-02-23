@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 f = open("extracted.json", "r")
 
+############### CONVERSION extracted.json (blocks of JSON in a text file) into Python dict #########################
 extracted_values={}
 current_line=""
 for l in f.readlines():
@@ -55,8 +56,7 @@ if len(current_line)>0:
 
 f.close()
 
-# print(extracted_values[0])
-
+############### ENRICHED METADATA FROM UI #########################
 sensortypes={
     "capa":{
         "temperatureSensor_0":"Soil Humidity Sensor/Raw value from SEN0308",
@@ -77,6 +77,16 @@ sensortypes={
 # Soil Temperature Sensor/degree Celsius (temperatureSensor_5)
 # Battery voltage/volt, low battery when lower than 2.85V (analogInput_6)
 
+
+data_dict={"sensortypes":sensortypes, "extracted_values":extracted_values}
+
+
+# exporting to JSON
+json_dict = json.dumps(data_dict, indent=4)
+with open("full_JSON_export.json", "w") as outfile:
+    outfile.write(json_dict)
+
+# exporting to INRA January 23 CSV format
 with open('extracted_2.csv', 'w') as f:
     for device_id in extracted_values:
         device=extracted_values[len(extracted_values)-device_id-1]
