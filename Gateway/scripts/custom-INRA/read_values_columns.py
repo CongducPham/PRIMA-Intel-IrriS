@@ -86,6 +86,76 @@ json_dict = json.dumps(data_dict, indent=4)
 with open("full_JSON_export.json", "w") as outfile:
     outfile.write(json_dict)
 
+# exporting to Bondy aggregated CSV format
+with open('extracted_Bondy_aggregated.csv', 'w') as f:
+    aggr_timestamps=[]
+
+    f.write(',')
+    for device_id in extracted_values:
+        device=extracted_values[len(extracted_values)-device_id-1]
+        aggr_timestamps+=[timeval["time"] for timeval in device["temperatureSensor_0"][2:]]
+        f.write(device["devName"])
+        for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_5","analogInput_6"]:
+            if len(device[sensor])>0:
+                f.write(',')
+
+    # sort list of timestamps
+    aggr_timestamps = sorted(set(aggr_timestamps))
+
+    f.write('\n,')
+
+    for device_id in extracted_values:
+        # for 
+        device=extracted_values[len(extracted_values)-device_id-1]
+        f.write(device["devID"])
+        for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_5","analogInput_6"]:
+            if len(device[sensor])>0:
+                f.write(',')
+
+    f.write('\n,')
+
+    for device_id in extracted_values:
+        device=extracted_values[len(extracted_values)-device_id-1]
+        for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_5","analogInput_6"]:
+            if len(device[sensor])>0:
+                if device["devAddr"][-2]=='A':
+                    f.write(sensortypes["capa"][sensor])
+                else:# B
+                    f.write(sensortypes["WM"][sensor])
+                f.write(',')
+
+    f.write('\n')
+
+
+    for ordered_timestamp in aggr_timestamps:
+        f.write(ordered_timestamp)
+        f.write(',')
+
+        for device_id in extracted_values:
+            # for 
+            device=extracted_values[len(extracted_values)-device_id-1]
+
+
+            for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_5","analogInput_6"]:
+                if len(device[sensor])>0:
+                    not_found=True
+                    for timevalpair in device[sensor][2 if sensor[-1] in ["0","1"] else 1:]:
+                        if timevalpair["time"]==ordered_timestamp:
+                            f.write(str(timevalpair["value"]))
+                            f.write(',')
+                            not_found=False
+                            break
+                    if not_found:
+                        f.write("n/a")
+                        f.write(',')
+        f.write('\n')
+            
+
+
+
+
+
+
 # exporting to INRA January 23 CSV format
 with open('extracted_2.csv', 'w') as f:
     for device_id in extracted_values:
