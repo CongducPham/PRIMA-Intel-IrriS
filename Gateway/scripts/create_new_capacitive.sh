@@ -27,13 +27,12 @@ rm ./LAST_CREATED_DEVICE.txt
 
 #IIWA, finally, copy IIWA config file into /home/pi/intel-irris-waziapp/config/ for backup
 echo "--> copy updated IIWA configuration files to /home/pi/intel-irris-waziapp/config/ for backup"
-cp intel-irris-devices.json intel-irris-active-device.json intel-irris-conf.json /home/pi/intel-irris-waziapp/config/
+cp intel_irris_devices.json intel_irris_sensors_configurations.json /home/pi/intel-irris-waziapp/config/
 
 #IIWA, finally, copy IIWA config file into container
 echo "--> copy new IIWA configuration files to IIWA container"
-docker cp intel-irris-devices.json waziup.intel-irris-waziapp:/root/src/config
-docker cp intel-irris-active-device.json waziup.intel-irris-waziapp:/root/src/config
-docker cp intel-irris-conf.json waziup.intel-irris-waziapp:/root/src/config
+docker cp intel_irris_devices.json waziup.intel-irris-waziapp:/root/src/config
+docker cp intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config
 
 echo "--> removing configuration files"
-rm -rf intel-irris-devices.json intel-irris-active-device.json intel-irris-conf.json
+rm -rf intel_irris_devices.json intel_irris_sensors_configurations.json 

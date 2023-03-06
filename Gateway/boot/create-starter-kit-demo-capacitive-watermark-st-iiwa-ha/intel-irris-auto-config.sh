@@ -81,17 +81,16 @@ rm /home/pi/scripts/LAST_CREATED_DEVICE.txt
 cd /home/pi/scripts
 
 #IIWA, finally, copy IIWA config file into /home/pi/intel-irris-waziapp/config/ for backup
-echo "--> copy new IIWA configuration files to /home/pi/intel-irris-waziapp/config/ for backup" >> /boot/intel-irris-auto-config.log
-cp intel-irris-devices.json intel-irris-active-device.json intel-irris-conf.json /home/pi/intel-irris-waziapp/config/
+echo "--> copy updated IIWA configuration files to /home/pi/intel-irris-waziapp/config/ for backup"
+cp intel_irris_devices.json intel_irris_sensors_configurations.json /home/pi/intel-irris-waziapp/config/
 
 #IIWA, finally, copy IIWA config file into container
-echo "--> copy new IIWA configuration files to IIWA container" >> /boot/intel-irris-auto-config.log
-docker cp intel-irris-devices.json waziup.intel-irris-waziapp:/root/src/config
-docker cp intel-irris-active-device.json waziup.intel-irris-waziapp:/root/src/config
-docker cp intel-irris-conf.json waziup.intel-irris-waziapp:/root/src/config
+echo "--> copy new IIWA configuration files to IIWA container"
+docker cp intel_irris_devices.json waziup.intel-irris-waziapp:/root/src/config
+docker cp intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config
 
-echo "--> removing IIWA configuration files" >> /boot/intel-irris-auto-config.log
-rm -rf intel-irris-devices.json intel-irris-active-device.json intel-irris-conf.json
+echo "--> removing configuration files"
+rm -rf intel_irris_devices.json intel_irris_sensors_configurations.json intel-irris-conf.json
 
 #HA, finally, copy HA config file into container
 cd /home/pi/homeassistant
