@@ -33,12 +33,6 @@ echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
 echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
 ./add_to_iiwa_config.sh $DEVICE capacitive
 
-#and make it the active device
-echo "--> make $DEVICE the active device for IIWA" >> /boot/intel-irris-auto-config.log
-echo "[]" >> intel-irris-active-device.json
-tmpfile=$(mktemp)
-jq ". += [{\"device_id\":\"${DEVICE}\",\"sensor_id\":\"temperatureSensor_0\"}]" intel-irris-active-device.json > "$tmpfile" && mv -- "$tmpfile" intel-irris-active-device.json
-
 #HA, first, duplicate the template files
 echo "--> copy template HA configuration files from /home/pi/homeassistant" >> /boot/intel-irris-auto-config.log
 cd /home/pi/homeassistant

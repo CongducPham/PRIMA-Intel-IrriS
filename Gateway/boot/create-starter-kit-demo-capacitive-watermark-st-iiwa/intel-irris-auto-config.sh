@@ -33,12 +33,6 @@ echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
 echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
 ./add_to_iiwa_config.sh $DEVICE capacitive
 
-#and make it the active device
-echo "--> make $DEVICE the active device for IIWA" >> /boot/intel-irris-auto-config.log
-echo "[]" >> intel-irris-active-device.json
-tmpfile=$(mktemp)
-jq ". += [{\"device_id\":\"${DEVICE}\",\"sensor_id\":\"temperatureSensor_0\"}]" intel-irris-active-device.json > "$tmpfile" && mv -- "$tmpfile" intel-irris-active-device.json
-
 #create tensiometer SOIL-AREA-2 and device with address 26011DB2
 echo "--> calling create_full_tensiometer_device_with_dev_addr.sh 2 B1" >> /boot/intel-irris-auto-config.log
 ./create_full_tensiometer_device_with_dev_addr.sh 2 B1
