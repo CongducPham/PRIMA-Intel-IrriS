@@ -215,13 +215,12 @@ if EXPORT_SINGLE_TIME:
         f.write(',')
         for device_id in extracted_values:
             device=extracted_values[len(extracted_values)-device_id-1]
-            # TODO: the following considers a device only updates sensor values synchronously for all its sensors.
-            # it's not the case when using e.g. scripts/push_sensor_test_value.sh  
-            aggr_timestamps+=[timeval["time"] for timeval in device["temperatureSensor_0"][2:]]
+            # aggr_timestamps+=[timeval["time"] for timeval in device["temperatureSensor_0"][2:]]
             f.write(device["devName"])
             for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_2","temperatureSensor_3","temperatureSensor_5","analogInput_6"]:
                 if len(device[sensor])>0:
                     f.write(',')
+                    aggr_timestamps+=[timeval["time"] for timeval in device[sensor][2 if sensor[-1] in ["0","1","2","3"] else 1:]]
 
         # sort list of timestamps
         aggr_timestamps = sorted(set(aggr_timestamps))
