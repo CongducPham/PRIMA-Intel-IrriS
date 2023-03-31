@@ -35,6 +35,8 @@ do
     echo "${DEVNAME}:${DEVADDR}:${DEVICE}" >> extracted.json
     curl -X GET "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/values" -H  "accept: application/json" >> extracted.json
     curl -X GET "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_1/values" -H  "accept: application/json" >> extracted.json
+    curl -X GET "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_2/values" -H  "accept: application/json" >> extracted.json
+    curl -X GET "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_3/values" -H  "accept: application/json" >> extracted.json
     curl -X GET "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_5/values" -H  "accept: application/json" >> extracted.json
     curl -X GET "http://localhost/devices/${DEVICE}/sensors/analogInput_6/values" -H  "accept: application/json" >> extracted.json
     echo "" >> extracted.json

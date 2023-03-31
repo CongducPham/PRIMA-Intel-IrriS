@@ -29,8 +29,10 @@ for l in f.readlines():
             # arrays=[json.loads(a+']') for a in arrays  ]
             extracted_values[len(extracted_values)-1]["temperatureSensor_0"]=arrays[0]
             extracted_values[len(extracted_values)-1]["temperatureSensor_1"]=arrays[1]
-            extracted_values[len(extracted_values)-1]["temperatureSensor_5"]=arrays[2]
-            extracted_values[len(extracted_values)-1]["analogInput_6"]=arrays[3]
+            extracted_values[len(extracted_values)-1]["temperatureSensor_2"]=arrays[2]
+            extracted_values[len(extracted_values)-1]["temperatureSensor_3"]=arrays[3]
+            extracted_values[len(extracted_values)-1]["temperatureSensor_5"]=arrays[4]
+            extracted_values[len(extracted_values)-1]["analogInput_6"]=arrays[5]
             # print(0/0)
         # print(l.replace('\n','').split(":"))
         sensor=l.replace('\n','').split(":")
@@ -57,8 +59,10 @@ if len(current_line)>0:
     # print(arrays)
     extracted_values[len(extracted_values)-1]["temperatureSensor_0"]=arrays[0]
     extracted_values[len(extracted_values)-1]["temperatureSensor_1"]=arrays[1]
-    extracted_values[len(extracted_values)-1]["temperatureSensor_5"]=arrays[2]
-    extracted_values[len(extracted_values)-1]["analogInput_6"]=arrays[3]
+    extracted_values[len(extracted_values)-1]["temperatureSensor_2"]=arrays[2]
+    extracted_values[len(extracted_values)-1]["temperatureSensor_3"]=arrays[3]
+    extracted_values[len(extracted_values)-1]["temperatureSensor_5"]=arrays[4]
+    extracted_values[len(extracted_values)-1]["analogInput_6"]=arrays[5]
 
 
 f.close()
@@ -74,6 +78,8 @@ sensortypes={
     "WM":{
         "temperatureSensor_0":"Soil Humidity Sensor/centibars from WM200",
         "temperatureSensor_1":"Soil Humidity Sensor/scaled value from WM200 real=x10",
+        "temperatureSensor_2":"Soil Humidity Sensor/centibars from WM200 WM2",
+        "temperatureSensor_3":"Soil Humidity Sensor/scaled value from WM200 real=x10 WM2",
         "temperatureSensor_5":"Soil Temperature Sensor/degree Celsius",
         "analogInput_6":"Battery voltage/volt"
     }
@@ -149,42 +155,50 @@ if EXPORT_GRAPHS_PANDAS:
     fig.set_size_inches(12,9)
     fig.savefig("capas.png",bbox_inches="tight")
 
-    WM200_cbars_axed=False
-    for device_id in extracted_values:
-        device=extracted_values[len(extracted_values)-device_id-1]
-        if device["devAddr"][-2]=='B':
-            if len(device["temperatureSensor_0"])>0:
-                df = pd.DataFrame(device["temperatureSensor_0"][2:])
-                df['time']=pd.to_datetime(df['time'])
-                df.rename(columns={'value': device["devName"]}, inplace=True)
-                if not WM200_cbars_axed:
-                    WM200_cbars_ax=df.plot(x='time',y=device["devName"],xlabel="Time",ylabel=sensortypes["WM"]["temperatureSensor_0"])
-                    WM200_cbars_axed=True
-                else:
-                    df.plot(x='time',y=device["devName"],ax=WM200_cbars_ax,xlabel="Time")
-    fig = plt.gcf()
-    fig.set_size_inches(12,9)
-    fig.savefig("WM_cbars.png",bbox_inches="tight")
+    for WM_amount in [1,2]:
+        if WM_amount==1:
+            ts_zero="temperatureSensor_0"
+            ts_one="temperatureSensor_1"
+        else:
+            ts_zero="temperatureSensor_2"
+            ts_one="temperatureSensor_3"
 
-    WM200_realx10_axed=False
-    for device_id in extracted_values:
-        device=extracted_values[len(extracted_values)-device_id-1]
-        if device["devAddr"][-2]=='B':
-            if len(device["temperatureSensor_1"])>0:
-                df = pd.DataFrame(device["temperatureSensor_1"][2:])
-                df['time']=pd.to_datetime(df['time'])
-                df.rename(columns={'value': device["devName"]}, inplace=True)
-                if not WM200_realx10_axed:
-                    WM200_realx10_ax=df.plot(x='time',y=device["devName"],xlabel="Time",ylabel=sensortypes["WM"]["temperatureSensor_1"])
-                    WM200_realx10_axed=True
-                else:
-                    df.plot(x='time',y=device["devName"],ax=WM200_realx10_ax,xlabel="Time")
-    fig = plt.gcf()
-    fig.set_size_inches(12,9)
-    fig.savefig("WM_WM200_realx10.png",bbox_inches="tight")
-    #         # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html
-    #         # In [12]: pd.to_datetime(pd.Series(['05/23/2005']), format="%m/%d/%Y")
-    #     # plt.show()
+        WM200_cbars_axed=False
+        for device_id in extracted_values:
+            device=extracted_values[len(extracted_values)-device_id-1]
+            if device["devAddr"][-2]=='B':
+                if len(device[ts_zero])>0:
+                    df = pd.DataFrame(device[ts_zero][2:])
+                    df['time']=pd.to_datetime(df['time'])
+                    df.rename(columns={'value': device["devName"]}, inplace=True)
+                    if not WM200_cbars_axed:
+                        WM200_cbars_ax=df.plot(x='time',y=device["devName"],xlabel="Time",ylabel=sensortypes["WM"][ts_zero])
+                        WM200_cbars_axed=True
+                    else:
+                        df.plot(x='time',y=device["devName"],ax=WM200_cbars_ax,xlabel="Time")
+        fig = plt.gcf()
+        fig.set_size_inches(12,9)
+        fig.savefig("WM_cbars.png",bbox_inches="tight")
+
+        WM200_realx10_axed=False
+        for device_id in extracted_values:
+            device=extracted_values[len(extracted_values)-device_id-1]
+            if device["devAddr"][-2]=='B':
+                if len(device[ts_one])>0:
+                    df = pd.DataFrame(device[ts_one][2:])
+                    df['time']=pd.to_datetime(df['time'])
+                    df.rename(columns={'value': device["devName"]}, inplace=True)
+                    if not WM200_realx10_axed:
+                        WM200_realx10_ax=df.plot(x='time',y=device["devName"],xlabel="Time",ylabel=sensortypes["WM"][ts_one])
+                        WM200_realx10_axed=True
+                    else:
+                        df.plot(x='time',y=device["devName"],ax=WM200_realx10_ax,xlabel="Time")
+        fig = plt.gcf()
+        fig.set_size_inches(12,9)
+        fig.savefig("WM{0}_WM200_realx10.png".format(WM_amount),bbox_inches="tight")
+        #         # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.plot.html
+        #         # In [12]: pd.to_datetime(pd.Series(['05/23/2005']), format="%m/%d/%Y")
+        #     # plt.show()
 
 
 # exporting to JSON
@@ -201,9 +215,11 @@ if EXPORT_SINGLE_TIME:
         f.write(',')
         for device_id in extracted_values:
             device=extracted_values[len(extracted_values)-device_id-1]
+            # TODO: the following considers a device only updates sensor values synchronously for all its sensors.
+            # it's not the case when using e.g. scripts/push_sensor_test_value.sh  
             aggr_timestamps+=[timeval["time"] for timeval in device["temperatureSensor_0"][2:]]
             f.write(device["devName"])
-            for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_5","analogInput_6"]:
+            for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_2","temperatureSensor_3","temperatureSensor_5","analogInput_6"]:
                 if len(device[sensor])>0:
                     f.write(',')
 
@@ -216,7 +232,7 @@ if EXPORT_SINGLE_TIME:
             # for 
             device=extracted_values[len(extracted_values)-device_id-1]
             f.write(device["devID"])
-            for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_5","analogInput_6"]:
+            for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_2","temperatureSensor_3","temperatureSensor_5","analogInput_6"]:
                 if len(device[sensor])>0:
                     f.write(',')
 
@@ -224,7 +240,7 @@ if EXPORT_SINGLE_TIME:
 
         for device_id in extracted_values:
             device=extracted_values[len(extracted_values)-device_id-1]
-            for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_5","analogInput_6"]:
+            for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_2","temperatureSensor_3","temperatureSensor_5","analogInput_6"]:
                 if len(device[sensor])>0:
                     if device["devAddr"][-2]=='A':
                         f.write(sensortypes["capa"][sensor])
@@ -244,10 +260,10 @@ if EXPORT_SINGLE_TIME:
                 device=extracted_values[len(extracted_values)-device_id-1]
 
 
-                for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_5","analogInput_6"]:
+                for sensor in ["temperatureSensor_0","temperatureSensor_1","temperatureSensor_2","temperatureSensor_3","temperatureSensor_5","analogInput_6"]:
                     if len(device[sensor])>0:
                         not_found=True
-                        for timevalpair in device[sensor][2 if sensor[-1] in ["0","1"] else 1:]:
+                        for timevalpair in device[sensor][2 if sensor[-1] in ["0","1","2","3"] else 1:]:
                             if timevalpair["time"]==ordered_timestamp:
                                 f.write(str(timevalpair["value"]))
                                 f.write(',')
