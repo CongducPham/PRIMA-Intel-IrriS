@@ -51,8 +51,8 @@ then
 	
 	if [ "$2" = "eu433" ] | [ "$2" = "eu868" ]
 		then
-			echo "configure for frequency band $1"
-			./scripts/config_band.sh $1
+			echo "configure for frequency band $2"
+			./scripts/config_band.sh $2
 			./scripts/show_band.sh
 	fi	
 

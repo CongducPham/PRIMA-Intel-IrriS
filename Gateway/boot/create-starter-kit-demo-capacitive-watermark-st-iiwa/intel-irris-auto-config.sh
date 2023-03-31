@@ -33,12 +33,6 @@ echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
 echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
 ./add_to_iiwa_config.sh $DEVICE capacitive
 
-#and make it the active device
-echo "--> make $DEVICE the active device for IIWA" >> /boot/intel-irris-auto-config.log
-echo "[]" >> intel-irris-active-device.json
-tmpfile=$(mktemp)
-jq ". += [{\"device_id\":\"${DEVICE}\",\"sensor_id\":\"temperatureSensor_0\"}]" intel-irris-active-device.json > "$tmpfile" && mv -- "$tmpfile" intel-irris-active-device.json
-
 #create tensiometer SOIL-AREA-2 and device with address 26011DB2
 echo "--> calling create_full_tensiometer_device_with_dev_addr.sh 2 B1" >> /boot/intel-irris-auto-config.log
 ./create_full_tensiometer_device_with_dev_addr.sh 2 B1
@@ -62,18 +56,16 @@ echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-au
 rm /home/pi/scripts/LAST_CREATED_DEVICE.txt
 
 #IIWA, finally, copy IIWA config file into /home/pi/intel-irris-waziapp/config/ for backup
-echo "--> copy new IIWA configuration files to /home/pi/intel-irris-waziapp/config/ for backup" >> /boot/intel-irris-auto-config.log
-cp intel-irris-devices.json intel-irris-active-device.json intel-irris-conf.json /home/pi/intel-irris-waziapp/config/
+echo "--> copy updated IIWA configuration files to /home/pi/intel-irris-waziapp/config/ for backup"
+cp intel_irris_devices.json intel_irris_sensors_configurations.json /home/pi/intel-irris-waziapp/config/
 
 #IIWA, finally, copy IIWA config file into container
-echo "--> copy new IIWA configuration files to IIWA container" >> /boot/intel-irris-auto-config.log
-docker cp intel-irris-devices.json waziup.intel-irris-waziapp:/root/src/config
-docker cp intel-irris-active-device.json waziup.intel-irris-waziapp:/root/src/config
-docker cp intel-irris-conf.json waziup.intel-irris-waziapp:/root/src/config
+echo "--> copy new IIWA configuration files to IIWA container"
+docker cp intel_irris_devices.json waziup.intel-irris-waziapp:/root/src/config
+docker cp intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config
 
-echo "--> removing IIWA configuration files" >> /boot/intel-irris-auto-config.log
-rm -rf intel-irris-devices.json intel-irris-active-device.json intel-irris-conf.json
-
+echo "--> removing configuration files"
+rm -rf intel_irris_devices.json intel_irris_sensors_configurations.json intel-irris-conf.json
 
 
 
