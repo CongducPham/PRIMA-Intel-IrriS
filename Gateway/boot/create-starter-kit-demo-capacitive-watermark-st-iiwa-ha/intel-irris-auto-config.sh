@@ -17,8 +17,11 @@ fi
 echo "--> calling create_full_capacitive_device_with_dev_addr.sh 1 AA" >> /boot/intel-irris-auto-config.log
 ./create_full_capacitive_device_with_dev_addr.sh 1 AA
 
-#add the voltage monitor sensor
 DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`
+#add the temperature sensor
+echo "--> calling create_only_temperature_sensor.sh $DEVICE" >> /boot/intel-irris-auto-config.log
+./create_only_temperature_sensor.sh $DEVICE
+#add the voltage monitor sensor
 echo "--> created device is $DEVICE" >> /boot/intel-irris-auto-config.log
 echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE" >> /boot/intel-irris-auto-config.log 
 ./create_only_voltage_monitor_sensor.sh $DEVICE
@@ -84,7 +87,7 @@ docker cp intel_irris_devices.json waziup.intel-irris-waziapp:/root/src/config
 docker cp intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config
 
 echo "--> removing configuration files"
-rm -rf intel_irris_devices.json intel_irris_sensors_configurations.json intel-irris-conf.json
+rm -rf intel_irris_devices.json intel_irris_sensors_configurations.json
 
 #HA, finally, copy HA config file into container
 cd /home/pi/homeassistant

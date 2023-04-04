@@ -13,6 +13,8 @@ views:
             entities:
               - entity: sensor.soil_area_1_raw_value_from_sen0308
                 secondary_info: last-updated
+              - entity: sensor.soil_area_1_soil_temperature_sensor
+                secondary_info: last-updated                
               - entity: sensor.soil_area_1_battery_voltage
                 secondary_info: last-updated
                 icon: mdi:battery
@@ -40,9 +42,9 @@ views:
                   - from: 416
                     color: '#d1000f'
               - type: sensor
-                entity: sensor.soil_area_1_battery_voltage
+                entity: sensor.soil_area_2_soil_temperature_sensor
                 graph: line
-                icon: mdi:battery
+                icon: mdi:thermometer
               - type: gauge
                 entity: sensor.soil_area_1_soil_value_index
                 needle: true

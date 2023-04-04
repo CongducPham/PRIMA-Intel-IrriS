@@ -65,7 +65,7 @@ docker cp intel_irris_devices.json waziup.intel-irris-waziapp:/root/src/config
 docker cp intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config
 
 echo "--> removing configuration files"
-rm -rf intel_irris_devices.json intel_irris_sensors_configurations.json intel-irris-conf.json
+rm -rf intel_irris_devices.json intel_irris_sensors_configurations.json
 
 
 

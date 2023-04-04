@@ -26,6 +26,10 @@ sensor capacitive:
     resource: http://localhost/devices/XXX1/sensors/temperatureSensor_0/value
     name: SOIL-AREA-1/Raw value from SEN0308
   - platform: rest
+    resource: http://localhost/devices/XXX1/sensors/temperatureSensor_5/value
+    name: SOIL-AREA-1/Soil Temperature Sensor
+    unit_of_measurement: "°C"    
+  - platform: rest
     resource: http://localhost/devices/XXX1/sensors/analogInput_6/value
     name: SOIL-AREA-1/Battery voltage
     unit_of_measurement: "Volts"

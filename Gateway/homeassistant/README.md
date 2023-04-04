@@ -59,7 +59,7 @@ Log in the HA instance
 
 When connected to the WaziGate (either with wired Ethernet or through the WaziGate's WiFi), open a browser and open `http://wazigate.local:8123` if wired Ethernet or `http://10.42.0.1:8123` if WaziGate's WiFi.
 
-Create an `intelirris` user. It should really be `intelirris`. Then choose a password. 
+Create an `intelirris` user. It should really be `intelirris`. Then choose a password. You can assigned a picture for `intelirris` user. You can take `intel-irris-small-logo.png` provided this folder.
 
 Log in your HA instance using `intelirris` user.	
 
