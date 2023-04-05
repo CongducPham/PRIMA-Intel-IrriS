@@ -95,7 +95,7 @@ jq ".sensors += \
 jq ".sensors += \
     [{\
       \"value\": {\
-        \"sensor_type\": \"${2}_cbar\",\
+        \"sensor_type\": \"tensiometer_cbar\",\
         \"sensor_age\": \"0\",\
         \"sensor_max\": \"124\",\
         \"sensor_min\": \"0\",\
