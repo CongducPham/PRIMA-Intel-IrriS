@@ -2,6 +2,8 @@
 
 logger -t intel-irris-auto-config "create-custom-multiple-iiwa"
 
+cd /home/pi
+
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
@@ -78,11 +80,6 @@ do
             echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
             ./add_to_iiwa_config.sh $DEVICE capacitive
 
-            #and make it the active device
-            echo "--> make $DEVICE the active device for IIWA" >> /boot/intel-irris-auto-config.log
-            echo "[]" >> intel_irris_active_device.json
-            tmpfile=$(mktemp)
-            jq ". += [{\"device_id\":\"${DEVICE}\",\"sensor_id\":\"temperatureSensor_0\"}]" intel_irris_active_device.json > "$tmpfile" && mv -- "$tmpfile" intel_irris_active_device.json
 
           elif [ "$DEVTYPE" = "WT" ]; then
             #create tensiometer SOIL-AREA-2 (after capas) and device with address 26011DB1, b2, b3,...
@@ -97,14 +94,6 @@ do
             #add the voltage monitor sensor
             echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE" >> /boot/intel-irris-auto-config.log
             ./create_only_voltage_monitor_sensor.sh $DEVICE
-
-            # echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
-            # echo "{\"device_id\": \"$DEVICE\", \"device_name\": \"SOIL-AREA-$DEVID\", \"sensors_structure\": \"1_watermark\"}," >> /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
-
-            # echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
-            # cp IIWA-templates/IIWA-wm-st.json IIWA-temp.json
-            # sed -i "s/XXX2/$DEVICE/g" IIWA-temp.json
-            # cat IIWA-temp.json >> /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
 
             #IIWA, then add second tensiometer device id
             echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
@@ -126,14 +115,6 @@ do
             echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE" >> /boot/intel-irris-auto-config.log
             ./create_only_voltage_monitor_sensor.sh $DEVICE
 
-            # echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
-            # echo "{\"device_id\": \"$DEVICE\", \"device_name\": \"SOIL-AREA-$DEVID\", \"sensors_structure\": \"1_watermark\"}," >> /home/pi/intel-irris-waziapp/config/intel-irris-devices.json
-
-            # echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
-            # cp IIWA-templates/IIWA-wm-st.json IIWA-temp.json
-            # sed -i "s/XXX2/$DEVICE/g" IIWA-temp.json
-            # cat IIWA-temp.json >> /home/pi/intel-irris-waziapp/config/intel-irris-conf.json
-
             #IIWA, then add second tensiometer device id
             echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
             ./add_to_iiwa_devices.sh $DEVICE $DEVID 2tensiometers
@@ -153,14 +134,13 @@ rm /home/pi/scripts/LAST_CREATED_DEVICE.txt
 
 #IIWA, finally, copy IIWA config file into /home/pi/intel-irris-waziapp/config/ for backup
 echo "--> copy new IIWA configuration files to /home/pi/intel-irris-waziapp/config/ for backup" >> /boot/intel-irris-auto-config.log
-cp intel_irris_devices.json intel_irris_active_device.json intel_irris_sensors_configurations.json /home/pi/intel-irris-waziapp/config/
+cp intel_irris_devices.json intel_irris_sensors_configurations.json /home/pi/intel-irris-waziapp/config/
 
 #IIWA, finally, copy IIWA config file into container
 echo "--> copy new IIWA configuration files to IIWA container" >> /boot/intel-irris-auto-config.log
 docker cp intel_irris_devices.json waziup.intel-irris-waziapp:/root/src/config
-docker cp intel_irris_active_device.json waziup.intel-irris-waziapp:/root/src/config
 docker cp intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config
 
 echo "--> removing IIWA configuration files" >> /boot/intel-irris-auto-config.log
-rm -rf intel_irris_devices.json intel_irris_active_device.json intel_irris_sensors_configurations.json
+rm -rf intel_irris_devices.json intel_irris_sensors_configurations.json
 
