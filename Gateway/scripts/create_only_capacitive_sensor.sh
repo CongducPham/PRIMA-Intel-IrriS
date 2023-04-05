@@ -19,7 +19,27 @@ echo "--> Use date of $DATE"
 echo "--> Use device $1"
 echo "--> Create capacitive sensor"
 
-curl -X POST "http://localhost/devices/$1/sensors" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"id\":\"temperatureSensor_0\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"Raw value from SEN0308\",\"model\":\"SEN0308\",\"type\":\"capacitive\",\"sensor_dry_max\":800,\"sensor_wet_max\":0,\"sensor_n_interval\":6,\"value_index\":0},\"name\":\"Soil Humidity Sensor\",\"quantity\":\"\",\"time\":\"$DATE\",\"unit\":\"\",\"value\":800}"
+curl -X POST "http://localhost/devices/$1/sensors" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{
+  \"id\":\"temperatureSensor_0\",
+  \"kind\":\"\",
+  \"meta\":
+  {
+    \"xlppChan\":0,
+    \"createdBy\":\"wazigate-lora\",
+    \"kind\":\"Raw value from SEN0308\",
+    \"model\":\"SEN0308\",
+    \"type\":\"capacitive\",
+    \"sensor_dry_max\":800,
+    \"sensor_wet_max\":0,
+    \"sensor_n_interval\":6,
+    \"value_index\":0
+  },
+  \"name\":\"Soil Humidity Sensor\",
+  \"quantity\":\"\",
+  \"time\":\"$DATE\",
+  \"unit\":\"\",
+  \"value\":800
+}"
 
 echo "device $1"
 echo "		with Soil Humidity Sensor displaying Raw value from SEN0308"

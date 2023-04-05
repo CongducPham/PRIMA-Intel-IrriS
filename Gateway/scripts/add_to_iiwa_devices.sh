@@ -6,21 +6,21 @@
 
 if [ $3 == 'tensiometer' ]
 then
-    STYPE="watermark"
-    SAMOUNT="1"
+	STYPE="watermark"
+	SAMOUNT="1"
 elif [ $3 == '2tensiometers' ]
 then
 	STYPE="watermark"
-    SAMOUNT="2"
+	SAMOUNT="2"
 else
 	STYPE=$3
-    SAMOUNT="1"
+	SAMOUNT="1"
 fi
 
 tmpfile=$(mktemp)
 
 jq ". + [{ \
-    \"device_id\": \"${1}\", \
-    \"device_name\": \"SOIL-AREA-${2}\", \
-    \"sensors_structure\": \"${SAMOUNT}_${STYPE}\" \
-    }]" intel_irris_devices.json > "$tmpfile" && mv -- "$tmpfile" intel_irris_devices.json
+	\"device_id\": \"${1}\", \
+	\"device_name\": \"SOIL-AREA-${2}\", \
+	\"sensors_structure\": \"${SAMOUNT}_${STYPE}\" \
+	}]" intel_irris_devices.json > "$tmpfile" && mv -- "$tmpfile" intel_irris_devices.json

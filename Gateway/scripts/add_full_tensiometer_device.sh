@@ -2,6 +2,8 @@
 
 # this script adds a watermark sensor as secondary device, i.e. SOIL-AREA-2 and devAddr=26011DB2
 # could be replaced by create_full_tensiometer_device_with_dev_addr.sh 2 B2
+./create_full_tensiometer_device_with_dev_addr.sh 2 B2
+exit
 
 echo "--> Adding an additional device to the existing device"
 

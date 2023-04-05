@@ -21,7 +21,21 @@ echo "--> Use date of $DATE"
 echo "--> Use device ${1}"
 echo "--> Create voltage monitor sensor"
 
-curl -X POST "http://localhost/devices/${1}/sensors" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{\"id\":\"analogInput_6\",\"kind\":\"\",\"meta\":{\"createdBy\":\"wazigate-lora\",\"kind\":\"volt, low battery when lower than 2.85V\"},\"name\":\"Battery voltage\",\"quantity\":\"\",\"time\":\"$DATE\",\"unit\":\"\",\"value\":-1}"
+curl -X POST "http://localhost/devices/${1}/sensors" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{
+  \"id\":\"analogInput_6\",
+  \"kind\":\"\",
+  \"meta\":
+  {
+    \"xlppChan\":6,
+    \"createdBy\":\"wazigate-lora\",
+    \"kind\":\"volt, low battery when lower than 2.85V\"
+  },
+  \"name\":\"Battery voltage\",
+  \"quantity\":\"\",
+  \"time\":\"$DATE\",
+  \"unit\":\"\",
+  \"value\":-1
+}"
 
 echo "device $1"
 echo "		with voltage monitor displaying volt"

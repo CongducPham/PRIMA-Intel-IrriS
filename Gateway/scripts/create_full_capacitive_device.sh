@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # this script creates a SEN0308 sensor as primary device, i.e. SOIL-AREA-1 and devAddr=26011DAA
+./create_full_capacitive_device_with_dev_addr.sh 1 AA
+exit
 
 echo "--> Get token"
 TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
