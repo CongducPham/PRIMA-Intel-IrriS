@@ -6,11 +6,11 @@ cd /home/pi
 
 if [ $# -eq 0 ]
   then
-    FILE=/home/pi/boot/watermarks.txt
+    FILE=/boot/watermarks.txt
     if test -f "$FILE"; 
       then
         NWMS=`cat $FILE`
-        NCAPAS=`cat /home/pi/boot/capas.txt`
+        NCAPAS=`cat /boot/capas.txt`
         # echo "$FILE exists."
         ./boot/create-custom-multiple-range-iiwa/intel-irris-auto-config.sh $NCAPAS $NWMS
       else
@@ -24,8 +24,8 @@ if [ $# -eq 0 ]
   # else
 fi
 
-echo $1 > /home/pi/boot/capas.txt
-echo $2 > /home/pi/boot/watermarks.txt
+echo $1 > /boot/capas.txt
+echo $2 > /boot/watermarks.txt
 
 
 cd /home/pi/scripts

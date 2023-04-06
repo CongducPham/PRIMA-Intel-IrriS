@@ -12,11 +12,11 @@ if [ $# -eq 0 ]
     echo "will create 1 capacitive SOIL-AREA-1 with address 26011DAE"
     echo "and 1 watermark with temperature sensor SOIL-AREA-8 with address 26011DB4"
     echo "for a double WM + temperature : 2WT"
-    echo "Default-1: (previous) config if any in file /home/pi/boot/devices.txt"
+    echo "Default-1: (previous) config if any in file /boot/devices.txt"
     echo "Default-2: C 1 AA WT 2 B1"
 
     #default-1: file exists and is non empty
-    FILE=/home/pi/boot/devices.txt
+    FILE=/boot/devices.txt
     if test -f "$FILE"; then
       # echo "$FILE exists."
       if test -s "$FILE"; then
@@ -31,7 +31,7 @@ if [ $# -eq 0 ]
     exit
 fi
 
-echo "$@" > /home/pi/boot/devices.txt
+echo "$@" > /boot/devices.txt
 
 cd /home/pi/scripts
 

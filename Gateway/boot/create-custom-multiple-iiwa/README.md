@@ -10,3 +10,5 @@ will for example generate the configuration (dashboard and iiwa) for a capacitiv
 For a device with two tensiometers and temperature, type 2WT.
 
 A default value (C 1 AA WT 2 B1) is chosen for a (first, bootstrap) argument-less configuration
+A list of bootstrap values may also be prepared in `/boot/devices.txt`.
+
