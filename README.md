@@ -92,7 +92,7 @@ The starter-kit
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/starter-kit-bg-white.jpg" width="400">
 
-<img src="https://intel-irris.eu/wp-content/uploads/2022/12/Intel-Irris-starter-kit-flyer-en.png" width="400">
+<img src="https://intel-irris.eu/wp-content/uploads/2023/02/Intel-Irris-starter-kit-flyer-en.png" width="400">
 
 Enjoy!
 C. Pham
