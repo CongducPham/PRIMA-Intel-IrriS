@@ -80,6 +80,25 @@ do
             echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
             ./add_to_iiwa_config.sh $DEVICE capacitive
 
+          elif [ "$DEVTYPE" = "CT" ]; then
+            #create capacitive SOIL-AREA-1 (i) and device with address 26011DAA, Ab, Ac,...
+            echo "--> create_full_capacitive_device_with_dev_addr.sh $DEVID $DEVADDR" >> /boot/intel-irris-auto-config.log
+            ./create_full_capacitive_device_with_dev_addr.sh $DEVID $DEVADDR
+
+            DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`
+            echo "--> created device is $DEVICE" >> /boot/intel-irris-auto-config.log
+            #add the temperature sensor
+            echo "--> calling create_only_temperature_sensor.sh $DEVICE" >> /boot/intel-irris-auto-config.log
+            ./create_only_temperature_sensor.sh $DEVICE
+            #add the voltage monitor sensor
+            echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE" >> /boot/intel-irris-auto-config.log 
+            ./create_only_voltage_monitor_sensor.sh $DEVICE
+
+            #IIWA, add first capacitive device id
+            echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
+            ./add_to_iiwa_devices.sh $DEVICE $DEVID capacitive
+            echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
+            ./add_to_iiwa_config.sh $DEVICE capacitive
 
           elif [ "$DEVTYPE" = "WT" ]; then
             #create tensiometer SOIL-AREA-2 (after capas) and device with address 26011DB1, b2, b3,...
