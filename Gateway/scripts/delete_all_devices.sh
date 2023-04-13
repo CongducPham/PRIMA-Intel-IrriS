@@ -1,5 +1,7 @@
 #!/bin/bash
 
+docker cp /home/pi/intel-irris-waziapp/config/empty/intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config    
+
 echo "Get token"
 TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
 
@@ -9,6 +11,7 @@ NDEVICE=`curl -X GET "http://localhost/devices" -H  "accept: application/json" |
 (( NDEVICE-- ))
 
 echo $NDEVICE
+
 
 #we leave device[0] which is usually the initial gateway declaration
 while [ $NDEVICE -gt 0 ]
@@ -22,6 +25,7 @@ do
   if [ $sizeDEVICE -gt 16 ]
   then
     echo "Delete device ${DEVICE}"
+    curl -X DELETE "http://localhost:5000/devices/${DEVICE}" -H  "accept: application/json"
     curl -X DELETE "http://localhost/devices/${DEVICE}" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json"   
   else
     echo "Probably a gateway, skipping"  

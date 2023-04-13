@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home/pi/scripts
+
 
 if [ $# -eq 0 ]
 then
@@ -69,7 +71,25 @@ else
         fi
     elif [ $1 == 'delete' ]
     then
-        curl -X DELETE "http://wazigate.local:5000/devices/$2" -H  "accept: application/json"
+        if [ $2 == 'all' ]
+        then
+            DEVICES=`curl -X GET "http://wazigate.local:5000/devices" -H  "accept: application/json"`
+            NDEVICE=`echo $DEVICES | jq '. | length'`
+
+            docker cp /home/pi/intel-irris-waziapp/config/empty/intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config    
+
+            while [ $NDEVICE -gt 0 ]
+            do
+                (( NDEVICE-- ))
+                DEVICE=`echo $DEVICES | jq ".[${NDEVICE}].device_id"  | tr -d '\"'`
+
+                # curl -X DELETE "http://wazigate.local:5000/devices/${DEVICE}" -H  "accept: application/json" -H  "Content-Type: application/json" -H "Authorization: Bearer $TOK"
+                ./iiwa_rest.sh delete ${DEVICE}
+
+            done
+        else
+            curl --max-time 30 -X DELETE "http://wazigate.local:5000/devices/$2" -H  "accept: application/json"
+        fi
     elif [ $1 == 'data' ]
     then
         curl -X GET "http://wazigate.local:5000/devices/data" -H  "accept: application/json" > iiwa_data.json

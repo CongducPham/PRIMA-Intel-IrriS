@@ -138,15 +138,44 @@ if len(sys.argv)>1:
 
 
     if sys.argv[1]=="delete":
-        WaziGate_url = 'http://wazigate.local:5000/devices/'+sys.argv[2]
-        
-        try:
-            response = requests.delete(
-                WaziGate_url, headers=WaziGate_headers, timeout=30)
+        if sys.argv[2]=="all":
+            WaziGate_url = 'http://wazigate.local:5000/devices'    
+            try:
+                response = requests.get(
+                    WaziGate_url, headers=WaziGate_headers, timeout=30)
+                # print(response.text)
+                device_json = json.loads(response.text)
 
-        except requests.exceptions.RequestException as e:
-            print(e)
-            print('delete-device: request command failed')
+
+            except requests.exceptions.RequestException as e:
+                print(e)
+                print('delete-all: request 1 command failed')
+
+            for dev_dash in device_json:
+                dev_id=dev_dash["device_id"] 
+                # print(dev_id)
+    
+                WaziGate_url = 'http://wazigate.local:5000/devices/'+dev_id
+                # print(WaziGate_url)
+            
+                try:
+                    response = requests.delete(
+                        WaziGate_url, headers=WaziGate_headers, timeout=30)
+
+                except requests.exceptions.RequestException as e:
+                    print(e)
+                    print('delete-device {0}: request command failed'.format(dev_id))
+
+        else:
+            WaziGate_url = 'http://wazigate.local:5000/devices/'+sys.argv[2]
+            
+            try:
+                response = requests.delete(
+                    WaziGate_url, headers=WaziGate_headers, timeout=30)
+
+            except requests.exceptions.RequestException as e:
+                print(e)
+                print('delete-device: request command failed')
 
 
     if sys.argv[1]=="data":
