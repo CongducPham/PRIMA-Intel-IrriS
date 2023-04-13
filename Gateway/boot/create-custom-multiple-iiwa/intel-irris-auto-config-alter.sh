@@ -79,7 +79,8 @@ do
             echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
 
             # python iiwa_rest.py add dev_id dev_name dev_structure sensor_id
-            python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 1_capacitive temperatureSensor_0
+            # python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 1_capacitive temperatureSensor_0
+            ./iiwa_rest.sh add $DEVICE SOIL-AREA-$DEVID 1_capacitive temperatureSensor_0
             # ./add_to_iiwa_devices.sh $DEVICE $DEVID capacitive
             # ./add_to_iiwa_config.sh $DEVICE capacitive
 
@@ -102,7 +103,8 @@ do
             echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
 
             # python iiwa_rest.py add dev_id dev_name dev_structure sensor_id
-            python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 1_capacitive temperatureSensor_0
+            # python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 1_capacitive temperatureSensor_0
+            ./iiwa_rest.sh add $DEVICE SOIL-AREA-$DEVID 1_capacitive temperatureSensor_0
             # ./add_to_iiwa_devices.sh $DEVICE $DEVID capacitive
             # ./add_to_iiwa_config.sh $DEVICE capacitive            
 
@@ -124,7 +126,8 @@ do
             echo "--> add $DEVICE to IIWA" >> /boot/intel-irris-auto-config.log
             echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
 
-            python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 1_watermark temperatureSensor_0
+            # python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 1_watermark temperatureSensor_0
+            ./iiwa_rest.sh add $DEVICE SOIL-AREA-$DEVID 1_watermark temperatureSensor_0
             # ./add_to_iiwa_devices.sh $DEVICE $DEVID tensiometer
             # ./add_to_iiwa_config.sh $DEVICE tensiometer
 
@@ -147,8 +150,11 @@ do
             echo "--> set default configuration for $DEVICE in IIWA" >> /boot/intel-irris-auto-config.log
             # ./add_to_iiwa_devices.sh $DEVICE $DEVID 2tensiometers
             # ./add_to_iiwa_config.sh $DEVICE 2tensiometers
-            python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 2_watermark temperatureSensor_0
-            python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 2_watermark temperatureSensor_2
+
+            # python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 2_watermark temperatureSensor_0
+            # python iiwa_rest.py add $DEVICE SOIL-AREA-$DEVID 2_watermark temperatureSensor_2
+            ./iiwa_rest.sh add $DEVICE SOIL-AREA-$DEVID 2_watermark temperatureSensor_0
+            ./iiwa_rest.sh add $DEVICE SOIL-AREA-$DEVID 2_watermark temperatureSensor_2
 
 
           else

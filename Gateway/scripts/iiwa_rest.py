@@ -52,8 +52,8 @@ if len(sys.argv)>1:
             response = requests.get(
                 WaziGate_url, headers=WaziGate_headers, timeout=30)
             print(response.text)
-            device_json = json.loads(response.text)
-            print(device_json)            
+            # device_json = json.loads(response.text)
+            # print(device_json)            
 
         except requests.exceptions.RequestException as e:
             print(e)
@@ -156,13 +156,28 @@ if len(sys.argv)>1:
             response = requests.get(
                 WaziGate_url, headers=WaziGate_headers, timeout=30)
             print(response.text)
-            device_json = json.loads(response.text)
-            print(device_json)            
+            # device_json = json.loads(response.text)
+            # print(device_json)            
             
 
         except requests.exceptions.RequestException as e:
             print(e)
             print('get-data: request command failed')
+
+    if sys.argv[1]=="configs":
+        WaziGate_url = 'http://wazigate.local:5000/sensors_configurations'
+        
+        try:
+            response = requests.get(
+                WaziGate_url, headers=WaziGate_headers, timeout=30)
+            print(response.text)
+            # device_json = json.loads(response.text)
+            # print(device_json)            
+            
+
+        except requests.exceptions.RequestException as e:
+            print(e)
+            print('get-sensors_configurations: request command failed')            
 
     print('=========================================')
 
