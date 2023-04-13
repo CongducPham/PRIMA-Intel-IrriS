@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Ex: create_new_capacitive.sh 3 AB
+# Ex: create_new_2-tensiometer.sh 4 B2
 
-echo "--> calling create_full_capacitive_device_with_dev_addr.sh $1 $2"
-./create_full_capacitive_device_with_dev_addr.sh $1 $2
+echo "--> calling create_full_tensiometer_device_with_dev_addr.sh $1 $2"
+./create_full_2-tensiometer_device_with_dev_addr.sh $1 $2
 
 DEVICE=`cat ./LAST_CREATED_DEVICE.txt`
 echo "--> created device is $DEVICE"
@@ -19,11 +19,11 @@ echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE"
 echo "--> copy current IIWA configuration files from /home/pi/intel-irris-waziapp/config"
 cp /home/pi/intel-irris-waziapp/config/*.json .
 
-#IIWA, add capacitive device id
-echo "--> add $DEVICE to IIWA"
-./add_to_iiwa_devices.sh $DEVICE $1 capacitive
+#IIWA, add tensiometer device id
+echo "--> add $DEVICE to IIWA" 
+./add_to_iiwa_devices.sh $DEVICE $1 2tensiometers
 echo "--> set default configuration for $DEVICE in IIWA"
-./add_to_iiwa_config.sh $DEVICE capacitive
+./add_to_iiwa_config.sh $DEVICE 2tensiometers
 
 #remove LAST_CREATED_DEVICE.txt
 rm ./LAST_CREATED_DEVICE.txt

@@ -49,7 +49,7 @@ then
 	#sudo update-rc.d -f fake-hwclock remove
 	#sudo systemctl disable fake-hwclock
 	
-	if [ "$2" = "eu433" ] | [ "$2" = "eu868" ]
+	if [ "$2" = "eu433" ] || [ "$2" = "eu868" ]
 		then
 			echo "configure for frequency band $2"
 			./scripts/config_band.sh $2

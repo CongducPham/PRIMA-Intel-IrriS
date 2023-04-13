@@ -18,8 +18,8 @@ jq ".sensors += \
         \"sensor_min\": \"0\",\
         \"soil_type\": \"silty\",\
         \"soil_irrigation_type\": \"undefined\",\
-        \"soil_salinity\": \"disabled\",\
-        \"soil_bulk_density\": \"disabled\",\
+        \"soil_salinity\": \"undefined\",\
+        \"soil_bulk_density\": \"undefined\",\
         \"plant_crop\": \"undefined\",\
         \"plant_sub_type\": \"undefined\",\
         \"plant_planting_date\": \"undefined\",\
@@ -47,8 +47,8 @@ jq ".sensors += \
         \"sensor_min\": \"0\",\
         \"soil_type\": \"silty\",
         \"soil_irrigation_type\": \"undefined\",\
-        \"soil_salinity\": \"disabled\",\
-        \"soil_bulk_density\": \"disabled\",\
+        \"soil_salinity\": \"undefined\",\
+        \"soil_bulk_density\": \"undefined\",\
         \"plant_crop\": \"undefined\",\
         \"plant_sub_type\": \"undefined\",\
         \"plant_planting_date\": \"undefined\",\
@@ -76,8 +76,8 @@ jq ".sensors += \
         \"sensor_min\": \"0\",\
         \"soil_type\": \"silty\",
         \"soil_irrigation_type\": \"undefined\",\
-        \"soil_salinity\": \"disabled\",\
-        \"soil_bulk_density\": \"disabled\",\
+        \"soil_salinity\": \"undefined\",\
+        \"soil_bulk_density\": \"undefined\",\
         \"plant_crop\": \"undefined\",\
         \"plant_sub_type\": \"undefined\",\
         \"plant_planting_date\": \"undefined\",\
@@ -101,8 +101,8 @@ jq ".sensors += \
         \"sensor_min\": \"0\",\
         \"soil_type\": \"silty\",
         \"soil_irrigation_type\": \"undefined\",\
-        \"soil_salinity\": \"disabled\",\
-        \"soil_bulk_density\": \"disabled\",\
+        \"soil_salinity\": \"undefined\",\
+        \"soil_bulk_density\": \"undefined\",\
         \"plant_crop\": \"undefined\",\
         \"plant_sub_type\": \"undefined\",\
         \"plant_planting_date\": \"undefined\",\
