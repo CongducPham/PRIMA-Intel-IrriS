@@ -14,8 +14,8 @@ jq ".sensors += \
       \"value\": {\
         \"sensor_type\": \"${2}\",\
         \"sensor_age\": \"0\",\
-        \"sensor_max\": \"800\",\
-        \"sensor_min\": \"0\",\
+        \"sensor_max_value\": \"800\",\
+        \"sensor_min_value\": \"0\",\
         \"soil_type\": \"silty\",\
         \"soil_irrigation_type\": \"undefined\",\
         \"soil_salinity\": \"undefined\",\
@@ -43,8 +43,8 @@ jq ".sensors += \
       \"value\": {\
         \"sensor_type\": \"${2}_cbar\",\
         \"sensor_age\": \"0\",\
-        \"sensor_max\": \"124\",\
-        \"sensor_min\": \"0\",\
+        \"sensor_max_value\": \"124\",\
+        \"sensor_min_value\": \"0\",\
         \"soil_type\": \"silty\",
         \"soil_irrigation_type\": \"undefined\",\
         \"soil_salinity\": \"undefined\",\
@@ -72,8 +72,8 @@ jq ".sensors += \
       \"value\": {\
         \"sensor_type\": \"tensiometer_cbar\",\
         \"sensor_age\": \"0\",\
-        \"sensor_max\": \"124\",\
-        \"sensor_min\": \"0\",\
+        \"sensor_max_value\": \"124\",\
+        \"sensor_min_value\": \"0\",\
         \"soil_type\": \"silty\",
         \"soil_irrigation_type\": \"undefined\",\
         \"soil_salinity\": \"undefined\",\
@@ -97,8 +97,8 @@ jq ".sensors += \
       \"value\": {\
         \"sensor_type\": \"tensiometer_cbar\",\
         \"sensor_age\": \"0\",\
-        \"sensor_max\": \"124\",\
-        \"sensor_min\": \"0\",\
+        \"sensor_max_value\": \"124\",\
+        \"sensor_min_value\": \"0\",\
         \"soil_type\": \"silty\",
         \"soil_irrigation_type\": \"undefined\",\
         \"soil_salinity\": \"undefined\",\
