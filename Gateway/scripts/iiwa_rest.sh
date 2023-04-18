@@ -76,7 +76,7 @@ else
             DEVICES=`curl -X GET "http://wazigate.local:5000/devices" -H  "accept: application/json"`
             NDEVICE=`echo $DEVICES | jq '. | length'`
 
-            docker cp /home/pi/intel-irris-waziapp/config/empty/intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config    
+            # docker cp /home/pi/intel-irris-waziapp/config/empty/intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config    
 
             while [ $NDEVICE -gt 0 ]
             do

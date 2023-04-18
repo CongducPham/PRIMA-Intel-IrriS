@@ -153,7 +153,7 @@ if len(sys.argv)>1:
 
             for dev_dash in device_json:
                 dev_id=dev_dash["device_id"] 
-                # print(dev_id)
+                print(dev_id)
     
                 WaziGate_url = 'http://wazigate.local:5000/devices/'+dev_id
                 # print(WaziGate_url)
@@ -161,6 +161,7 @@ if len(sys.argv)>1:
                 try:
                     response = requests.delete(
                         WaziGate_url, headers=WaziGate_headers, timeout=30)
+                    print(response.text)
 
                 except requests.exceptions.RequestException as e:
                     print(e)

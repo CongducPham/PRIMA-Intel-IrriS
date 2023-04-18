@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker cp /home/pi/intel-irris-waziapp/config/empty/intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config    
+# docker cp /home/pi/intel-irris-waziapp/config/empty/intel_irris_sensors_configurations.json waziup.intel-irris-waziapp:/root/src/config    
 
 echo "Get token"
 TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
