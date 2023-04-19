@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: August 31st, 2022 by C. Pham
+ * last update: April 19th, 2023 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -70,6 +70,10 @@
 //#define SOIL_TEMP_SENSOR
 // only for watermark sensors, not relevant for capacitive sensors
 #define LINK_SOIL_TEMP_TO_CENTIBAR
+// use SEN0308 capacitive calibration for low voltage
+#define SEN0308_CALIBRATION_LOW_VOLTAGE
+// send millivolt with SEN0308 capacitive
+//#define SEN0308_TRANSMIT_MILLIVOLT
 
 ////////////////////////////////////////////////////////////////////
 // WAZISENSE and WAZIDEV v1.4 boards have
@@ -339,7 +343,6 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 
 // Include sensors
 #include "Sensor.h"
-#include "rawAnalog.h"
 #ifdef SI7021_SENSOR
 #include <Wire.h>
 #include "i2c_SI7021.h"
@@ -347,12 +350,15 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #include "si7021_Humidity.h"
 #endif
 
-#ifdef SOIL_TEMP_SENSOR
-#include "DS18B20.h"
-#endif
-
 #ifdef WITH_WATERMARK
 #include "watermark.h"
+#else
+//#include "rawAnalog.h"
+#include "sen0308.h"
+#endif
+
+#ifdef SOIL_TEMP_SENSOR
+#include "DS18B20.h"
 #endif
 
 #ifdef USE_XLPP
@@ -436,6 +442,8 @@ uint8_t capacitive_sensor_index;
 uint8_t wm1_sensor_index;
 uint8_t wm2_sensor_index;
 uint8_t soil_temp_sensor_index;
+#define SOIL_TEMP_UNDEFINED_VALUE -99.0
+double soil_temp_sensor_value=SOIL_TEMP_UNDEFINED_VALUE;
 //////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
@@ -929,7 +937,7 @@ void setup() {
   sensor_index++;
 #endif
 #else
-  sensor_ptrs[sensor_index] = new rawAnalog("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH1_ANALOG_PIN, (uint8_t) SH1_PWR_PIN /*no pin trigger*/);
+  sensor_ptrs[sensor_index] = new sen0308("SH1", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH1_ANALOG_PIN, (uint8_t) SH1_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
   sensor_ptrs[sensor_index]->set_warmup_time(200);
   capacitive_sensor_index=sensor_index;
@@ -1310,7 +1318,7 @@ void setup() {
 #endif
 
   // check batterie first time
-  current_vcc = vcc.Read_Volts();
+  current_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.00;
   //initialized last_vcc on boot
   last_vcc = current_vcc;
   PRINT_CSTSTR("Battery voltage on startup is ");
@@ -1343,7 +1351,6 @@ void measure_and_send( void)
   long endSend;
   uint8_t app_key_offset=0;
   int e;
-  float sensor_value;
 
 #if defined WITH_APPKEY && not defined LORAWAN
       app_key_offset = sizeof(my_appKey);
@@ -1417,6 +1424,11 @@ void measure_and_send( void)
         //there might be specific pre-init operations for some sensors
         sensor_ptrs[i]->pre_init();   
       }
+
+#if defined WITH_WATERMARK && defined SOIL_TEMP_SENSOR
+      // we get the soil temperature in advance so that we can use it later for the watermark
+      soil_temp_sensor_value=sensor_ptrs[soil_temp_sensor_index]->get_value();
+#endif
       
       // main loop for sensors, actually, you don't have to edit anything here
       // just add a predefined sensor if needed or provide a new sensor class instance for a handle a new physical sensor
@@ -1433,7 +1445,23 @@ void measure_and_send( void)
               }
 #else
               char float_str[10];
-              double tmp_value=sensor_ptrs[i]->get_value();
+              double tmp_value;
+              
+#if defined WITH_WATERMARK && defined SOIL_TEMP_SENSOR
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST",2)==0)
+                tmp_value=soil_temp_sensor_value;                
+              else
+#endif              
+                tmp_value=sensor_ptrs[i]->get_value();
+
+              //TEST
+              //tmp_value += 0.25;
+
+#if not defined WITH_WATERMARK && defined SEN0308_TRANSMIT_MILLIVOLT
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"SH1",3)==0) {
+                tmp_value=(double)(((sen0308*)sensor_ptrs[i])->convert_to_millivolt(tmp_value, 1023));
+              }  
+#endif
                           
               ftoa(float_str, tmp_value, 2);
           
@@ -1447,15 +1475,25 @@ void measure_and_send( void)
 #ifdef WITH_WATERMARK
               //the first Watermark
               if (strncmp(sensor_ptrs[i]->get_nomenclature(),"WM1",3)==0) {
-                //taking 28°C as the default soil temperature
-                ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0), 2);
+#ifdef LINK_SOIL_TEMP_TO_CENTIBAR                
+                if (soil_temp_sensor_value!=SOIL_TEMP_UNDEFINED_VALUE)
+                  ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, soil_temp_sensor_value, -1.0), 2);
+                else  
+#endif                
+                  //taking 28°C as the default soil temperature
+                  ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0), 2);
                 sprintf(final_str, "%s/CB1/%s", final_str, float_str);
               }  
 #ifdef TWO_WATERMARK
               //the second Watermark
               if (strncmp(sensor_ptrs[i]->get_nomenclature(),"WM2",3)==0) {
-                //taking 28°C as the default soil temperature
-                ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0), 2);
+#ifdef LINK_SOIL_TEMP_TO_CENTIBAR                
+                if (soil_temp_sensor_value!=SOIL_TEMP_UNDEFINED_VALUE)
+                  ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, soil_temp_sensor_value, -1.0), 2);
+                else  
+#endif                
+                  //taking 28°C as the default soil temperature
+                  ftoa(float_str, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0), 2);                
                 sprintf(final_str, "%s/CB2/%s", final_str, float_str);
               }  
 #endif              
@@ -1483,8 +1521,13 @@ void measure_and_send( void)
               //the first Watermark
               if (strncmp(sensor_ptrs[i]->get_nomenclature(),"WM1",3)==0) {
                 //tmp_value=110.0; // for testing, i.e. 1100omhs
-                // here we convert to centibar, using a mean temperature of 28°C
-                lpp.addTemperature(ch, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0));
+#ifdef LINK_SOIL_TEMP_TO_CENTIBAR                
+                if (soil_temp_sensor_value!=SOIL_TEMP_UNDEFINED_VALUE)
+                  lpp.addTemperature(ch, sensor_ptrs[i]->convert_value(tmp_value, soil_temp_sensor_value, -1.0));
+                else
+#endif                  
+                  // here we convert to centibar, using a mean temperature of 28°C
+                  lpp.addTemperature(ch, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0));
                 ch++;
                                  
                 //Note: for watermark, raw data is scaled by dividing by 10 because addAnalogInput() will not accept
@@ -1497,8 +1540,13 @@ void measure_and_send( void)
               //the second Watermark
               if (strncmp(sensor_ptrs[i]->get_nomenclature(),"WM2",3)==0) {
                 //tmp_value=110.0; // for testing, i.e. 1100omhs
-                // here we convert to centibar, using a mean temperature of 28°C
-                lpp.addTemperature(ch, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0));
+#ifdef LINK_SOIL_TEMP_TO_CENTIBAR                
+                if (soil_temp_sensor_value!=SOIL_TEMP_UNDEFINED_VALUE)
+                  lpp.addTemperature(ch, sensor_ptrs[i]->convert_value(tmp_value, soil_temp_sensor_value, -1.0));
+                else
+#endif                
+                  // here we convert to centibar, using a mean temperature of 28°C
+                  lpp.addTemperature(ch, sensor_ptrs[i]->convert_value(tmp_value, WM_REF_TEMPERATURE, -1.0));
                 ch++;
                 
                 //Note: for watermark, raw data is scaled by dividing by 10 because addAnalogInput() will not accept
@@ -1514,14 +1562,14 @@ void measure_and_send( void)
               if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST",2)==0) {
                 //we always use channel 5 for soil temperature
                 lpp.addTemperature(5, tmp_value);
-#ifdef LINK_SOIL_TEMP_TO_CENTIBAR
-                //TODO: the channel index is hardcoded
-                lpp.addTemperature(0, sensor_ptrs[wm1_sensor_index]->convert_value(sensor_ptrs[wm1_sensor_index]->get_data(), tmp_value, -1.0));
-#ifdef TWO_WATERMARK
-                //TODO: the channel index is hardcoded
-                lpp.addTemperature(2, sensor_ptrs[wm2_sensor_index]->convert_value(sensor_ptrs[wm2_sensor_index]->get_data(), tmp_value, -1.0));
-#endif                
-#endif
+//#ifdef LINK_SOIL_TEMP_TO_CENTIBAR
+//                //TODO: the channel index is hardcoded
+//                lpp.addTemperature(0, sensor_ptrs[wm1_sensor_index]->convert_value(sensor_ptrs[wm1_sensor_index]->get_data(), tmp_value, -1.0));
+//#ifdef TWO_WATERMARK
+//                //TODO: the channel index is hardcoded
+//                lpp.addTemperature(2, sensor_ptrs[wm2_sensor_index]->convert_value(sensor_ptrs[wm2_sensor_index]->get_data(), tmp_value, -1.0));
+//#endif                
+//#endif
               }
 #endif
 
@@ -1535,7 +1583,10 @@ void measure_and_send( void)
               }
 #endif
               //the soil capacitive sensor
-              //tmp_value=250.0; // for testing              
+              //tmp_value=250.0; // for testing
+#if defined MONITOR_BAT_VOLTAGE && defined SEN0308_CALIBRATION_LOW_VOLTAGE
+              tmp_value=sensor_ptrs[i]->convert_value(tmp_value, (double)last_vcc, 0.0);
+#endif
               lpp.addTemperature(ch, tmp_value);    
 #endif
 #endif
@@ -1564,10 +1615,12 @@ void measure_and_send( void)
 #if defined USE_XLPP || defined USE_LPP
 //here we transmit last_vcc, measured from last transmission cycle
 #if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE      
-      lpp.addAnalogInput(6, last_vcc);
+        lpp.addAnalogInput(6, last_vcc);
+        //lpp.addTemperature(6, last_vcc);
 #elif defined TRANSMIT_VOLTAGE
       if (last_vcc < VCC_LOW) {
-        lpp.addAnalogInput(6, last_vcc);  
+        lpp.addAnalogInput(6, last_vcc);
+        //lpp.addTemperature(6, last_vcc);
       }
 #endif      
 #endif
@@ -1669,7 +1722,7 @@ void measure_and_send( void)
 #ifdef MONITOR_BAT_VOLTAGE
         //not 100% reliable because the board can reboot right after transmission because of
         //low voltage, so last_vcc = vcc.Read_Volts(); is not executed
-        last_vcc = vcc.Read_Volts();     
+        last_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.0;     
 #endif                
         endSend = millis();                                                  
         TXPacketCount++;
@@ -1690,7 +1743,7 @@ void measure_and_send( void)
 #ifdef MONITOR_BAT_VOLTAGE
         //not 100% reliable because the board can reboot right after transmission because of
         //low voltage, so last_vcc = vcc.Read_Volts(); is not executed
-        last_vcc = vcc.Read_Volts();     
+        last_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.0;     
 #endif        
         endSend=millis();       
         //if here there was an error transmitting packet
@@ -1994,7 +2047,7 @@ void loop(void)
 
 #ifdef MONITOR_BAT_VOLTAGE        
 
-      current_vcc = vcc.Read_Volts();
+      current_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.0;
 
       PRINT_CSTSTR("BATTERY-->");
       PRINT_VALUE("%f", current_vcc);

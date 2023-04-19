@@ -15,6 +15,7 @@ class rawAnalog : public Sensor {
     rawAnalog(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power);
     void update_data();
     double get_value();
+    uint16_t convert_to_millivolt(double value, uint16_t maxvalue);
 };
 
 #endif

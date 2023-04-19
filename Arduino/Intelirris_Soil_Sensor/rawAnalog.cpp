@@ -70,3 +70,8 @@ double rawAnalog::get_value()
   update_data();
   return get_data();
 }
+
+uint16_t rawAnalog::convert_to_millivolt(double value, uint16_t maxvalue)
+{
+  return ((uint16_t)(value*RAWANALOG_SCALE/(double)maxvalue));
+}
