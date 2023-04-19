@@ -10,6 +10,7 @@ NDEVICE=`curl -X GET "http://localhost/devices" -H  "accept: application/json" |
 
 echo $NDEVICE
 
+
 #we leave device[0] which is usually the initial gateway declaration
 while [ $NDEVICE -gt 0 ]
 do
@@ -22,6 +23,7 @@ do
   if [ $sizeDEVICE -gt 16 ]
   then
     echo "Delete device ${DEVICE}"
+    curl -X DELETE "http://localhost:5000/devices/${DEVICE}" -H  "accept: application/json"
     curl -X DELETE "http://localhost/devices/${DEVICE}" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json"   
   else
     echo "Probably a gateway, skipping"  
