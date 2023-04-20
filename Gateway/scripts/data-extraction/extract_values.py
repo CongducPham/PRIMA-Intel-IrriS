@@ -2,7 +2,8 @@ import requests
 import json
 import sys
 
-BASE_URL = "http://localhost/"
+# BASE_URL = "http://localhost/"
+BASE_URL = "http://wazigate.local/"
 
 # common headers for requests
 iiwa_headers = {
@@ -15,7 +16,8 @@ WaziGate_headers = {
 WaziGate_headers_auth = {
     'accept': 'application/json',
     'content-type': 'application/json',
-    'Authorization': 'Bearer **'
+    # 'Authorization': 'Bearer **'
+    'Authorization': 'Bearer '
 }
 # ---------------------#
 
@@ -29,7 +31,8 @@ if len(sys.argv)>1:
         pload = '{"username":"admin","password":"loragateway"}'
         response = requests.post(
             WaziGate_url, headers=WaziGate_headers, data=pload, timeout=30)
-
+        # print(response.text)
+        WaziGate_headers_auth['Authorization']+=response.text.replace('"','')
     except requests.exceptions.RequestException as e:
         print(e)
         print('get-entry: requests command failed')
@@ -53,13 +56,7 @@ if len(sys.argv)>1:
         print(response.text)
         sys.exit('Something bad happened')
 
-
-    # print(device_json)
-    # print(len(device_json))
-    # print(response.text)
-
     # print(json.dumps(device_json, indent=4))
-    # print(0/0)
 
     if sys.argv[1]=="devices":
         devices={}
@@ -122,7 +119,6 @@ if len(sys.argv)>1:
                             break
                     if found_sens:
 
-    # curl -X GET "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/values" -H  "accept: application/json" >> extracted.json
                         WaziGate_url = BASE_URL+'devices/'+dev_id+'/sensors/'+sens_id+'/values'    
                         try:
                             response = requests.get(
@@ -149,7 +145,6 @@ if len(sys.argv)>1:
                             "values":sens_values
                         })
 
-        # print(extracted_values)
         
         if len(sys.argv)>2:
             if sys.argv[2]=="json":
@@ -157,8 +152,6 @@ if len(sys.argv)>1:
                 json_dict = json.dumps(extracted_values, indent=4)
                 with open("full_JSON_export.json", "w") as outfile:
                     outfile.write(json_dict)
-
-                #TODO: update dataset/plot json according to this new json structure
 
             elif sys.argv[2]=="csv_Bondy":
 
@@ -250,13 +243,36 @@ if len(sys.argv)>1:
 
 
             elif sys.argv[2]=="csv":
-                print("aaaa")
-            
-        # for dev_dash in device_json:
-        #     dev_id=dev_dash["device_id"]
-        #     print(dev_id)
+                matrix=[]
+                max_len=0
+                for device_id in extracted_values:
+                    device=extracted_values[device_id]
+                    row1_ori=[device["devID"],device["devName"]]
+
+                    for existing_sensor in device["sensors"]:
+                        row1=row1_ori+[timeval["time"] for timeval in existing_sensor["values"][2 if existing_sensor["id"][-1] in ["0","1","2","3"] else 1:]]
+                        row2=[existing_sensor["id"],existing_sensor["pretty_name"]]
+                        row2+=[timeval["value"] for timeval in existing_sensor["values"][2 if existing_sensor["id"][-1] in ["0","1","2","3"] else 1:]]
+
+                        max_len=max(max_len,len(row2))
+                        matrix+=[row1,row2]
+
+                #pad
+                for row in matrix:
+                    to_pad=max_len-len(row)
+                    if to_pad>0:
+                        row+=[""]*to_pad
+
+                #transpose to a csv
+                with open('extracted_data.csv', 'w') as f:
+                    for col in zip(*matrix):
+                        for cell in col:
+                            f.write(str(cell))
+                            f.write(',')
+                        f.write('\n')
+
     else:
         print("{0} is an unknown argument.".format(sys.argv[1]))
 
 else:
-    print("extract_values.py requires arguments")
+    print("extract_values.py requires arguments, see README")
