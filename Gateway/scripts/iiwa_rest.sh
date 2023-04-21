@@ -13,15 +13,15 @@ else
     
     if [ $1 == 'devices' ]
     then
-        curl -X GET "http://wazigate.local:5000/devices" -H  "accept: application/json" > iiwa_devices.json
+        curl -X GET "http://localhost:5000/devices" -H  "accept: application/json" > iiwa_devices.json
     elif [ $1 == 'add' ]
     then
-        curl -X POST "http://wazigate.local:5000/devices/$2" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{
+        curl -X POST "http://localhost:5000/devices/$2" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{
           \"device_id\":\"$2\",\"device_name\":\"$3\",\"sensors_structure\":\"$4\"}" | tr -d '\"'
 
         if [ $4 == '1_watermark' ] || [ $4 == '2_watermark' ]
         then
-            curl -X POST "http://wazigate.local:5000/devices/$2/sensors/$5" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "
+            curl -X POST "http://localhost:5000/devices/$2/sensors/$5" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "
             {
                 \"sensor_type\": \"tensiometer_cbar\", 
                 \"sensor_age\": \"0\", 
@@ -45,7 +45,7 @@ else
             }
             " | tr -d '\"'
         else
-            curl -X POST "http://wazigate.local:5000/devices/$2/sensors/$5" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "
+            curl -X POST "http://localhost:5000/devices/$2/sensors/$5" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "
             {
                 \"sensor_type\": \"capacitive\", 
                 \"sensor_age\": \"0\", 
@@ -73,7 +73,7 @@ else
     then
         if [ $2 == 'all' ]
         then
-            DEVICES=`curl -X GET "http://wazigate.local:5000/devices" -H  "accept: application/json"`
+            DEVICES=`curl -X GET "http://localhost:5000/devices" -H  "accept: application/json"`
             NDEVICE=`echo $DEVICES | jq '. | length'`
 
             while [ $NDEVICE -gt 0 ]
@@ -81,18 +81,18 @@ else
                 (( NDEVICE-- ))
                 DEVICE=`echo $DEVICES | jq ".[${NDEVICE}].device_id"  | tr -d '\"'`
 
-                curl -X DELETE "http://wazigate.local:5000/devices/${DEVICE}" -H  "accept: application/json" -H  "Content-Type: application/json" -H "Authorization: Bearer $TOK"
+                curl -X DELETE "http://localhost:5000/devices/${DEVICE}" -H  "accept: application/json" -H  "Content-Type: application/json" -H "Authorization: Bearer $TOK"
                 # ./iiwa_rest.sh delete ${DEVICE}
             done
         else
-            curl --max-time 30 -X DELETE "http://wazigate.local:5000/devices/$2" -H  "accept: application/json"
+            curl --max-time 30 -X DELETE "http://localhost:5000/devices/$2" -H  "accept: application/json"
         fi
     elif [ $1 == 'data' ]
     then
-        curl -X GET "http://wazigate.local:5000/devices/data" -H  "accept: application/json" > iiwa_data.json
+        curl -X GET "http://localhost:5000/devices/data" -H  "accept: application/json" > iiwa_data.json
     elif [ $1 == 'configs' ]
     then
-        curl -X GET "http://wazigate.local:5000/sensors_configurations" -H  "accept: application/json" > iiwa_sensors_configurations.json
+        curl -X GET "http://localhost:5000/sensors_configurations" -H  "accept: application/json" > iiwa_sensors_configurations.json
     fi
 fi
 

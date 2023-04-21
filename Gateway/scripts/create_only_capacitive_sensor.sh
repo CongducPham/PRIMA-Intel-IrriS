@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # this script creates a SEN0308 sensor attached to a given device
+# OBSOLETE
 
 if [ $# -eq 0 ]
   then

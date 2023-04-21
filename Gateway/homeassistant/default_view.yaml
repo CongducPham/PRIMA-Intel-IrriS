@@ -42,7 +42,7 @@ views:
                   - from: 416
                     color: '#d1000f'
               - type: sensor
-                entity: sensor.soil_area_2_soil_temperature_sensor
+                entity: sensor.soil_area_1_soil_temperature_sensor
                 graph: line
                 icon: mdi:thermometer
               - type: gauge

@@ -22,7 +22,7 @@ Based on information from https://sequr.be/blog/2022/09/home-assistant-container
 
 	> cd /opt
 	> sudo cp /home/pi/homeassistant/docker-compose.yaml .
-	> docker-compose up -d
+	> sudo docker-compose up -d
 
 This may take a while to download the HA Docker container.
 
@@ -61,9 +61,9 @@ When connected to the WaziGate (either with wired Ethernet or through the WaziGa
 
 Create an `intelirris` user. It should really be `intelirris`. Then choose a password. You can assigned a picture for `intelirris` user. You can take `intel-irris-small-logo.png` provided this folder.
 
-Log in your HA instance using `intelirris` user.	
+Log in your HA instance using `intelirris` user.	Then define the location name as `Farm`. Fill in the various information such as `Country`, `Language`, ...
 
-You should see a very simple dashboard with the latest data from your devices. If it is not the case, go to `Developer Tools` and click on `REST ENTITIES AND NOTIFY SERVICES` in the `YAML configuration reloading` section. THEN GO BACK TO THE `Overview` menu.
+Then, you should see a very simple dashboard with the latest data from your devices. If it is not the case, go to `Developer Tools` and click on `REST ENTITIES AND NOTIFY SERVICES` in the `YAML configuration reloading` section. If it is the first configuration, you may need to click on `Restart` in the `Check and Restart` section. THEN GO BACK TO THE `Overview` menu.
 
 Last step: customize the dashboard
 -----

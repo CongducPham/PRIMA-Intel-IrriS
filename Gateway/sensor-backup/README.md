@@ -97,6 +97,14 @@ Restore sensor's data from:
 - 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_5.data_split_X.json, if file exists
 - 62c7c657127dbd0001154bbc.tensiometer.analogInput_6.data_split_X.json
 
+If you want a fresh start, you can delete all devices before you restore from backup files:
+
+	> /home/pi/scripts/delete_all_devices.sh
+	
+**If you want your new devices to be automatically included into IIWA and HA**, you must run `add_to_iiwa_ha_starterkit.sh` after the restoration process:
+
+	> /home/pi/scripts/add_to_iiwa_ha_starterkit.sh
+
 Restore: to restore to a specific device id
 -------
 

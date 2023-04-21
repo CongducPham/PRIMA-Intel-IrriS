@@ -2,7 +2,7 @@
 
 # Ex: create_new_2-tensiometer.sh 4 B2
 
-echo "--> calling create_full_tensiometer_device_with_dev_addr.sh $1 $2"
+echo "--> calling create_full_2-tensiometer_device_with_dev_addr.sh $1 $2"
 ./create_full_2-tensiometer_device_with_dev_addr.sh $1 $2
 
 DEVICE=`cat ./LAST_CREATED_DEVICE.txt`
