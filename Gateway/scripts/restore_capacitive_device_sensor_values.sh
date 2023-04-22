@@ -81,7 +81,6 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
 
 fi
 
-echo $DEVICE > /home/pi/scripts/LAST_CREATED_DEVICE.txt
 echo "device $DEVICE"
 echo "		name: SOIL-AREA-${1}"
 echo "		with Soil Humidity Sensor displaying Raw value from SEN0308"
