@@ -34,7 +34,7 @@ Default configuration for INTEL-IRRIS project (works out-of-the box with the INT
 - LPP channel 5 is used for the soil temperature data if an DS18B20 is connected resulting in `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data
 - LPP channel 6 is used for battery voltage resulting in `analogInput_6` as the internal default logical sensor for battery voltage
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/dashboard-voltage.png" width="400">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-dashboard.png" width="400">
 
 Enjoy!
 C. Pham
