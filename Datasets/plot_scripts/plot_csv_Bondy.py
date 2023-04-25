@@ -9,7 +9,7 @@ df=pd.read_csv('extracted_Bondy_aggregated.csv', header=[0,1,2])
 # df.drop(labels=df.columns[2],axis=1,inplace=True)
 
 ## Use Pandas interpretation of date strings
-df[df.columns[0]]=pd.to_datetime(df[df.columns[0]])
+df[df.columns[0]]=pd.to_datetime(df[df.columns[0]],utc=True)
 
 ## Group column IDs according to considered metrics 
 same_cols={}
