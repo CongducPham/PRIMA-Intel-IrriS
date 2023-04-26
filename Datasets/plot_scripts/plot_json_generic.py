@@ -26,15 +26,18 @@ for sens_type in sensortypes:
             if existing_sensor["pretty_name"]==sens_type:
                 found=True
                 break
-        if found and len(existing_sensor["values"])>0:
-            df = pd.DataFrame(existing_sensor["values"][2 if existing_sensor["id"][-1] in ["0","1","2","3"] else 1:])
-            df['time']=pd.to_datetime(df['time'])
-            df.rename(columns={'value': device["devName"]}, inplace=True)
-            if not fig_axed:
-                fig_ax=df.plot(x='time',y=device["devName"],xlabel="Time",ylabel=sens_type)
-                fig_axed=True
-            else:
-                df.plot(x='time',y=device["devName"],ax=fig_ax,xlabel="Time")
+        if found:
+            first_non_default_index=2 if existing_sensor["id"][-1] in ["0","1","2","3"] else 1
+            if len(existing_sensor["values"])>first_non_default_index:
+                df = pd.DataFrame(existing_sensor["values"][first_non_default_index:])
+                df['time']=pd.to_datetime(df['time'],utc=True)
+
+                df.rename(columns={'value': device["devName"]}, inplace=True)
+                if not fig_axed:
+                    fig_ax=df.plot(x='time',y=device["devName"],xlabel="Time",ylabel=sens_type)
+                    fig_axed=True
+                else:
+                    df.plot(x='time',y=device["devName"],ax=fig_ax,xlabel="Time")
 
     fig = plt.gcf()
     fig.set_size_inches(12,9)

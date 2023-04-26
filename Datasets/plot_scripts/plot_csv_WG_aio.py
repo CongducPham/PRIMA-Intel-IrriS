@@ -9,7 +9,7 @@ devnames={}
 for col in range(len(df.columns)):
     # convert times with pandas and get device names
     if col%2==0:
-        df[df.columns[col]]=pd.to_datetime(df[df.columns[col]])
+        df[df.columns[col]]=pd.to_datetime(df[df.columns[col]],utc=True)
         devnames[col+1]=df.columns[col][1]
         if len(devnames[col+1])>2:
             # check duplicates
