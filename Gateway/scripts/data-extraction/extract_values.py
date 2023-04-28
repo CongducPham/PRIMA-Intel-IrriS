@@ -2,8 +2,6 @@ import requests
 import json
 import sys
 
-# BASE_URL = "http://localhost/"
-BASE_URL = "http://wazigate.local/"
 
 # common headers for requests
 iiwa_headers = {
@@ -21,12 +19,17 @@ WaziGate_headers_auth = {
 }
 # ---------------------#
 
-if len(sys.argv)>1:
+if len(sys.argv)>2:
     print('=========================================')
+
+    # BASE_URL = "http://localhost/"
+    # BASE_URL = "http://wazigate.local/"
+    BASE_URL = "http://"+sys.argv[1]+"/"
+
 
     my_token = "hello"
     # get the token first
-    WaziGate_url = 'http://wazigate.local/auth/token'
+    WaziGate_url = 'http://'+sys.argv[1]'+/auth/token'
     try:
         pload = '{"username":"admin","password":"loragateway"}'
         response = requests.post(
@@ -58,7 +61,7 @@ if len(sys.argv)>1:
 
     # print(json.dumps(device_json, indent=4))
 
-    if sys.argv[1]=="devices":
+    if sys.argv[2]=="devices":
         devices={}
         for dev_dash in device_json:
             #discard GWs
@@ -86,14 +89,14 @@ if len(sys.argv)>1:
         with open("devices_to_export.json", "w") as outfile:
             outfile.write(json_dict)
 
-        if len(sys.argv)>2 and sys.argv[2]=="print":
+        if len(sys.argv)>3 and sys.argv[3]=="print":
             print(json_dict)
 
 
-    elif sys.argv[1][-5:]==".json":
+    elif sys.argv[2][-5:]==".json":
         extracted_values={}
         dev_dict={}
-        with open(sys.argv[1]) as f:
+        with open(sys.argv[2]) as f:
             dev_dict = json.load(f)
         for dev in dev_dict:
             dev_id=dev_dict[dev]["id"]
@@ -146,14 +149,14 @@ if len(sys.argv)>1:
                         })
 
         
-        if len(sys.argv)>2:
-            if sys.argv[2]=="json":
+        if len(sys.argv)>3:
+            if sys.argv[3]=="json":
 
                 json_dict = json.dumps(extracted_values, indent=4)
                 with open("full_JSON_export.json", "w") as outfile:
                     outfile.write(json_dict)
 
-            elif sys.argv[2]=="csv_Bondy":
+            elif sys.argv[3]=="csv_Bondy":
 
                 # exporting to Bondy aggregated CSV format
                 with open('extracted_Bondy_aggregated.csv', 'w') as f:
@@ -242,7 +245,7 @@ if len(sys.argv)>1:
                         f.write('\n')
 
 
-            elif sys.argv[2]=="csv":
+            elif sys.argv[3]=="csv":
                 matrix=[]
                 max_len=0
                 for device_id in extracted_values:
@@ -272,7 +275,7 @@ if len(sys.argv)>1:
                         f.write('\n')
 
     else:
-        print("{0} is an unknown argument.".format(sys.argv[1]))
+        print("{0} is an unknown argument.".format(sys.argv[2]))
 
 else:
     print("extract_values.py requires arguments, see README")
