@@ -11,7 +11,9 @@ if [ $# -eq 0 ]
     exit
 fi
 
-SENSORS="temperatureSensor_0 temperatureSensor_1 temperatureSensor_5 analogInput_6"
+# SENSORS="temperatureSensor_0 temperatureSensor_1 temperatureSensor_5 analogInput_6"
+SENSORS="temperatureSensor_0 temperatureSensor_1 temperatureSensor_2 temperatureSensor_3 temperatureSensor_5 analogInput_6"
+
 
 for k in $SENSORS
 do
