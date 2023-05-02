@@ -47,8 +47,7 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
     \"name\":\"Watermark 1\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
-    \"unit\":\"\",
-    \"value\":10
+    \"unit\":\"\"
   },{
     \"id\":\"temperatureSensor_1\",
     \"kind\":\"\",
@@ -67,8 +66,7 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
     \"name\":\"Watermark 1\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
-    \"unit\":\"\",
-    \"value\":550
+    \"unit\":\"\"
   },{
     \"id\":\"temperatureSensor_2\",
     \"kind\":\"\",
@@ -87,8 +85,7 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
     \"name\":\"Watermark 2\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
-    \"unit\":\"\",
-    \"value\":10
+    \"unit\":\"\"
   },{
     \"id\":\"temperatureSensor_3\",
     \"kind\":\"\",
@@ -107,8 +104,7 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
     \"name\":\"Watermark 2\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
-    \"unit\":\"\",
-    \"value\":550
+    \"unit\":\"\"
   }]}" | tr -d '\"'`
 
 else
@@ -137,8 +133,7 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
     \"name\":\"Watermark 1\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
-    \"unit\":\"\",
-    \"value\":10
+    \"unit\":\"\"
   },{
     \"id\":\"temperatureSensor_1\",
     \"kind\":\"\",
@@ -157,8 +152,7 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
     \"name\":\"Watermark 1\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
-    \"unit\":\"\",
-    \"value\":550
+    \"unit\":\"\"
   },{
     \"id\":\"temperatureSensor_2\",
     \"kind\":\"\",
@@ -177,8 +171,7 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
     \"name\":\"Watermark 2\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
-    \"unit\":\"\",
-    \"value\":10
+    \"unit\":\"\"
   },{
     \"id\":\"temperatureSensor_3\",
     \"kind\":\"\",
@@ -197,8 +190,7 @@ DEVICE=`curl -X POST "http://localhost/devices" -H "accept: application/json" -H
     \"name\":\"Watermark 2\",
     \"quantity\":\"\",
     \"time\":\"$DATE\",
-    \"unit\":\"\",
-    \"value\":550
+    \"unit\":\"\"
   }]}" | tr -d '\"'`
   
 fi
