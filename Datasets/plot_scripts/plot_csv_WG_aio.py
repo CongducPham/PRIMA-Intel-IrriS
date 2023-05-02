@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 INTELIRRIS=True
 # INTELIRRIS=False
 
-df=pd.read_csv('template.csv', header=[0,1])#.dropna()  
+df=pd.read_csv('extracted_data.csv', header=[0,1])#.dropna()
 
 ## Group column IDs according to considered metrics 
 same_cols={}

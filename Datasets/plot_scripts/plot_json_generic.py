@@ -34,7 +34,7 @@ for sens_type in sensortypes:
         if found:
             start_index=0
             if INTELIRRIS:
-                start_index=2 if sensorids[col][-1] in ["0","1","2","3"] else 1
+                start_index=2 if existing_sensor["id"][-1] in ["0","1","2","3"] else 1
             if len(existing_sensor["values"])>start_index:
                 df = pd.DataFrame(existing_sensor["values"][start_index:])
                 df['time']=pd.to_datetime(df['time'],utc=True)

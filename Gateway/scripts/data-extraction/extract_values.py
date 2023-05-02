@@ -29,7 +29,7 @@ if len(sys.argv)>2:
 
     my_token = "hello"
     # get the token first
-    WaziGate_url = 'http://'+sys.argv[1]'+/auth/token'
+    WaziGate_url = 'http://'+sys.argv[1]+'/auth/token'
     try:
         pload = '{"username":"admin","password":"loragateway"}'
         response = requests.post(
@@ -253,9 +253,9 @@ if len(sys.argv)>2:
                     row1_ori=[device["devID"],device["devName"]]
 
                     for existing_sensor in device["sensors"]:
-                        row1=row1_ori+[timeval["time"] for timeval in existing_sensor["values"][2 if existing_sensor["id"][-1] in ["0","1","2","3"] else 1:]]
+                        row1=row1_ori+[timeval["time"] for timeval in existing_sensor["values"]]
                         row2=[existing_sensor["id"],existing_sensor["pretty_name"]]
-                        row2+=[timeval["value"] for timeval in existing_sensor["values"][2 if existing_sensor["id"][-1] in ["0","1","2","3"] else 1:]]
+                        row2+=[timeval["value"] for timeval in existing_sensor["values"]]
 
                         max_len=max(max_len,len(row2))
                         matrix+=[row1,row2]
