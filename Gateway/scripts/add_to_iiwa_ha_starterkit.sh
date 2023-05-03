@@ -14,7 +14,7 @@ echo "--> Add capacitive $DEVICE"
 #add second tensiometer
 DEVICE2=`./show_device_by_name.sh SOIL-AREA-2 id | tr -d '\"'`
 echo "--> Add tensiometer $DEVICE"
-./iiwa_rest.sh add $DEVICE2 SOIL-AREA-2 1_tensiometer temperatureSensor_0
+./iiwa_rest.sh add $DEVICE2 SOIL-AREA-2 1_watermark temperatureSensor_0
 
 #HA, first, duplicate the template files
 echo "--> copy template HA configuration files from /home/pi/homeassistant"
