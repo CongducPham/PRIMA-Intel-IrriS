@@ -1,11 +1,16 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-df=pd.read_csv('template.csv', header=[0,1])#.dropna()  
+
+INTELIRRIS=True
+# INTELIRRIS=False
+
+df=pd.read_csv('extracted_data.csv', header=[0,1])#.dropna()
 
 ## Group column IDs according to considered metrics 
 same_cols={}
 devnames={}
+sensorids={}
 for col in range(len(df.columns)):
     # convert times with pandas and get device names
     if col%2==0:
@@ -21,6 +26,8 @@ for col in range(len(df.columns)):
     if col%2==1:
         # check duplicates
         colname=df.columns[col][1]
+        sensid=df.columns[col][0]
+        sensorids[col]=sensid
         if colname[-2]==".":
             colname=colname[:-2]
         if colname[-3]==".":
@@ -31,15 +38,20 @@ for col in range(len(df.columns)):
             same_cols[colname]=[col]
 # df.columns.set_levels(level0,level=0,inplace=True)
 # print(same_cols)
+# print(sensorids)
 
 # Plot loop
 for metric in same_cols:
     # Plot metric as a func of time using Matplotlib plot func 
     for col in same_cols[metric]:
+        start_index=0
+        if INTELIRRIS:
+            start_index=2 if sensorids[col][-1] in ["0","1","2","3"] else 1
         col_len=len(df[df.columns[col]].dropna())
         plt.plot(
-            [df[df.columns[col-1]][i].to_pydatetime() for i in range(col_len)],
-            df[df.columns[col]].dropna(),
+            [df[df.columns[col-1]][i].to_pydatetime() for i in range(start_index,col_len)],
+            # df[df.columns[col]].dropna(),
+            [df[df.columns[col]][i] for i in range(start_index,col_len)],
             )
     plt.gca().legend([devnames[col] for col in same_cols[metric]])
     plt.gca().set_xlabel("Time")
