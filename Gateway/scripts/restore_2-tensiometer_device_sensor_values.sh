@@ -7,7 +7,7 @@ if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
     echo "Need the original device id"
-    echo "e.g. restore_tensiometer_device_sensor_values.sh 1 B1 62c7c657127dbd00011540a6"
+    echo "e.g. restore_2-tensiometer_device_sensor_values.sh 1 B1 62c7c657127dbd00011540a6"
     exit
 fi
 

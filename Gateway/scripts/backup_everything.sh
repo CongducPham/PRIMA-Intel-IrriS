@@ -31,15 +31,20 @@ do
   then
 	# - show_device_by_name.sh SOIL-AREA-1 sensors[0].meta.kind
 	DEVTYPE=`echo $DEVICES | jq ".[${NDEVICE}].sensors[0].meta.type"  | tr -d '\"'`
+	DEVNAME=`echo $DEVICES | jq ".[${NDEVICE}].name"  | tr -d '\"'`
+	DEVADDR=`curl -X GET "http://localhost/devices/$DEVICE/meta" | jq ".lorawan.devAddr"  | tr -d '\"'`
 
-	echo "backup $DEVTYPE device $DEVICE" >> sensor-backup.log
     if [ $DEVTYPE == 'capacitive' ]
     then
+		DEVADDRSHORT=A${DEVADDR: -1}
 		/home/pi/scripts/backup_capacitive_device_sensor_values.sh $DEVICE
     elif [ $DEVTYPE == 'tensiometer' ]
     then
+		DEVADDRSHORT=B${DEVADDR: -1}
 		/home/pi/scripts/backup_tensiometer_device_sensor_values.sh $DEVICE
 	fi
+	echo "backup $DEVTYPE device $DEVICE named $DEVNAME address $DEVADDRSHORT" >> sensor-backup.log
+
   fi      
   (( NDEVICE-- ))
 done
@@ -75,5 +80,6 @@ then
 		echo "could not mount /dev/sda1 to /media" >> sensor-backup.log
 		echo "trying to umount" >> sensor-backup.log
 	fi
+	cp sensor-backup.log /media/
 	sudo umount /media	
 fi
