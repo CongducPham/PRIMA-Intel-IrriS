@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Ex: backup_starter_kit.sh
-# this script backup the starter-kit default device to sensor-backup folder
+# Ex: backup_everything.sh
+# this script backups all devices to sensor-backup folder
 # if an argument is provided, the scripts will try to copy backup files to USB drive
 # normally USB drive is /dev/sda1
-# Ex: backup_starter_kit.sh tousbdrive
+# Ex: backup_everything.sh tousbdrive
 
 cd /home/pi/sensor-backup
 
@@ -45,7 +45,7 @@ do
 done
 
 #only if one argument is provided
-#Ex: backup_starter_kit.sh tousbdrive
+#Ex: backup_everything.sh tousbdrive
 if [ $# -eq 1 ]
 then
 	echo "mounting USB drive to /media for pi user" >> sensor-backup.log
