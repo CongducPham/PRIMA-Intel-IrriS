@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# this script pushes new random values for all sensors of all devices. 
+# if the first argument (destination url of the Wazigate) is not provided, the scripts fails. 
+# Ex: ./push_everything.sh 192.168.43.75
+
 if [ $# -eq 0 ]
 then
     echo "No arguments supplied"

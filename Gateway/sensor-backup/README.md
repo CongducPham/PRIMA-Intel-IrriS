@@ -28,7 +28,7 @@ Then, each sensor data file (e.g. temperatureSensor_0.data.json) is further spli
 - 62c7c657127dbd00011540a6.capacitive.temperatureSensor_0.data_split_2.json
 - ...
 
-**For a tensiometer sensor device:**
+**For a (2-)tensiometer sensor device:**
 
 	> cd sensor_backup
 	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh <device_id>
@@ -41,6 +41,8 @@ Produces:
 
 - 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_0.data.json
 - 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_1.data.json
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_2.data.json, if a second tensiometer is connected
+- 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_3.data.json, if a second tensiometer is connected
 - 62c7c657127dbd0001154bbc.tensiometer.temperatureSensor_5.data.json, if soil temperature connected
 - 62c7c657127dbd0001154bbc.tensiometer.analogInput_6.data.json
 
@@ -101,9 +103,16 @@ If you want a fresh start, you can delete all devices before you restore from ba
 
 	> /home/pi/scripts/delete_all_devices.sh
 	
+**For a 2-tensiometer sensor device:**
+Idem:
+
+	> /home/pi/scripts/restore_2-tensiometer_device_sensor_values.sh <new_device_index> <new_device_addr> <from_device_id>
+
 **If you want your new devices to be automatically included into IIWA and HA**, you must run `add_to_iiwa_ha_starterkit.sh` after the restoration process:
 
 	> /home/pi/scripts/add_to_iiwa_ha_starterkit.sh
+
+Note: this will only work for 2 devices composing a starter kit. See later for IIWA for more complex settings.
 
 Restore: to restore to a specific device id
 -------
@@ -123,7 +132,7 @@ Example:
 	
 or, if you know which one you need to delete:
 
-	> /home/pi/scripts/delete_devices.sh 62c7c657127dbd0001154bbc	
+	> /home/pi/scripts/delete_device.sh 62c7c657127dbd0001154bbc
 
 To copy backup file stored on WaziGate to host computer
 -------
@@ -143,19 +152,31 @@ You can restore these sensor data example samples on the INTEL-IRRIS WaziGate as
 
 	> cd sensor-backup
 	> /home/pi/scripts/restore_capacitive_device_sensor_values.sh 3 AB 63a7191a68f3190886639cc7
-	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh 4 B2 63a71aa368f319088663dc85
+	> /home/pi/scripts/restore_tensiometer_device_sensor_values.sh 4 B2 63a71aa368f319088663dc85
 
 These commands will create 2 new devices, a capacitive as SOIL-AREA-3 and a tensiometer as SOIL-AREA-4, with addresses 26011DAB and 26011DB2, that will come in addition to the 2 default devices configured with the starter-kit. If you want to replace the default devices in order to be able to receive real sensor data from your devices, first delete all devices then run the above scripts by replacing `3 AB` and `4 B2` by respectively `1 AA` and `2 B1`.
 
-Periodic and automatic backup of your starter-kit devices
+Periodic and automatic backup of your configured devices
 -------
 
-It is possible to periodically backup the default devices of the starter-kit (capacitive SOIL-AREA-1 and tensiometer SOIL-AREA-2) to a USB stick in order to have an external backup. Just plug an USB stick in the RaspberryPi and the backup will be realized every 6 hours. You can remove the USB stick at any time and plug it on your laptop/computer if you want. You can also re-plug the USB stick to the RaspberryPi at any time. The produced backup files are the same than what has been described previously.
+It is possible (default in current version) to periodically backup the configured devices to a USB stick in order to have an external backup. Just plug an USB stick in the RaspberryPi and the backup will be realized every 6 hours. You can remove the USB stick at any time and plug it on your laptop/computer if you want. You can also re-plug the USB stick to the RaspberryPi at any time. The produced backup files are the same than what has been described previously.
+
+Both the period and the backup procedure are available:
+
+	> more /home/pi/scripts/backup_everything.sh
+	> more /home/pi/scripts/crontab.pi
 
 Note that if there is no USB stick attached to the RaspberryPi, the periodic backup files are still stored in `/home/pi/sensor-backup` folder. Note that there is no historical backup: the backup takes all values and the latest backup overwrite the previous backup.
 
-For the moment, the restoration of the device from backup files (on USB stick) must be done manually but we are thinking on having an automatic procedure.
+At the moment, the restoration of the device from backup files (on USB stick) must be done manually: 
 
+	> cd sensor-backup
+	> /home/pi/scripts/iiwa_rest.sh configs
+	> /home/pi/scripts/restore_everything.sh
+
+Note: this script will delete all devices and all specific IIWA before restoring the backup ones with a default IIWA configuration.
+But you can backup IIWA configs too, as indicated, and settle back the correct parameters.
+We are thinking on having a more automatic procedure.
 
 Enjoy!
 C. Pham

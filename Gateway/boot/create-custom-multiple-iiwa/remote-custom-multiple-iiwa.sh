@@ -1,4 +1,22 @@
 #!/bin/bash
+
+# Remote equivalent of create-custom-multiple-iiwa.
+# Without keeping the conf in a devices.txt file.
+# Instead of modifying all the scripts to make them remote, direct curl invocation is involved here
+
+if [ $# -eq 0 ]
+then
+  echo "No arguments supplied"
+  echo "Need a destination URL."
+  echo "Need a sequence of device type, name, and address."
+  echo "e.g. remote-custom-multiple-iiwa.sh wazigate.local C 1 AE WT 8 B4"
+  echo "will create 1 capacitive SOIL-AREA-1 with address 26011DAE"
+  echo "and 1 watermark with temperature sensor SOIL-AREA-8 with address 26011DB4"
+  echo "for a double WM + temperature : 2WT"
+  exit
+fi
+
+
 TOK=`curl -X POST "http://$1/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
 
 NDEVICE=`curl -X GET "http://$1/devices" -H  "accept: application/json" -H "Authorization: Bearer $TOK" | jq '. | length'`
