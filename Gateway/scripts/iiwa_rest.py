@@ -2,6 +2,23 @@ import requests
 import json
 import sys
 
+
+#############################
+# e.g. python ./iiwa_rest.py devices
+# the following "add" only works on devices existing in WG
+# e.g. python ./iiwa_rest.py add 62c7c657127dbd00011540a4 SOIL-AREA-1 1_capacitive temperatureSensor_0
+# e.g. python ./iiwa_rest.py add 62c7c657127dbd00011540a6 SOIL-AREA-2 1_watermark temperatureSensor_0
+# e.g. python ./iiwa_rest.py add 62c7c657127dbd00011540a8 SOIL-AREA-3 2_watermark temperatureSensor_0
+# e.g. python ./iiwa_rest.py add 62c7c657127dbd00011540a8 SOIL-AREA-3 2_watermark temperatureSensor_2
+# e.g. python ./iiwa_rest.py delete 62c7c657127dbd00011540a6
+# e.g. python ./iiwa_rest.py delete all
+# e.g. python ./iiwa_rest.py data
+# e.g. python ./iiwa_rest.py configs
+#############################
+
+
+
+
 BASE_URL = "http://localhost/"
 
 # common headers for requests

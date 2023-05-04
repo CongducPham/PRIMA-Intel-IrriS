@@ -2,6 +2,19 @@
 
 cd /home/pi/scripts
 
+#############################
+# e.g. ./iiwa_rest.sh devices
+# the following "add" only works on devices existing in WG
+# e.g. ./iiwa_rest.sh add 62c7c657127dbd00011540a4 SOIL-AREA-1 1_capacitive temperatureSensor_0
+# e.g. ./iiwa_rest.sh add 62c7c657127dbd00011540a6 SOIL-AREA-2 1_watermark temperatureSensor_0
+# e.g. ./iiwa_rest.sh add 62c7c657127dbd00011540a8 SOIL-AREA-3 2_watermark temperatureSensor_0
+# e.g. ./iiwa_rest.sh add 62c7c657127dbd00011540a8 SOIL-AREA-3 2_watermark temperatureSensor_2
+# e.g. ./iiwa_rest.sh delete 62c7c657127dbd00011540a6
+# e.g. ./iiwa_rest.sh delete all
+# e.g. ./iiwa_rest.sh data
+# e.g. ./iiwa_rest.sh configs
+#############################
+
 
 if [ $# -eq 0 ]
 then

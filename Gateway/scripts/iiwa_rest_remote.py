@@ -2,6 +2,21 @@ import requests
 import json
 import sys
 
+
+#############################
+# e.g. python ./iiwa_rest_remote.py localhost devices
+# the following "add" only works on devices existing in WG
+# e.g. python ./iiwa_rest_remote.py wazigate.local add 62c7c657127dbd00011540a4 SOIL-AREA-1 1_capacitive temperatureSensor_0
+# e.g. python ./iiwa_rest_remote.py 10.42.0.1 add 62c7c657127dbd00011540a6 SOIL-AREA-2 1_watermark temperatureSensor_0
+# e.g. python ./iiwa_rest_remote.py 192.168.0.25 add 62c7c657127dbd00011540a8 SOIL-AREA-3 2_watermark temperatureSensor_0
+# e.g. python ./iiwa_rest_remote.py wazigate.local add 62c7c657127dbd00011540a8 SOIL-AREA-3 2_watermark temperatureSensor_2
+# e.g. python ./iiwa_rest_remote.py wazigate.local delete 62c7c657127dbd00011540a6
+# e.g. python ./iiwa_rest_remote.py wazigate.local delete all
+# e.g. python ./iiwa_rest_remote.py wazigate.local data
+# e.g. python ./iiwa_rest_remote.py wazigate.local configs
+#############################
+
+
 BASE_URL = "http://localhost/"
 
 # common headers for requests

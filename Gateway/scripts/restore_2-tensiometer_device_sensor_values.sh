@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Ex: restore_tensiometer_device_sensor_values.sh 1 B1 62c7c657127dbd00011540a6
-# this script push data backup from a tensiometer w/soil temperature device to a new created tensiometer device
+# Ex: restore_2-tensiometer_device_sensor_values.sh 1 B1 62c7c657127dbd00011540a6 62c7c657127dbd00011540a6
+# this script push data backup from a 2-tensiometer w/ soil temperature device to a (new) created tensiometer device
 
 if [ $# -eq 0 ]
   then

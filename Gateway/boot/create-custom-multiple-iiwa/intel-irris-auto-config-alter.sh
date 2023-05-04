@@ -7,7 +7,7 @@ cd /home/pi
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
-    echo "Need a sequence of device type, name, and adress."
+    echo "Need a sequence of device type, name, and address."
     echo "e.g. create-custom-multiple-iiwa....sh C 1 AE WT 8 B4"
     echo "will create 1 capacitive SOIL-AREA-1 with address 26011DAE"
     echo "and 1 watermark with temperature sensor SOIL-AREA-8 with address 26011DB4"

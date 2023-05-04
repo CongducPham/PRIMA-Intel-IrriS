@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# This script restores all from the sensor-backup folder.
+# It also adds a default IIWA setup for all restored sensor.
+# Example:
+# > ./scripts/restore_everything.sh
+
 cd /home/pi/sensor-backup
 
 /home/pi/scripts/delete_all_devices.sh
@@ -8,8 +13,7 @@ capas=$(ls | grep split | grep capa | awk -F'[_.]' '{print $1}' | uniq)
 # echo $capas
 for k in $capas
 do
-	echo $k
-
+	# echo $k
 	devname=$(cat sensor-backup.log | grep $k | grep backup | awk -F'[ ]' '{print $6}' | awk -F'[-]' '{print $3}')
 	devaddr=$(cat sensor-backup.log | grep $k | grep backup | awk -F'[ ]' '{print $8}')
 
@@ -21,7 +25,7 @@ done
 tensios=$(ls | grep split | grep tensio | awk -F'[_.]' '{print $1}' | uniq)
 for k in $tensios
 do
-	echo $k
+	# echo $k
 	devname=$(cat sensor-backup.log | grep $k | grep backup | awk -F'[ ]' '{print $6}' | awk -F'[-]' '{print $3}')
 	devaddr=$(cat sensor-backup.log | grep $k | grep backup | awk -F'[ ]' '{print $8}')
 
