@@ -18,6 +18,8 @@ rm -rf *split*
 
 TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
 
+/home/pi/scripts/iiwa_rest.sh configs > backup_iiwa.json
+
 DEVICES=`curl -X GET "http://localhost/devices" -H  "accept: application/json"`
 NDEVICE=`echo $DEVICES | jq '. | length'`
 (( NDEVICE-- ))
@@ -81,5 +83,6 @@ then
 		echo "trying to umount" >> sensor-backup.log
 	fi
 	cp sensor-backup.log /media/
+	cp backup_iiwa.json /media/
 	sudo umount /media	
 fi

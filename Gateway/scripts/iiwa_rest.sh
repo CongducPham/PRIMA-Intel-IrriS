@@ -13,6 +13,7 @@ cd /home/pi/scripts
 # e.g. ./iiwa_rest.sh delete all
 # e.g. ./iiwa_rest.sh data
 # e.g. ./iiwa_rest.sh configs
+# e.g. ./iiwa_rest_remote.sh update 6454c62e68f319085c988d67 temperatureSensor_0 "{\"weather_weekly_pluviometry\" : \"588\"}"
 #############################
 
 
@@ -21,12 +22,13 @@ then
     echo "No arguments supplied"
     exit
 else
-    echo "--> Get token"
+    # echo "--> Get token"
     TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
     
     if [ $1 == 'devices' ]
     then
-        curl -X GET "http://localhost:5000/devices" -H  "accept: application/json" > iiwa_devices.json
+        # curl -X GET "http://localhost:5000/devices" -H  "accept: application/json" > iiwa_devices.json
+        curl -X GET "http://localhost:5000/devices" -H  "accept: application/json"
     elif [ $1 == 'add' ]
     then
         curl -X POST "http://localhost:5000/devices/$2" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{
@@ -102,10 +104,15 @@ else
         fi
     elif [ $1 == 'data' ]
     then
-        curl -X GET "http://localhost:5000/devices/data" -H  "accept: application/json" > iiwa_data.json
+        # curl -X GET "http://localhost:5000/devices/data" -H  "accept: application/json" > iiwa_data.json
+        curl -X GET "http://localhost:5000/devices/data" -H  "accept: application/json"
     elif [ $1 == 'configs' ]
     then
-        curl -X GET "http://localhost:5000/sensors_configurations" -H  "accept: application/json" > iiwa_sensors_configurations.json
+        # curl -X GET "http://localhost:5000/sensors_configurations" -H  "accept: application/json" > iiwa_sensors_configurations.json
+        curl -X GET "http://localhost:5000/sensors_configurations" -H  "accept: application/json"
+    elif [ $1 == 'update' ]
+    then
+        curl -X POST "http://wazigate.local:5000/devices/$2/sensors/$3" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "$4"
     fi
 fi
 
