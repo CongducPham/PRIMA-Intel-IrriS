@@ -69,6 +69,9 @@ if len(sys.argv)>2:
             response = requests.get(
                 WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
             print(response.text)
+            with open("iiwa_devices.json", "w") as outfile:
+                outfile.write(response.text)
+            
             # device_json = json.loads(response.text)
             # print(device_json)            
 
@@ -101,7 +104,7 @@ if len(sys.argv)>2:
                 "sensor_max_value": "124", 
                 "sensor_min_value": "0", 
                 "soil_type": "silty", 
-                "soil_irrigation_type": "undefined", 
+                "soil_irrigation_type": "furrow", 
                 "soil_salinity": "undefined", 
                 "soil_bulk_density": "undefined",
                 "soil_field_capacity":"undefined", 
@@ -125,7 +128,7 @@ if len(sys.argv)>2:
                 "sensor_max_value": "800", 
                 "sensor_min_value": "0", 
                 "soil_type": "silty", 
-                "soil_irrigation_type": "undefined", 
+                "soil_irrigation_type": "furrow", 
                 "soil_salinity": "undefined", 
                 "soil_bulk_density": "undefined",
                 "soil_field_capacity":"undefined", 
@@ -198,6 +201,9 @@ if len(sys.argv)>2:
             response = requests.get(
                 WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
             print(response.text)
+            with open("iiwa_data.json", "w") as outfile:
+                outfile.write(response.text)
+
             # device_json = json.loads(response.text)
             # print(device_json)            
             
@@ -213,6 +219,8 @@ if len(sys.argv)>2:
             response = requests.get(
                 WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
             print(response.text)
+            with open("iiwa_sensors_configurations.json", "w") as outfile:
+                outfile.write(response.text)
             # device_json = json.loads(response.text)
             # print(device_json)            
             
