@@ -159,7 +159,7 @@ These commands will create 2 new devices, a capacitive as SOIL-AREA-3 and a tens
 Periodic and automatic backup of your configured devices
 -------
 
-It is possible (default in current version) to periodically backup the configured devices to a USB stick in order to have an external backup. Just plug an USB stick in the RaspberryPi and the backup will be realized every 6 hours. You can remove the USB stick at any time and plug it on your laptop/computer if you want. You can also re-plug the USB stick to the RaspberryPi at any time. The produced backup files are the same than what has been described previously.
+It is possible (default in current version) to periodically backup the configured devices data and IIWA configurations to a USB stick in order to have an external backup. Just plug an USB stick in the RaspberryPi and the backup will be realized every 6 hours. You can remove the USB stick at any time and plug it on your laptop/computer if you want. You can also re-plug the USB stick to the RaspberryPi at any time. The produced backup files are the same than what has been described previously.
 
 Both the period and the backup procedure are available:
 
@@ -168,15 +168,12 @@ Both the period and the backup procedure are available:
 
 Note that if there is no USB stick attached to the RaspberryPi, the periodic backup files are still stored in `/home/pi/sensor-backup` folder. Note that there is no historical backup: the backup takes all values and the latest backup overwrite the previous backup.
 
-At the moment, the restoration of the device from backup files (on USB stick) must be done manually: 
+At the moment, the restoration of the device from backup files (from USB stick or backup folder) must be done manually: 
 
 	> cd sensor-backup
-	> /home/pi/scripts/iiwa_rest.sh configs
 	> /home/pi/scripts/restore_everything.sh
 
-Note: this script will delete all devices and all specific IIWA before restoring the backup ones with a default IIWA configuration.
-But you can backup IIWA configs too, as indicated, and settle back the correct parameters.
-We are thinking on having a more automatic procedure.
+Note: this script will delete all devices and all specific IIWA configurations before restoring the backup ones with their backup IIWA configurations.
 
 Enjoy!
 C. Pham

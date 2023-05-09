@@ -13,6 +13,7 @@ cd /home/pi/scripts
 # e.g. ./iiwa_rest.sh delete all
 # e.g. ./iiwa_rest.sh data
 # e.g. ./iiwa_rest.sh configs
+# e.g. ./iiwa_rest_remote.sh update 6454c62e68f319085c988d67 temperatureSensor_0 "{\"weather_weekly_pluviometry\" : \"588\"}"
 #############################
 
 
