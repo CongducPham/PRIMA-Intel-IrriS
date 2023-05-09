@@ -21,12 +21,13 @@ then
     echo "No arguments supplied"
     exit
 else
-    echo "--> Get token"
+    # echo "--> Get token"
     TOK=`curl -X POST "http://localhost/auth/token" -H  "accept: application/json" -H  "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"loragateway\"}" | tr -d '\"'`
     
     if [ $1 == 'devices' ]
     then
-        curl -X GET "http://localhost:5000/devices" -H  "accept: application/json" > iiwa_devices.json
+        # curl -X GET "http://localhost:5000/devices" -H  "accept: application/json" > iiwa_devices.json
+        curl -X GET "http://localhost:5000/devices" -H  "accept: application/json"
     elif [ $1 == 'add' ]
     then
         curl -X POST "http://localhost:5000/devices/$2" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "{
@@ -41,7 +42,7 @@ else
                 \"sensor_max_value\": \"124\", 
                 \"sensor_min_value\": \"0\", 
                 \"soil_type\": \"silty\", 
-                \"soil_irrigation_type\": \"undefined\", 
+                \"soil_irrigation_type\": \"furrow\", 
                 \"soil_salinity\": \"undefined\", 
                 \"soil_bulk_density\": \"undefined\",
                 \"soil_field_capacity\":\"undefined\", 
@@ -65,7 +66,7 @@ else
                 \"sensor_max_value\": \"800\", 
                 \"sensor_min_value\": \"0\", 
                 \"soil_type\": \"silty\", 
-                \"soil_irrigation_type\": \"undefined\", 
+                \"soil_irrigation_type\": \"furrow\", 
                 \"soil_salinity\": \"undefined\", 
                 \"soil_bulk_density\": \"undefined\",
                 \"soil_field_capacity\":\"undefined\", 
@@ -102,10 +103,15 @@ else
         fi
     elif [ $1 == 'data' ]
     then
-        curl -X GET "http://localhost:5000/devices/data" -H  "accept: application/json" > iiwa_data.json
+        # curl -X GET "http://localhost:5000/devices/data" -H  "accept: application/json" > iiwa_data.json
+        curl -X GET "http://localhost:5000/devices/data" -H  "accept: application/json"
     elif [ $1 == 'configs' ]
     then
-        curl -X GET "http://localhost:5000/sensors_configurations" -H  "accept: application/json" > iiwa_sensors_configurations.json
+        # curl -X GET "http://localhost:5000/sensors_configurations" -H  "accept: application/json" > iiwa_sensors_configurations.json
+        curl -X GET "http://localhost:5000/sensors_configurations" -H  "accept: application/json"
+    elif [ $1 == 'update' ]
+    then
+        curl -X POST "http://wazigate.local:5000/devices/$2/sensors/$3" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "$4"
     fi
 fi
 
