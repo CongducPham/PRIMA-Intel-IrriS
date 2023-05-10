@@ -52,52 +52,11 @@ do
     (( NSENSORS-- ))
     DEVICE=`echo $SENSOR_CONFIGS | jq ".sensors[${NSENSORS}].device_id"  | tr -d '\"'`
     SENSOR=`echo $SENSOR_CONFIGS | jq ".sensors[${NSENSORS}].sensor_id"  | tr -d '\"'`
-    DEVCONF=`echo $SENSOR_CONFIGS | jq ".sensors[${NSENSORS}]"`
 
-    sensor_type=`echo $DEVCONF | jq ".value.sensor_type" | tr -d '\"'`
-    sensor_age=`echo $DEVCONF | jq ".value.sensor_age" | tr -d '\"'`
-    sensor_max_value=`echo $DEVCONF | jq ".value.sensor_max_value" | tr -d '\"'`
-    sensor_min_value=`echo $DEVCONF | jq ".value.sensor_min_value" | tr -d '\"'`
-    soil_type=`echo $DEVCONF | jq ".value.soil_type" | tr -d '\"'`
-    soil_irrigation_type=`echo $DEVCONF | jq ".value.soil_irrigation_type" | tr -d '\"'`
-    soil_salinity=`echo $DEVCONF | jq ".value.soil_salinity" | tr -d '\"'`
-    soil_bulk_density=`echo $DEVCONF | jq ".value.soil_bulk_density" | tr -d '\"'`
-    soil_field_capacity=`echo $DEVCONF | jq ".value.soil_field_capacity" | tr -d '\"'`
-    soil_temperature_value=`echo $DEVCONF | jq ".soil_temperature_source.soil_temperature_value" | tr -d '\"'`
-    soil_temperature_device_id=`echo $DEVCONF | jq ".soil_temperature_source.soil_temperature_device_id" | tr -d '\"'`
-    soil_temperature_sensor_id=`echo $DEVCONF | jq ".soil_temperature_source.soil_temperature_sensor_id" | tr -d '\"'`
-    plant_category=`echo $DEVCONF | jq ".value.plant_category" | tr -d '\"'`
-    plant_type=`echo $DEVCONF | jq ".value.plant_type" | tr -d '\"'`
-    plant_variety=`echo $DEVCONF | jq ".value.plant_variety" | tr -d '\"'`
-    plant_planting_date=`echo $DEVCONF | jq ".value.plant_planting_date" | tr -d '\"'`
-    weather_region=`echo $DEVCONF | jq ".value.weather_region" | tr -d '\"'`
-    weather_weekly_evaporation=`echo $DEVCONF | jq ".value.weather_weekly_evaporation" | tr -d '\"'`
-    weather_weekly_pluviometry=`echo $DEVCONF | jq ".value.weather_weekly_pluviometry" | tr -d '\"'`
+    DEVCONFVAL=`echo $SENSOR_CONFIGS | jq ".sensors[${NSENSORS}].value"`
+    DEVCONFTEMP=`echo $SENSOR_CONFIGS | jq ".sensors[${NSENSORS}].soil_temperature_source"`
 
-
-    NEWCONF="
-    {
-        \"sensor_type\":\"$sensor_type\",
-        \"sensor_age\":\"$sensor_age\",
-        \"sensor_max_value\":\"$sensor_max_value\",
-        \"sensor_min_value\":\"$sensor_min_value\",
-        \"soil_type\":\"$soil_type\",
-        \"soil_irrigation_type\":\"$soil_irrigation_type\",
-        \"soil_salinity\":\"$soil_salinity\",
-        \"soil_bulk_density\":\"$soil_bulk_density\",
-        \"soil_field_capacity\":\"$soil_field_capacity\",
-        \"soil_temperature_value\":\"$soil_temperature_value\",
-        \"soil_temperature_device_id\":\"$soil_temperature_device_id\",
-        \"soil_temperature_sensor_id\":\"$soil_temperature_sensor_id\",
-        \"plant_category\":\"$plant_category\",
-        \"plant_type\":\"$plant_type\",
-        \"plant_variety\":\"$plant_variety\",
-        \"plant_planting_date\":\"$plant_planting_date\",
-        \"weather_region\":\"$weather_region\",
-        \"weather_weekly_evaporation\":\"$weather_weekly_evaporation\",
-        \"weather_weekly_pluviometry\":\"$weather_weekly_pluviometry\"
-    }
-    "
+    NEWCONF=`echo "$DEVCONFVAL $DEVCONFTEMP" | jq -s add `
 
     update_data=`echo $NEWCONF | jq`
     # echo "$update_data"
