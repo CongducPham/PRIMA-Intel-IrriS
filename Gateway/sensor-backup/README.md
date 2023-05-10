@@ -5,15 +5,15 @@ You can use this folder for your device sensor backup/restore tasks. The scripts
 
 Sections
 ------
-**Backup: to backup a given device**
-**Restore: to restore to a new device**
-**Restore: to restore to a specific device id**
-**To copy backup file stored on WaziGate to host computer**
-**Sensor data samples**
-**Full Manual Backup of your configured devices**
-**Periodic and automatic backup of your configured devices**
-**Full Manual Restore of some data and configurations**
-**Use case: switch current values to a new gateway**
+- **Backup: to backup a given device**
+- **Restore: to restore to a new device**
+- **Restore: to restore to a specific device id**
+- **To copy backup file stored on WaziGate to host computer**
+- **Sensor data samples**
+- **Full Manual Backup of your configured devices**
+- **Periodic and automatic backup of your configured devices**
+- **Full Manual Restore of some data and configurations**
+- **Use case: switch current values to a new gateway**
 
 Backup: to backup a given device
 ------
