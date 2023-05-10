@@ -1,14 +1,15 @@
 #!/bin/bash
 
-# This script restores all from the sensor-backup folder.
-# It also adds a default IIWA setup for all restored sensor.
-# Example:
-# > ./scripts/restore_everything.sh
+# Ex: restore_everything.sh
+# This script restores all from the sensor-backup folder, including their IIWA configuration
+# if an argument is provided, the scripts will try to restore from backup files stored on USB drive
+# normally USB drive is /dev/sda1
+# Ex: restore_everything.sh fromusbdrive
 
 cd /home/pi/sensor-backup
 
 #only if one argument is provided
-#Ex: backup_everything.sh tousbdrive
+#Ex: restore_everything.sh fromusbdrive
 if [ $# -eq 1 ]
 then
 	echo "mounting USB drive to /media for pi user" >> sensor-backup.log
@@ -80,7 +81,7 @@ do
 
     update_data=`echo $NEWCONF | jq`
     # echo "$update_data"
-	/home/pi/scripts/iiwa_rest.sh update $DEVICE $SENSOR "$update_data"
+		/home/pi/scripts/iiwa_rest.sh update $DEVICE $SENSOR "$update_data"
 
 done
 

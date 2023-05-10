@@ -4,7 +4,6 @@
 # Ex: add_to_iiwa_config.sh 63c04493ca473d6e95aaa224 tensiometer
 # Ex: add_to_iiwa_config.sh 63c04493ca473d6e95aaa224 2tensiometers
 
-
 tmpfile=$(mktemp)
 
 if [ $2 == 'capacitive' ]
@@ -20,10 +19,14 @@ jq ".sensors += \
         \"soil_irrigation_type\": \"furrow\",\
         \"soil_salinity\": \"undefined\",\
         \"soil_bulk_density\": \"undefined\",\
-        \"plant_crop\": \"undefined\",\
-        \"plant_sub_type\": \"undefined\",\
+        \"soil_field_capacity\": \"undefined\",\
+        \"plant_category\": \"undefined\",\
+        \"plant_type\": \"undefined\",\
+        \"plant_variety\": \"undefined\",\
         \"plant_planting_date\": \"undefined\",\
         \"weather_region\": \"semi-arid\",\
+        \"weather_weekly_evaporation\": \"undefined\",\
+        \"weather_weekly_pluviometry\": \"undefined\",\
         \"last_value\": 0\
       },\
       \"soil_temperature_source\": {\
@@ -49,10 +52,14 @@ jq ".sensors += \
         \"soil_irrigation_type\": \"furrow\",\
         \"soil_salinity\": \"undefined\",\
         \"soil_bulk_density\": \"undefined\",\
-        \"plant_crop\": \"undefined\",\
-        \"plant_sub_type\": \"undefined\",\
+        \"soil_field_capacity\": \"undefined\",\
+        \"plant_category\": \"undefined\",\
+        \"plant_type\": \"undefined\",\
+        \"plant_variety\": \"undefined\",\
         \"plant_planting_date\": \"undefined\",\
         \"weather_region\": \"semi-arid\",\
+        \"weather_weekly_evaporation\": \"undefined\",\
+        \"weather_weekly_pluviometry\": \"undefined\",\
         \"last_value\": 0\
       },\
       \"soil_temperature_source\": {\
@@ -78,10 +85,14 @@ jq ".sensors += \
         \"soil_irrigation_type\": \"furrow\",\
         \"soil_salinity\": \"undefined\",\
         \"soil_bulk_density\": \"undefined\",\
-        \"plant_crop\": \"undefined\",\
-        \"plant_sub_type\": \"undefined\",\
+        \"soil_field_capacity\": \"undefined\",\
+        \"plant_category\": \"undefined\",\
+        \"plant_type\": \"undefined\",\
+        \"plant_variety\": \"undefined\",\
         \"plant_planting_date\": \"undefined\",\
         \"weather_region\": \"semi-arid\",\
+        \"weather_weekly_evaporation\": \"undefined\",\
+        \"weather_weekly_pluviometry\": \"undefined\",\
         \"last_value\": 0\
       },\
       \"soil_temperature_source\": {\
@@ -103,10 +114,14 @@ jq ".sensors += \
         \"soil_irrigation_type\": \"furrow\",\
         \"soil_salinity\": \"undefined\",\
         \"soil_bulk_density\": \"undefined\",\
-        \"plant_crop\": \"undefined\",\
-        \"plant_sub_type\": \"undefined\",\
+        \"soil_field_capacity\": \"undefined\",\
+        \"plant_category\": \"undefined\",\
+        \"plant_type\": \"undefined\",\
+        \"plant_variety\":\"undefined\",\
         \"plant_planting_date\": \"undefined\",\
         \"weather_region\": \"semi-arid\",\
+        \"weather_weekly_evaporation\": \"undefined\",\
+        \"weather_weekly_pluviometry\": \"undefined\",\
         \"last_value\": 0\
       },\
       \"soil_temperature_source\": {\

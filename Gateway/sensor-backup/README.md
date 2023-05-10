@@ -20,7 +20,7 @@ Backup: to backup a given device
 
 **For a capacitive sensor device:**
 
-	> cd sensor_backup
+	> cd sensor-backup
 	> /home/pi/scripts/backup_capacitive_device_sensor_values.sh <device_id>
 	
 Example:
@@ -42,7 +42,7 @@ Then, each sensor data file (e.g. temperatureSensor_0.data.json) is further spli
 
 **For a (2-)tensiometer sensor device:**
 
-	> cd sensor_backup
+	> cd sensor-backup
 	> /home/pi/scripts/backup_tensiometer_device_sensor_values.sh <device_id>
 	
 Example:
@@ -68,11 +68,11 @@ Then, each sensor data file (e.g. temperatureSensor_0.data.json) is further spli
 Restore: to restore to a new device
 -------
 
-The default behavior is to **automatically creates a new device** where sensor's data previously backup will be restored.
+The default behavior is to **automatically creates a new device** where sensor's data previously backed up will be restored.
 
 **For a capacitive sensor device:**
 
-	> cd sensor_backup
+	> cd sensor-backup
 	> /home/pi/scripts/restore_capacitive_device_sensor_values.sh <new_device_index> <new_device_addr> <from_device_id>
 	
 Example:
@@ -124,7 +124,7 @@ Idem:
 
 	> /home/pi/scripts/add_to_iiwa_ha_starterkit.sh
 
-Note: this will only work for 2 devices composing a starter kit. See later for IIWA for more complex settings.
+Note: this will only work for the 2 default devices of the INTEL-IRRIS starter kit. See later for IIWA on more complex settings.
 
 Restore: to restore to a specific device id
 -------
@@ -135,7 +135,7 @@ For both capacitive and tensiometer, it is possible to indicate a specific devic
 
 Example:
 
-	> cd sensor_backup
+	> cd sensor-backup
 	> /home/pi/scripts/restore_tensiometer_device_sensor_values.sh 2 B1 62c7c657127dbd0001154bbc 62c7c657127dbd0001154bbc
 	
 **However, make sure that on the WaziGate you are restoring the sensor data, there are no conflicting devices with same ids or same LoRaWAN DevAddr.** Therefore, it can be necessary to delete all devices before you restore from backup files.
@@ -153,7 +153,7 @@ On host computer:
 
 	> scp pi@192.168.3.5:/home/pi/sensor-backup/*.json .
 
-Replace `192.168.3.5` by the IP address assigned to the WaziGate. If you are connecting to the WaziGate by the WaziGate's WiFi, use the static `10.42.0.1` IP address. You can also use an FTP software such as `FileZilla` and to open an SFTP connection using port 22. Remember user is `pi` and password is `loragateway`.
+Replace `192.168.3.5` by the IP address assigned to the WaziGate. If you are connecting to the WaziGate by the WaziGate's WiFi, use the static `10.42.0.1` IP address. You can also use an FTP software such as `FileZilla` and to open an SFTP connection using port 22. Remember, user is `pi` and password is `loragateway`.
 
 Sensor data samples
 -------
@@ -171,27 +171,30 @@ These commands will create 2 new devices, a capacitive as SOIL-AREA-3 and a tens
 Full Manual Backup of your configured devices
 -------
 
-In the case you set up a WaziGate with a non-standard configuration, i.e. with devices and sensors that difer from the starter kit scenario, and/or with specific IIWA configurations, you can manually backup everything on the GW, say in folder sensor-backup, like this:
+In the case you set up a WaziGate with a non-standard configuration, i.e. with devices and sensors that differ from the default starter-kit configuration, and/or with specific IIWA configurations, you can manually backup everything on the gateway as follows:
 
 	> cd sensor-backup
 	> /home/pi/scripts/backup_everything.sh 
 
-This script will list all the configured sensors and use the individual backup scripts on them. It also calls the IIWA REST scripts to get and store their IIWA configurations. 
+This script will automatically list all the configured devices and run the individual backup scripts on them. It also calls the IIWA REST scripts to get and store their IIWA configurations. 
 
-It can be convenient to backup these data outside the GW, e.g. on a USB stick.  
-Just plug a USB stick into the RaspberryPi and do the following:
+It can be convenient to also backup these device data on a USB stick. To do so, just plug a USB stick into the gateway (i.e. the RaspberryPi) and run the following command:
 
+	> cd sensor-backup
 	> /home/pi/scripts/backup_everything.sh tousbdrive
-The script then mount the USB stick, copy the backup files on it, and unmount it.
+	
+The script will backup all devices as previously described but will also mount the USB stick, copy the backup files on it, and unmount it.
 
 Periodic and automatic backup of your configured devices
 -------
 
-In current version, the WaziGate periodically backups the configured devices data and IIWA configurations to folder `~/sensor-backup` and to a USB stick, in order to have an external regular backup. By default the backup will be realized every 6 hours. You can remove the USB stick at any time and plug it on your laptop/computer if needed. You can also re-plug the USB stick to the RaspberryPi at any time. The produced backup files are the same than what has been described previously.
+In the current version, the WaziGate periodically backups the configured devices data and IIWA configurations to folder `/home/pi/sensor-backup` and to a USB stick, in order to have an external regular backup. By default the backup will be realized every 6 hours. You can remove the USB stick at any time and plug it on your laptop/computer if needed. You can also re-plug the USB stick to the RaspberryPi at any time. The produced backup files are the same than what has been described previously.
 
-The period of the backup procedure is available and may be modified here:
+The periodicity of the backup procedure is defined in the `crontab.pi` file and can be modified if needed:
 
-	> more /home/pi/scripts/crontab.pi
+	> cat /home/pi/scripts/crontab.pi
+	#backup starter-kit default devices every 6 hours
+	0 3,9,15,21 * * * /home/pi/scripts/backup_everything.sh tousbdrive
 
 Note that if there is no USB stick attached to the RaspberryPi, the periodic backup files are still stored in `/home/pi/sensor-backup` folder. Note that there is no historical backup: the backup comprises all the available values and the newest backup overwrites any previous one.
 
@@ -209,18 +212,16 @@ Note: this script will delete all current devices and all specific IIWA configur
 Use case: switch current values to a new gateway
 -------
 
-Let's take this example: you want to set up a new gateway without losing the history of all the data of your current gateway. 
+Assuming you want to set up a new gateway without losing the history of all the data of your current gateway. 
 
-First, on the current Gateway, plug a USB stick, go SSH, and do the following:
+First, on the current gateway, plug a USB stick, connect with SSH (using the integrated SSH feature of the WaziGate for instance) and run the following commands:
 
 	> cd sensor-backup
 	> /home/pi/scripts/backup_everything.sh tousbdrive
 
-Remove the USB stick, plug it to the new gateway, go SSH there and do:
+Remove the USB stick, plug it to the new gateway, connect with SSH and run:
 
 	> /home/pi/scripts/restore_everything.sh fromusbdrive
-
-
 
 
 Enjoy!

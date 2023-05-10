@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Ex: backup_everything.sh
-# this script backups all devices to sensor-backup folder
+# this script backups all devices to sensor-backup folder, including their IIWA configuration
 # if an argument is provided, the scripts will try to copy backup files to USB drive
 # normally USB drive is /dev/sda1
 # Ex: backup_everything.sh tousbdrive
