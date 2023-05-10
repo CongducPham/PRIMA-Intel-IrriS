@@ -14,7 +14,7 @@ import sys
 # e.g. python ./iiwa_rest_remote.py wazigate.local delete all
 # e.g. python ./iiwa_rest_remote.py wazigate.local data
 # e.g. python ./iiwa_rest_remote.py wazigate.local configs
-# e.g. python ./iiwa_rest_remote.py update 6454c62e68f319085c988d67 temperatureSensor_0 "{\"weather_weekly_pluviometry\" : \"588\"}"
+# e.g. python ./iiwa_rest_remote.py 192.168.0.42 update 6454c62e68f319085c988d67 temperatureSensor_0 "{\"weather_weekly_pluviometry\" : \"588\"}"
 #############################
 
 
