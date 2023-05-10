@@ -14,6 +14,7 @@ import sys
 # e.g. python ./iiwa_rest_remote.py wazigate.local delete all
 # e.g. python ./iiwa_rest_remote.py wazigate.local data
 # e.g. python ./iiwa_rest_remote.py wazigate.local configs
+# e.g. python ./iiwa_rest_remote.py update 6454c62e68f319085c988d67 temperatureSensor_0 "{\"weather_weekly_pluviometry\" : \"588\"}"
 #############################
 
 
@@ -227,7 +228,49 @@ if len(sys.argv)>2:
 
         except requests.exceptions.RequestException as e:
             print(e)
-            print('get-sensors_configurations: request command failed')            
+            print('get-sensors_configurations: request command failed')
+
+    if sys.argv[2]=="update":
+        WaziGate_url = 'http://'+sys.argv[1]+':5000/sensors_configurations'
+        configs_json={}
+        new_conf={}
+
+        try:
+            response = requests.get(
+                WaziGate_url, headers=WaziGate_headers_auth, timeout=30)
+            configs_json = json.loads(response.text)
+
+
+        except requests.exceptions.RequestException as e:
+            print(e)
+            print('get-sensors_configurations: request command failed')
+
+        found=False
+        for sens_dict in configs_json["sensors"]:
+            if sens_dict["device_id"]==sys.argv[3] and sens_dict["sensor_id"]==sys.argv[4]:
+                found=True
+                new_conf.update(sens_dict["value"])
+                new_conf.update(sens_dict["soil_temperature_source"])
+                break
+
+        if found:
+            wished_update=json.loads(sys.argv[5])
+            new_conf.update(wished_update)
+
+            WaziGate_url = 'http://'+sys.argv[1]+':5000/devices/'+sys.argv[3]+'/sensors/'+sys.argv[4]
+
+            pload= json.dumps(new_conf)
+
+            try:
+                response = requests.post(
+                    WaziGate_url, headers=WaziGate_headers_auth, data=pload, timeout=30)
+
+            except requests.exceptions.RequestException as e:
+                print(e)
+                print('add sensors: request command failed')
+
+
+
 
     print('=========================================')
 
