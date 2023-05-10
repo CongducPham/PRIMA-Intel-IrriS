@@ -256,11 +256,9 @@ if len(sys.argv)>2:
         if found:
             wished_update=json.loads(sys.argv[5])
             new_conf.update(wished_update)
-
-            WaziGate_url = 'http://'+sys.argv[1]+':5000/devices/'+sys.argv[3]+'/sensors/'+sys.argv[4]
-
             pload= json.dumps(new_conf)
 
+            WaziGate_url = 'http://'+sys.argv[1]+':5000/devices/'+sys.argv[3]+'/sensors/'+sys.argv[4]
             try:
                 response = requests.post(
                     WaziGate_url, headers=WaziGate_headers_auth, data=pload, timeout=30)
