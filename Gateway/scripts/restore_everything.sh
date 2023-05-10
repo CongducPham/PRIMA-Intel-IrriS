@@ -7,6 +7,26 @@
 
 cd /home/pi/sensor-backup
 
+#only if one argument is provided
+#Ex: backup_everything.sh tousbdrive
+if [ $# -eq 1 ]
+then
+	echo "mounting USB drive to /media for pi user" >> sensor-backup.log
+	sudo mount -o uid=1000,gid=1000 /dev/sda1 /media
+	MOUNT_RET_CODE=$?
+	echo "mount return code is $MOUNT_RET_CODE" >> sensor-backup.log
+	if [ $MOUNT_RET_CODE -eq 0 ]
+	then
+		sleep 1
+		cd /media
+	else
+		echo "could not mount /dev/sda1 to /media" >> sensor-backup.log
+		echo "trying to umount" >> sensor-backup.log
+		sudo umount /media
+		cd /home/pi/sensor-backup
+	fi
+fi
+
 /home/pi/scripts/delete_all_devices.sh
 
 capas=$(ls | grep split | grep capa | awk -F'[_.]' '{print $1}' | uniq)
@@ -14,8 +34,8 @@ capas=$(ls | grep split | grep capa | awk -F'[_.]' '{print $1}' | uniq)
 for k in $capas
 do
 	# echo $k
-	devname=$(cat sensor-backup.log | grep $k | grep backup | awk -F'[ ]' '{print $6}' | awk -F'[-]' '{print $3}')
-	devaddr=$(cat sensor-backup.log | grep $k | grep backup | awk -F'[ ]' '{print $8}')
+	devname=$(cat sensor-backup.log | grep $k | grep backup | grep named | awk -F'[ ]' '{print $6}' | awk -F'[-]' '{print $3}')
+	devaddr=$(cat sensor-backup.log | grep $k | grep backup | grep named | awk -F'[ ]' '{print $8}')
 
 	/home/pi/scripts/restore_capacitive_device_sensor_values.sh $devname $devaddr $k $k
 	/home/pi/scripts/iiwa_rest.sh add $k SOIL-AREA-$devname 1_capacitive temperatureSensor_0
@@ -26,8 +46,8 @@ tensios=$(ls | grep split | grep tensio | awk -F'[_.]' '{print $1}' | uniq)
 for k in $tensios
 do
 	# echo $k
-	devname=$(cat sensor-backup.log | grep $k | grep backup | awk -F'[ ]' '{print $6}' | awk -F'[-]' '{print $3}')
-	devaddr=$(cat sensor-backup.log | grep $k | grep backup | awk -F'[ ]' '{print $8}')
+	devname=$(cat sensor-backup.log | grep $k | grep backup | grep named | awk -F'[ ]' '{print $6}' | awk -F'[-]' '{print $3}')
+	devaddr=$(cat sensor-backup.log | grep $k | grep backup | grep named | awk -F'[ ]' '{print $8}')
 
 	is2WT=$(ls | grep $k | grep "ensor\_2" | wc -l)
 	if [ $is2WT -eq 0 ]
@@ -63,3 +83,12 @@ do
 	/home/pi/scripts/iiwa_rest.sh update $DEVICE $SENSOR "$update_data"
 
 done
+
+
+if [ $# -eq 1 ]
+then
+	sleep 1
+	cd
+	echo "trying to umount" >> sensor-backup.log
+	sudo umount /media
+fi
