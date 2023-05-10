@@ -112,7 +112,32 @@ else
         curl -X GET "http://localhost:5000/sensors_configurations" -H  "accept: application/json"
     elif [ $1 == 'update' ]
     then
-        curl -X POST "http://wazigate.local:5000/devices/$2/sensors/$3" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "$4"
+        SENSOR_CONFIGS=`curl -X GET "http://localhost:5000/sensors_configurations" -H  "accept: application/json"`
+        NSENSORS=`echo $SENSOR_CONFIGS | jq '.sensors | length'`
+
+        while [ $NSENSORS -gt 0 ]
+        do
+            (( NSENSORS-- ))
+            DEVICE=`echo $SENSOR_CONFIGS | jq ".sensors[${NSENSORS}].device_id"  | tr -d '\"'`
+            SENSOR=`echo $SENSOR_CONFIGS | jq ".sensors[${NSENSORS}].sensor_id"  | tr -d '\"'`
+
+
+            if [ $2 == $DEVICE ] && [ $3 == $SENSOR ]
+            then
+                # echo FOUND
+                DEVCONFVAL=`echo $SENSOR_CONFIGS | jq ".sensors[${NSENSORS}].value"`
+                DEVCONFTEMP=`echo $SENSOR_CONFIGS | jq ".sensors[${NSENSORS}].soil_temperature_source"`
+
+                DEVCONF=`echo "$DEVCONFVAL $DEVCONFTEMP $4" | jq -s add `
+
+                JQDUMP=`echo $DEVCONF | jq`
+
+                curl -X POST "http://localhost:5000/devices/$2/sensors/$3" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json" -d "$JQDUMP"
+
+                exit
+
+            fi
+        done
     fi
 fi
 
