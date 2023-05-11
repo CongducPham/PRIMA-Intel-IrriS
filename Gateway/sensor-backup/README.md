@@ -222,6 +222,7 @@ First, on the current gateway, plug a USB stick, connect with SSH (using the int
 Remove the USB stick, plug it to the new gateway, connect with SSH and run:
 
 	> /home/pi/scripts/restore_everything.sh fromusbdrive
+Caution: this last step may be impaired by the periodic backup procedure (see above). To avoid data being overwritten on the USB stick, don't try the procedure at 3AM, 9AM, 3PM or 9PM, and/or keep a local copy of the USB contents.
 
 
 Enjoy!
