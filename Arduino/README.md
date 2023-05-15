@@ -34,7 +34,7 @@ Default configuration for INTEL-IRRIS project (works out-of-the box with the INT
 - LPP channel 5 is used for the soil temperature data if an DS18B20 is connected resulting in `temperatureSensor_5` as the internal default logical sensor on the WaziGate for the soil temperature data
 - LPP channel 6 is used for battery voltage resulting in `analogInput_6` as the internal default logical sensor for battery voltage
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-dashboard.png" width="400">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/INTEL-IRRIS-wazigate-default-dashboard.png" width="900">
 
 Arduino_LoRa_SX12XX_Ping_OLED Arduino code
 ===================================
@@ -45,7 +45,7 @@ The field tester device will send every 120s a `Confirmed Data Up` LoRaWAN packe
 
 The field tester device supports a small OLED screen that will indicate if the downlink acknowledgment packet has been received by the field tester device or not. 
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-OLED.JPG" width="400">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled.JPG" width="400">
 
 By default in the code, the OLED can be connected as follows:
 
@@ -62,6 +62,8 @@ If no dedicated device is available, it can be flashed temporarily on an INTEL-I
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-capacitive-1.JPG" width="400">
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-capacitive-2.JPG" width="400">
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case.JPG" width="400">
 
 If an INTEL-IRRIS device with a tensiometer & temperature sensor was to be used, then it is easier to connect as follows:
 
@@ -84,7 +86,7 @@ The default configuration of the field tester device is:
 - 1 transmission every 120s
 - LPP channel 10 is used for the packet sequence number (starting at 1) resulting in `digitalOutput_10` as the internal default logical sensor on the WaziGate to receive the packet sequence number on the WaziGate dashboard. The WaziGate dashboard will display in the default capacitive device UI card the newly discovered `digitaloutput` sensor which will hold the packet sequence.
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-dashboard.png" width="400">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-dashboard.png" width="800">
 
 After testing coverage, you can simply delete the `digitaloutput` sensor of the default capacitive sensor.
 
@@ -92,7 +94,7 @@ Note that the SNR (Signal to Noise Ratio) indicated on the OLED screen is the SN
 
 You will see uplink packets coming in and the associated downlink acknowledgement if the WaziGate received the uplink packet. Click on `Uplink` to get details on the uplink transmission. Then look for `loRaSNR` that indicates the SNR of the uplink transmission. Here we can read `loRaSNR=5`.
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-chirpstack.png" width="400">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-chirpstack.png" width="800">
 
 Here is a simple table to assess on the radio quality of the uplink transmission.
 
