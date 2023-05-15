@@ -2,7 +2,7 @@
  *  INTEL_IRRIS soil humidity sensor platform
  *  extended version with AES and custom Carrier Sense features
  *  
- *  Copyright (C) 2016-2022 Congduc Pham, University of Pau, France
+ *  Copyright (C) 2016-2023 Congduc Pham, University of Pau, France
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: April 19th, 2023 by C. Pham
+ * last update: May 15th, 2023 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -75,20 +75,10 @@
 // send millivolt with SEN0308 capacitive
 //#define SEN0308_TRANSMIT_MILLIVOLT
 
-////////////////////////////////////////////////////////////////////
-// WAZISENSE and WAZIDEV v1.4 boards have
-//  - an embedded SI7021 sensor
-// WAZISENSE has an integrated solar panel level monitoring circuit 
-//  - input voltage coming from solar panel is exposed on pin A2
-// WAZIDEV has a battery voltage level monitoring circuit
-//  - exposed on pin A7, and D7 must then be at LOW level
-////////////////////////////////////////////////////////////////////
-
-//choose either WAZISENSE or WAZIDEV14, or NONE of them for DIY ProMini
+//uncomment for WAZISENSE v2
 //#define WAZISENSE
-//#define WAZIDEV14
 
-//can be uncommented for both WAZISENSE and WAZIDEV14
+//uncomment for an onboard SI7021 sensor
 //#define SI7021_SENSOR
 
 //uncomment to use LPP format to send to WAZIGATE for instance
@@ -255,17 +245,11 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 //#define OLED
 //various predefined connection setups for OLED
 // GND, VCC, SCL, SDA
-//#define OLED_GND234
-//#define OLED_7GND654 //7 as GND
-//#define OLED_GND13_12_11
-
-//For WaziDev without SOLAR_PANEL_LEVEL
-#define OLED_9GND876 //9 as GND
-//For WaziDev with SOLAR_PANEL_LEVEL, cannot use D7
-//#define OLED_A3GNDA2_A1_A0 //A3 as GND
-
-//Suitable for WaziSense
-//#define OLED_GND579
+//Suitable for WaziSense v2
+//#define OLED_GND5A5A4 //5 as VCC
+//for other boards – pin 4 is not available when LoRa RST is on pin 4
+//#define OLED_GND235 //suitable even with 1 capacitive or 1 tensiometer+temp sensor attached
+//#define OLED_9GND876 //9 as GND
 
 /********************************************************************
   ___                              _         
@@ -278,18 +262,14 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 //RESERVED PINS on Arduino ProMini: 10, 11, 12, 13, 4
 
 #ifdef WAZISENSE
-//uncomment to transmit data related to solar panel level 
-//#define SOLAR_PANEL_LEVEL
 //this is how you need to connect the analog soil humidity sensors
-#define SH1_ANALOG_PIN A6
-#define SH1_PWR_PIN 6
-#define TEMP_DIGITAL_PIN 7
-#define TEMP_PWR_PIN A7
+#define SH1_ANALOG_PIN A2
+#define SH1_PWR_PIN A1
+//this is how you need to connect the DS18B20 soil temperature sensor
+//the analog soil humidity sensor and the DS18B20 shares the same pwr line
+#define TEMP_DIGITAL_PIN 4
+#define TEMP_PWR_PIN A1
 #else
-#ifdef WAZIDEV14
-//uncomment to transmit data related to battery voltage level 
-//#define WAZIDEV_BAT_VOLTAGE
-#endif
 //this is how you need to connect the analog soil humidity sensor
 #define SH1_ANALOG_PIN A0
 #define SH1_PWR_PIN A1
@@ -297,8 +277,19 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 //the analog soil humidity sensor and the DS18B20 shares the same pwr line
 #define TEMP_DIGITAL_PIN 7
 #define TEMP_PWR_PIN A1
+#endif
 
 #ifdef WITH_WATERMARK
+#ifdef WAZISENSE
+//first Watermark
+#define WM1_PWR_PIN1 3
+#define WM1_PWR_PIN2 4
+#define WM1_ANALOG_PIN A2
+//second Watermark
+#define WM2_PWR_PIN1 5
+#define WM2_PWR_PIN2 A4 //SDA
+#define WM2_ANALOG_PIN A5 //SCL
+#else
 //first Watermark
 #define WM1_PWR_PIN1 8
 #define WM1_PWR_PIN2 9
@@ -308,7 +299,6 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #define WM2_PWR_PIN2 6
 #define WM2_ANALOG_PIN A3
 #endif
-
 #endif
 
 
@@ -383,60 +373,20 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 // SENSORS DEFINITION 
 //////////////////////////////////////////////////////////////////
 // NORMALLY YOU DO NOT NEED TO CHANGE THIS SECTION
-#if defined WAZISENSE || defined WAZIDEV14
-  #ifdef SI7021_SENSOR
-    SI7021 si7021;
-    bool foundSI7021=false;
-    uint8_t si7021_temp_index;
-    uint8_t si7021_hum_index;
-    #if defined SOLAR_PANEL_LEVEL || defined WAZIDEV_BAT_VOLTAGE
-      //soil sensor(s) + SI7021 temp/hum + solar|battery level
-      #ifdef SOIL_TEMP_SENSOR
-        const int number_of_sensors = 5;
-      #else
-        const int number_of_sensors = 4;
-      #endif
-    #else
-       //soil sensor(s) + SI7021 temp/hum
-      #ifdef SOIL_TEMP_SENSOR
-        const int number_of_sensors = 4;
-      #else
-        const int number_of_sensors = 3;
-      #endif
-    #endif
-  #else
-    #if defined SOLAR_PANEL_LEVEL || defined WAZIDEV_BAT_VOLTAGE
-      //soil sensor(s) + solar|battery level
-      #ifdef SOIL_TEMP_SENSOR
-        const int number_of_sensors = 3;
-      #else
-        const int number_of_sensors = 2;
-      #endif
-    #else
-       //soil sensor(s)
-      #ifdef SOIL_TEMP_SENSOR
-        const int number_of_sensors = 2;
-      #else
-        const int number_of_sensors = 1;
-      #endif
-    #endif  
-  #endif
+
+#ifdef SI7021_SENSOR
+SI7021 si7021;
+bool foundSI7021=false;
+uint8_t si7021_temp_index;
+uint8_t si7021_hum_index;
+//capacitive|watermark; 2nd watermark; soil temperature; SI7021 temp+hum; 
+const int max_number_of_sensors = 5;
 #else
-  //soil sensor(s) on regular ProMini PCB version
-  #ifdef TWO_WATERMARK
-    #ifdef SOIL_TEMP_SENSOR
-      const int number_of_sensors = 3;
-    #else
-      const int number_of_sensors = 2;
-    #endif
-  #else
-    #ifdef SOIL_TEMP_SENSOR
-      const int number_of_sensors = 2;
-    #else
-      const int number_of_sensors = 1;
-    #endif
-  #endif    
+// capacitive or watermark; 2nd watermark; soil temperature; 
+const int max_number_of_sensors = 3;
 #endif
+
+uint8_t number_of_sensors;
 
 uint8_t capacitive_sensor_index;
 uint8_t wm1_sensor_index;
@@ -444,6 +394,7 @@ uint8_t wm2_sensor_index;
 uint8_t soil_temp_sensor_index;
 #define SOIL_TEMP_UNDEFINED_VALUE -99.0
 double soil_temp_sensor_value=SOIL_TEMP_UNDEFINED_VALUE;
+
 //////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
@@ -633,42 +584,24 @@ U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/
 //U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 5, /* data=*/ 4, /* reset=*/ U8X8_PIN_NONE);
 U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 12, /* data=*/ 14, /* reset=*/ U8X8_PIN_NONE);
 #else
-#ifdef OLED_GND234
+#ifdef OLED_GND235
   #ifdef OLED_PWR_PIN
     #undef OLED_PWR_PIN
     #define OLED_PWR_PIN 2
   #endif
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 3, /* data=*/ 4, /* reset=*/ U8X8_PIN_NONE);
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 3, /* data=*/ 5, /* reset=*/ U8X8_PIN_NONE);
 #elif defined OLED_9GND876
   #ifdef OLED_PWR_PIN
     #undef OLED_PWR_PIN
     #define OLED_PWR_PIN 8
   #endif  
   U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 7, /* data=*/ 6, /* reset=*/ U8X8_PIN_NONE);
-#elif defined OLED_7GND654
-  #ifdef OLED_PWR_PIN
-    #undef OLED_PWR_PIN
-    #define OLED_PWR_PIN 6
-  #endif  
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 5, /* data=*/ 4, /* reset=*/ U8X8_PIN_NONE);  
-#elif defined OLED_GND13_12_11
-  #ifdef OLED_PWR_PIN
-    #undef OLED_PWR_PIN
-    #define OLED_PWR_PIN 13
-  #endif  
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 12, /* data=*/ 11, /* reset=*/ U8X8_PIN_NONE); 
-#elif defined OLED_GND579
+#elif defined OLED_GND5A5A4
   #ifdef OLED_PWR_PIN
     #undef OLED_PWR_PIN
     #define OLED_PWR_PIN 5
   #endif  
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 7, /* data=*/ 9, /* reset=*/ U8X8_PIN_NONE); 
-#elif defined OLED_A3GNDA2_A1_A0
-  #ifdef OLED_PWR_PIN
-    #undef OLED_PWR_PIN
-    #define OLED_PWR_PIN A2
-  #endif  
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A1, /* data=*/ A0, /* reset=*/ U8X8_PIN_NONE); 
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A5, /* data=*/ A4, /* reset=*/ U8X8_PIN_NONE);      
 #else
   U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A5, /* data=*/ A4, /* reset=*/ U8X8_PIN_NONE);
 #endif
@@ -679,7 +612,7 @@ char oled_msg[20];
 unsigned long nextTransmissionTime=0L;
 
 // array containing sensors pointers
-Sensor* sensor_ptrs[number_of_sensors];
+Sensor* sensor_ptrs[max_number_of_sensors];
 
 #ifdef WITH_EEPROM
 struct sx1272config {
@@ -907,14 +840,6 @@ void setup() {
   //use pin 9 as ground
   pinMode(9, OUTPUT);
   digitalWrite(9, LOW);
-#elif defined OLED_7GND654
-  //use pin 7 as ground
-  pinMode(7, OUTPUT);
-  digitalWrite(7, LOW);
-#elif defined OLED_A3GNDA2_A1_A0
-  //use pin A3 as ground
-  pinMode(A3, OUTPUT);
-  analogWrite(A3, LOW);  
 #endif
 #endif
 
@@ -950,17 +875,6 @@ void setup() {
   soil_temp_sensor_index=sensor_index;
   sensor_index++;
 #endif
-
-#if defined WAZISENSE && defined SOLAR_PANEL_LEVEL  
-  sensor_ptrs[sensor_index] = new rawAnalog("SPL", IS_ANALOG, IS_CONNECTED, IS_NOT_LOWPOWER, (uint8_t) A2, -1 /*no pin trigger*/);
-  sensor_ptrs[sensor_index]->set_n_sample(1);
-  sensor_index++;  
-#endif
-#if defined WAZIDEV14 && defined WAZIDEV_BAT_VOLTAGE
-  sensor_ptrs[sensor_index] = new rawAnalog("BAT", IS_ANALOG, IS_CONNECTED, IS_NOT_LOWPOWER, (uint8_t) A7, -1 /*no pin trigger*/);
-  sensor_ptrs[sensor_index]->set_n_sample(1);
-  sensor_index++;  
-#endif
   
 #ifdef SI7021_SENSOR
   if (si7021.initialize()) {
@@ -988,8 +902,6 @@ void setup() {
   u8x8.drawString(0, 0, "PRIMA IntelIrriS");
 #ifdef WAZISENSE
   u8x8.drawString(0, 1, "with WaziSense  ");
-#elif defined WAZIDEV14  
-  u8x8.drawString(0, 1, "with WaziDev1.4 ");
 #else
   u8x8.drawString(0, 1, "with DIY IoT    ");
 #endif
@@ -1005,25 +917,7 @@ void setup() {
   PRINT_CSTSTR(BOOT_START_MSG);
 
 #ifdef WAZISENSE
-  PRINT_CSTSTR("WaziSense board\n");
-#ifdef SOLAR_PANEL_LEVEL  
-  //for the solar panel monitoring circuit
-  pinMode(A2, INPUT);
-#endif    
-#endif
-
-#ifdef WAZIDEV14
-  PRINT_CSTSTR("WaziDev v1.4 board\n");
-  pinMode(7, OUTPUT);
-#ifdef WAZIDEV_BAT_VOLTAGE  
-  //for the bat level monitoring circuit
-  pinMode(A7, INPUT);
-  //need to put D7 low to activate the monitoring circuit
-  digitalWrite(7, LOW);
-#else
-  //keep D7 HIGH to de-activate the bat level monitoring circuit
-  digitalWrite(7, HIGH);  
-#endif    
+  PRINT_CSTSTR("WaziSense board\n");  
 #endif
 
 #ifdef ARDUINO_AVR_PRO
@@ -1337,9 +1231,6 @@ void setup() {
   PRINT_CSTSTR("low_voltage_indication=");
   PRINTLN_VALUE("%d", low_voltage_indication);  
 #endif
-
-  //printf_begin();
-  //delay(500);
 }
 
 //////////////////////////////////////////////////////////////
@@ -1350,27 +1241,11 @@ void measure_and_send( void)
   long startSend;
   long endSend;
   uint8_t app_key_offset=0;
-  int e;
 
 #if defined WITH_APPKEY && not defined LORAWAN
       app_key_offset = sizeof(my_appKey);
       // set the app key in the payload
       memcpy(message,my_appKey,app_key_offset);
-#endif
-
-#ifdef WAZISENSE
-      int A2value=analogRead(A2);
-      PRINT_CSTSTR("Solar panel is at level ");
-      PRINTLN_VALUE("%d", A2value);
-
-      pinMode(8, OUTPUT);
-      digitalWrite(8, HIGH);
-      delay(100);
-      digitalWrite(8, LOW);
-      delay(200);
-      digitalWrite(8, HIGH);
-      delay(100);
-      digitalWrite(8, LOW);
 #endif
 
 #ifdef OLED
@@ -1385,8 +1260,6 @@ void measure_and_send( void)
         u8x8.drawString(0, 0, "PRIMA IntelIrriS");
 #ifdef WAZISENSE
         u8x8.drawString(0, 1, "with WaziSense  ");
-#elif defined WAZIDEV14  
-        u8x8.drawString(0, 1, "with WaziDev1.4 ");
 #else
         u8x8.drawString(0, 1, "with DIY IoT    ");
 #endif
@@ -1754,24 +1627,6 @@ void measure_and_send( void)
         PRINT_HEX("%d", IRQStatus);
         LT.printIrqStatus(); 
       }
-          
-#ifdef WITH_EEPROM
-      // save packet number for next packet in case of reboot     
-      my_sx1272config.seq=LT.readTXSeqNo();
-      EEPROM.put(0, my_sx1272config);
-#endif
-      PRINTLN;
-      PRINT_CSTSTR("LoRa pkt size ");
-      PRINT_VALUE("%d", pl);
-      PRINTLN;
-      
-      PRINT_CSTSTR("LoRa pkt seq ");   
-      PRINT_VALUE("%d", LT.readTXSeqNo()-1);
-      PRINTLN;
-    
-      PRINT_CSTSTR("LoRa Sent in ");
-      PRINT_VALUE("%ld", endSend-startSend);
-      PRINTLN;
 
 ///////////////////////////////////////////////////////////////////
 // DOWNLINK BLOCK - EDIT ONLY NEW COMMAND SECTION
@@ -1779,7 +1634,6 @@ void measure_and_send( void)
 ///////////////////////////////////////////////////////////////////
 
 #ifdef WITH_RCVW
-      
 #ifdef LORAWAN 
       uint8_t rxw_max=2;
 #else
@@ -1796,17 +1650,15 @@ void measure_and_send( void)
                               
       do {
           PRINT_CSTSTR("Wait for ");
-          PRINT_VALUE("%d", (endSend+rxw*DELAY_BEFORE_RCVW) - millis());
-          PRINTLN;
-    
+          PRINTLN_VALUE("%d", (endSend+rxw*DELAY_BEFORE_RCVW) - millis());
+          
+          PRINT_CSTSTR("Wait for incoming packet-RX");
+          PRINTLN_VALUE("%d", rxw);
+
           //target 1s which is RX1 for LoRaWAN in most regions
           //then target 1s more which is RX2 for LoRaWAN in most regions
           while (millis()-endSend < rxw*DELAY_BEFORE_RCVW)
             ;
-          
-          PRINT_CSTSTR("Wait for incoming packet-RX");
-          PRINT_VALUE("%d", rxw);
-          PRINTLN;
             
           // wait for incoming packets
           RXPacketL = LT.receive(message, sizeof(message), 850, WAIT_RX);
@@ -2019,8 +1871,26 @@ void measure_and_send( void)
         }          
       }
       else
-        PRINT_CSTSTR("No downlink\n");
+        PRINT_CSTSTR("No downlink\n");        
 #endif         
+
+#ifdef WITH_EEPROM
+      // save packet number for next packet in case of reboot     
+      my_sx1272config.seq=LT.readTXSeqNo();
+      EEPROM.put(0, my_sx1272config);
+#endif
+      PRINTLN;
+      PRINT_CSTSTR("LoRa pkt size ");
+      PRINT_VALUE("%d", pl);
+      PRINTLN;
+      
+      PRINT_CSTSTR("LoRa pkt seq ");   
+      PRINT_VALUE("%d", LT.readTXSeqNo()-1);
+      PRINTLN;
+    
+      PRINT_CSTSTR("LoRa Sent in ");
+      PRINT_VALUE("%ld", endSend-startSend);
+      PRINTLN;
 }  
 
 /*****************************
