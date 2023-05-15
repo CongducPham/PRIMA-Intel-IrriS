@@ -39,11 +39,11 @@ Default configuration for INTEL-IRRIS project (works out-of-the box with the INT
 Arduino_LoRa_SX12XX_Ping_OLED Arduino code
 ===================================
 
-The `Arduino_LoRa_SX12XX_Ping_OLED.ino` code is a simple field tester tool that can be flashed on a dedicated device to perform field coverage tests. This dedicated device can be built very similarly to an INTEL-IRRIS sensor device. 
+The `Arduino_LoRa_SX12XX_Ping_OLED.ino` code is a simple Field Tester tool that can be flashed on a dedicated device to perform field coverage tests. This dedicated device can be built very similarly to an INTEL-IRRIS sensor device. 
 
-The field tester device will send every 120s a `Confirmed Data Up` LoRaWAN packet to the INTEL-IRRIS WaziGate gateway to request a downlink acknowledgment packet. If the device receives such acknowledgement it would indicate that the uplink packet has been successfully received by the INTEL-IRRIS WaziGate. When deploying INTEL-IRRIS soil humidity sensor devices, the field tester device is useful to determine whether the device can reach the gateway, without having to check on the gateway itself.
+The Field Tester device will send every 120s a `Confirmed Data Up` LoRaWAN packet to the INTEL-IRRIS WaziGate gateway to request a downlink acknowledgment packet. If the device receives such acknowledgement it would indicate that the uplink packet has been successfully received by the INTEL-IRRIS WaziGate. When deploying INTEL-IRRIS soil humidity sensor devices, the Field Tester device is useful to determine whether the device can reach the gateway, without having to check on the gateway itself.
 
-The field tester device supports a small OLED screen that will indicate if the downlink acknowledgment packet has been received by the field tester device or not. 
+The Field Tester device supports a small OLED screen that will indicate if the downlink acknowledgment packet has been received by the field tester device or not. 
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled.JPG" width="400">
 
@@ -57,13 +57,19 @@ By default in the code, the OLED can be connected as follows:
            6----------SDA   (Arduino 6 will act as SDA)
 ``` 
 
-If no dedicated device is available, it can be flashed temporarily on an INTEL-IRRIS device. In this case, it is easier to connect the OLED to an INTEL-IRRIS device with a capacitive sensor where pin 9, 8, 7 and 6 are available. 
+Although having a **dedicated Field Tester device is recommended**, if you do not have such spare device available, the Field Tester can be flashed temporarily on an INTEL-IRRIS device. In this case, it is easier to connect the OLED to an INTEL-IRRIS device with a capacitive device sensor where pin 9, 8, 7 and 6 are available. 
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-capacitive-1.JPG" width="400">
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-capacitive-2.JPG" width="400">
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case.JPG" width="400">
+
+**You can make a dedicated spare case cover with a small hole to pass the OLED wire through. Once field test is over, put back the original cover of the INTEL-IRRIS device if needed.**
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case-1.JPG" width="400">
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case-2.JPG" width="400">
 
 If an INTEL-IRRIS device with a tensiometer & temperature sensor was to be used, then it is easier to connect as follows:
 
@@ -88,7 +94,7 @@ The default configuration of the field tester device is:
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-dashboard.png" width="400">
 
-After testing coverage, you can simply delete the `digitaloutput` sensor of the default capacitive sensor.
+After testing coverage, you can simply delete the `digitaloutput` sensor of the default capacitive device.
 
 Note that the SNR (Signal to Noise Ratio) indicated on the OLED screen is the SNR of the acknowledgement. To know the SNR of the uplink (uplink means from device to gateway) transmission (thus the quality of the uplink transmission), you need to check on the WaziGate itself, using the live LoRaWAN frame capture feature of the embedded ChirpStack Network Server User Interface. To access the ChirpStack Network Server on the WaziGate, just connect to its WiFi network, then open `http://10.42.0.1:8080` with a web browser. Log in as `admin` user with `admin` password. Then go the `Gateway` menu, click on the WaziGate gateway and then select `LIVE LORAWAN FRAME` tab.
 
@@ -104,7 +110,7 @@ Here is a simple table to assess on the radio quality of the uplink transmission
 - SNR > 3: good radio quality, we can expect 100% packet reception
 - SNR > 6: very good radio quality, we can expect 100% packet reception
 
-**IMPORTANT NOTICE: it is possible that the gateway receives the uplink transmission but the field tester device can not receive the acknowledgement. Therefore, in case you don't see any acknowledgment on the field tester, always check on the WaziGate.**
+**IMPORTANT NOTICE: it is possible that the gateway receives the uplink transmission but the Field Testerdevice can not receive the acknowledgement. Therefore, in case you don't see any acknowledgment on the Field Tester, always check on the WaziGate.**
 
 If the radio signal is weak, you can improve it with several actions:
 
@@ -113,7 +119,7 @@ If the radio signal is weak, you can improve it with several actions:
 - try to put the gateway antenna outside, using an outdoor antenna with a antenna cable extension
 - try to use a more efficient antenna for the device, or for the gateway or for both
 
-For those who would like a more elaborated LoRaWAN field tester, they can look at this great project: [https://github.com/disk91/WioLoRaWANFieldTester](https://github.com/disk91/WioLoRaWANFieldTester).
+For those who would like a more elaborated LoRaWAN Field Tester, they can look at this great project: [https://github.com/disk91/WioLoRaWANFieldTester](https://github.com/disk91/WioLoRaWANFieldTester).
 
 Enjoy!
 C. Pham
