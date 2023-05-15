@@ -386,7 +386,7 @@ const int max_number_of_sensors = 5;
 const int max_number_of_sensors = 3;
 #endif
 
-uint8_t number_of_sensors;
+uint8_t number_of_sensors=max_number_of_sensors;
 
 uint8_t capacitive_sensor_index;
 uint8_t wm1_sensor_index;
@@ -453,7 +453,7 @@ uint32_t TXPacketCount=0;
 //
 // low voltage mode is applied when the battary voltage falls below VCC_LOW
 // once detected, the device will keep MAX_LOW_VOLTAGE_INDICATION=3 normal operation cycle
-// then, it will increase the measure & tranmission time interval to LOW_VOLTAGE_IDLE_PERIOD_HOUR=4 hours
+// then, it will increase the measure & transmission time interval to LOW_VOLTAGE_IDLE_PERIOD_HOUR=4 hours
 // the mechanism prevents the ATMega328P microcontroller to reboot constantly
 // the battery voltage is transmitted to the gateway and appears on the dashboard so that
 // end-user can be warned of low voltage on the deployed device
@@ -890,7 +890,9 @@ void setup() {
   si7021_hum_index=sensor_index;
   sensor_index++;
 #endif
- 
+
+  //we ajust to get the real number of sensors
+  number_of_sensors=sensor_index;
 ////////////////////////////////////////////////////////////////// 
   
 #ifdef OLED
@@ -1322,9 +1324,11 @@ void measure_and_send( void)
               
 #if defined WITH_WATERMARK && defined SOIL_TEMP_SENSOR
               if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST",2)==0)
+                //because we already got it previously, so we just avoid reading it again
                 tmp_value=soil_temp_sensor_value;                
               else
-#endif              
+#endif          
+                //get the value from the sensor    
                 tmp_value=sensor_ptrs[i]->get_value();
 
               //TEST
@@ -1435,14 +1439,6 @@ void measure_and_send( void)
               if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST",2)==0) {
                 //we always use channel 5 for soil temperature
                 lpp.addTemperature(5, tmp_value);
-//#ifdef LINK_SOIL_TEMP_TO_CENTIBAR
-//                //TODO: the channel index is hardcoded
-//                lpp.addTemperature(0, sensor_ptrs[wm1_sensor_index]->convert_value(sensor_ptrs[wm1_sensor_index]->get_data(), tmp_value, -1.0));
-//#ifdef TWO_WATERMARK
-//                //TODO: the channel index is hardcoded
-//                lpp.addTemperature(2, sensor_ptrs[wm2_sensor_index]->convert_value(sensor_ptrs[wm2_sensor_index]->get_data(), tmp_value, -1.0));
-//#endif                
-//#endif
               }
 #endif
 
