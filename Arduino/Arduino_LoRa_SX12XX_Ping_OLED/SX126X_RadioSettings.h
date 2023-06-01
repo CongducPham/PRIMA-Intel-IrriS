@@ -140,9 +140,9 @@ const uint32_t CH_03_433 = 434300000;
 #ifdef BAND868
 //868.1MHz
 const uint32_t DEFAULT_CHANNEL=CH_18_868;
-#elif defined BAND900
+#elif defined BAND915
 //hardcoded with the first LoRaWAN frequency
-const uint32_t DEFAULT_CHANNEL=923200000;
+const uint32_t DEFAULT_CHANNEL=915200000;
 #elif defined BAND433
 //hardcoded with the first LoRaWAN frequency
 const uint32_t DEFAULT_CHANNEL=433175000;

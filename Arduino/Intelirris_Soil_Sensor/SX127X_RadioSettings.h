@@ -23,7 +23,11 @@
 #else
 #define NSS 10                                  //select pin on LoRa device
 #endif
+#ifdef WAZISENSE
+#define NRESET 9
+#else
 #define NRESET 4                                //reset pin on LoRa device
+#endif
 //we do not connect DIO0 as we use polling method
 //if you have an RFM95 then
 //you can use our ProMini LoRa PCB for RFM95 where DIO0 can be connected to D2
@@ -142,9 +146,9 @@ const uint32_t CH_03_433 = 434300000;
 #ifdef BAND868
 //868.1MHz
 const uint32_t DEFAULT_CHANNEL=CH_18_868;
-#elif defined BAND900
+#elif defined BAND915
 //hardcoded with the first LoRaWAN frequency
-const uint32_t DEFAULT_CHANNEL=923200000;
+const uint32_t DEFAULT_CHANNEL=915200000;
 #elif defined BAND433
 //hardcoded with the first LoRaWAN frequency
 const uint32_t DEFAULT_CHANNEL=433175000;

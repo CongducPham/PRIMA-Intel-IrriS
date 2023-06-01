@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: May 15th, 2023 by C. Pham
+ * last update: May 31st, 2023 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -44,11 +44,20 @@
 ////////////////////////////////////////////////////////////////////
 // Frequency band - do not change in SX127X_RadioSettings.h anymore
 //#define BAND868
-//#define BAND900 
+//#define BAND915 
 #define BAND433
 
+////////////////////////////
+//uncomment to use a customized frequency.
+//#define MY_FREQUENCY 868100000
+//#define MY_FREQUENCY 433170000
+//#define MY_FREQUENCY 915200000
+
+//uncomment for WAZISENSE v2
+//#define WAZISENSE
+
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – 31/08/2022\n"
+#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – May 15th, 2023\n"
 
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
@@ -74,9 +83,6 @@
 #define SEN0308_CALIBRATION_LOW_VOLTAGE
 // send millivolt with SEN0308 capacitive
 //#define SEN0308_TRANSMIT_MILLIVOLT
-
-//uncomment for WAZISENSE v2
-//#define WAZISENSE
 
 //uncomment for an onboard SI7021 sensor
 //#define SI7021_SENSOR
@@ -148,10 +154,6 @@
 // Test generation of random values from device
 //#define TEST_DEVICE_RANDOM
 
-////////////////////////////
-//uncomment to use a customized frequency. TTN plan includes 868.1/868.3/868.5/867.1/867.3/867.5/867.7/867.9 for LoRa
-//#define MY_FREQUENCY 868100000
-//#define MY_FREQUENCY 433170000
 ////////////////////////////
 //when sending to a LoRaWAN gateway (e.g. running util_pkt_logger) but with no native LoRaWAN format, just to set the correct sync word
 //#define PUBLIC_SYNCWORD
@@ -259,7 +261,24 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
                              |_|             
 ********************************************************************/
 
-//RESERVED PINS on Arduino ProMini: 10, 11, 12, 13, 4
+//RESERVED PINS on Arduino ProMini: 10, 11, 12, 13, 4 (for LoRa RST)
+
+//RESERVED PINS on WaziSense: 10, 11, 12, 13, 9 (for LoRa RST), 8 (LED1), 6 & 7 (power pins), A0 (bat level), 
+// WaziSense pinout
+// sensor power
+// | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
+// Capacitive wiring (x)
+// | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
+// |     |     | x  x  x |       x |            |
+//
+// 1 tensiometer wiring (x) + soil temp DS18B20 wiring (o)
+// | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
+// |     | o o |    x    |    x    |    x  o    |
+//
+// 1st tensiometer wiring (x) + 2nd tensiometer wiring (*) + soil temp DS18B20 wiring (o)
+// | + - | + - | A2 A1 G | D4 D3 G | A5 A4 D5 G |
+// |     | o o | *  x    | *  x    | *  x  o    |
+//
 
 #ifdef WAZISENSE
 //this is how you need to connect the analog soil humidity sensors
@@ -267,8 +286,8 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #define SH1_PWR_PIN A1
 //this is how you need to connect the DS18B20 soil temperature sensor
 //the analog soil humidity sensor and the DS18B20 shares the same pwr line
-#define TEMP_DIGITAL_PIN 4
-#define TEMP_PWR_PIN A1
+#define TEMP_DIGITAL_PIN 5
+#define TEMP_PWR_PIN 6 //one of the sensor power pin
 #else
 //this is how you need to connect the analog soil humidity sensor
 #define SH1_ANALOG_PIN A0
@@ -282,13 +301,13 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #ifdef WITH_WATERMARK
 #ifdef WAZISENSE
 //first Watermark
-#define WM1_PWR_PIN1 3
-#define WM1_PWR_PIN2 4
-#define WM1_ANALOG_PIN A2
+#define WM1_PWR_PIN1 A4 //SDA
+#define WM1_PWR_PIN2 3
+#define WM1_ANALOG_PIN A1
 //second Watermark
-#define WM2_PWR_PIN1 5
-#define WM2_PWR_PIN2 A4 //SDA
-#define WM2_ANALOG_PIN A5 //SCL
+#define WM2_PWR_PIN1 A5 //SCL 
+#define WM2_PWR_PIN2 4 
+#define WM2_ANALOG_PIN A2
 #else
 //first Watermark
 #define WM1_PWR_PIN1 8
@@ -823,6 +842,26 @@ void setup() {
 #else
   bool low_power_status = IS_NOT_LOWPOWER;
   //digitalWrite(PIN_POWER,HIGH);
+#endif
+
+#ifdef WAZISENSE
+#define BUILTIN_LED1 8
+#define MOSFET1 6
+#define MOSFET2 7
+
+  pinMode(BUILTIN_LED1, OUTPUT);
+  digitalWrite(BUILTIN_LED1, HIGH);
+  delay(200);
+  digitalWrite(BUILTIN_LED1, LOW);
+  delay(200);
+  digitalWrite(BUILTIN_LED1, HIGH);
+  delay(200);
+  digitalWrite(BUILTIN_LED1, LOW);    
+  
+  pinMode(MOSFET1, OUTPUT);
+  pinMode(MOSFET2, OUTPUT);
+  digitalWrite(MOSFET1, LOW);
+  digitalWrite(MOSFET2, LOW);
 #endif
   
   delay(1000);
@@ -1669,8 +1708,10 @@ void measure_and_send( void)
               //change freq to 869.525 as we are targeting RX2 window
               PRINT_CSTSTR("Set downlink frequency to 869.525MHz\n");
               LT.setRfFrequency(869525000, Offset);
-#elif defined BAND900
-              //TODO?
+#elif defined BAND915
+              //change freq to 923.3 as we are targeting RX2 window
+              PRINT_CSTSTR("Set downlink frequency to 923.3MHz\n");
+              LT.setRfFrequency(923300000, Offset);
 #elif defined BAND433
               //change freq to 434.665 as we are targeting RX2 window
               PRINT_CSTSTR("Set downlink frequency to 434.665MHz\n");

@@ -19,7 +19,7 @@
  *
  *****************************************************************************
  *
- * last update: May 15th, 2023 by C. Pham
+ * last update: May 31st, 2023 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -49,7 +49,7 @@
 ////////////////////////////////////////////////////////////////////
 // Frequency band - do not change in SX127X_RadioSettings.h anymore
 //#define BAND868
-//#define BAND900 
+//#define BAND915 
 #define BAND433
 
 ////////////////////////////////////////////////////////////////////
@@ -823,8 +823,10 @@ void loop(void)
               //change freq to 869.525 as we are targeting RX2 window
               PRINT_CSTSTR("Set downlink frequency to 869.525MHz\n");
               LT.setRfFrequency(869525000, Offset);
-#elif defined BAND900
-              //TODO?
+#elif defined BAND915
+              //change freq to 923.3 as we are targeting RX2 window
+              PRINT_CSTSTR("Set downlink frequency to 923.3MHz\n");
+              LT.setRfFrequency(923300000, Offset);
 #elif defined BAND433
               //change freq to 434.665 as we are targeting RX2 window
               PRINT_CSTSTR("Set downlink frequency to 434.665MHz\n");
