@@ -49,7 +49,7 @@ then
 	#sudo update-rc.d -f fake-hwclock remove
 	#sudo systemctl disable fake-hwclock
 	
-	if [ "$2" = "eu433" ] || [ "$2" = "eu868" ]
+	if [ "$2" = "eu433" ] || [ "$2" = "eu868" ] || [ "$2" = "au915" ]
 		then
 			echo "configure for frequency band $2"
 			./scripts/config_band.sh $2
@@ -66,6 +66,9 @@ then
 		echo "Enabling auto-config service at boot"
 		sudo cp intel-irris-auto-config-service.service.txt /etc/systemd/system/intel-irris-auto-config-service.service
 		sudo systemctl enable intel-irris-auto-config-service.service	
+		#update start.sh for multi_chan_pkt_fwd, until default WaziGate distrib fixes the bug with RST pin
+		docker cp /home/pi/scripts/multi_chan_pkt_fwd/start.sh waziup.wazigate-lora.forwarders:/root/
+		docker exec -it --user root waziup.wazigate-lora.forwarders chown root:root /root/start.sh
 	fi
 
 	cd oled
