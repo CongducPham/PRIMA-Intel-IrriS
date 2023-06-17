@@ -19,7 +19,7 @@
  *
  *****************************************************************************
  *
- * last update: May 31st, 2023 by C. Pham
+ * last update: June 17th, 2023 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -40,6 +40,10 @@
 ////////////////////////////////////////////////////////////////////
 // sends data to INTEL-IRRIS WaziGate edge-gateway
 #define TO_WAZIGATE
+
+////////////////////////////////////////////////////////////////////
+//uncomment if you have an OLED attached
+#define OLED
 
 ////////////////////////////////////////////////////////////////////
 // define a dedicated ping device with address 0x26011DA0
@@ -134,10 +138,7 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
  | (_) | / -_) _` |
   \___/|_\___\__,_|
 ********************************************************************/
-                     
-//uncomment if you have an OLED attached
-#define OLED
-//#define OLED
+
 //various predefined connection setups for OLED
 // GND, VCC, SCL, SDA
 //Suitable for WaziSense v2
@@ -720,7 +721,7 @@ void loop(void)
       endSend=millis();                                         
       uint16_t localCRC = LT.CRCCCITT(message, r_size, 0xFFFF);
       PRINT_CSTSTR("CRC,");
-      PRINT_HEX("%d", localCRC);
+      PRINTLN_HEX("%d", localCRC);
 
 #ifndef LORAWAN
       if (LT.readAckStatus()) {
@@ -791,19 +792,22 @@ void loop(void)
       uint8_t RXPacketL;
                               
       do {          
-          //PRINTLN_VALUE("%d", endSend);
-          //PRINTLN_VALUE("%d", millis());        
-          //PRINT_CSTSTR("Wait for ");
-          //PRINT_VALUE("%d", (endSend+rxw*DELAY_BEFORE_RCVW) - millis());
-          //PRINTLN;
-
+#if not defined OLED 
+          PRINTLN_VALUE("%d", endSend);
+          PRINTLN_VALUE("%d", millis());        
+          PRINT_CSTSTR("Wait for ");
+          PRINT_VALUE("%d", (endSend+rxw*DELAY_BEFORE_RCVW) - millis());
+          PRINTLN;
+#endif
           PRINT_CSTSTR("Wait for incoming packet-RX");
           PRINTLN_VALUE("%d", rxw);
-                    
+
+#if not defined OLED                   
           //target 1s which is RX1 for LoRaWAN in most regions
           //then target 1s more which is RX2 for LoRaWAN in most regions
-          //while (millis()-endSend < rxw*DELAY_BEFORE_RCVW)
-          //  ;
+          while (millis()-endSend < rxw*DELAY_BEFORE_RCVW)
+            ;
+#endif
 
           //we take it safely so we open the receive window much earlier
           //to not miss the downlink packet from the gw
