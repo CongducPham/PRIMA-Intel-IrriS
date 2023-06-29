@@ -18,7 +18,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: May 31st, 2023 by C. Pham
+ * last update: Jun 16th, 2023 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -55,6 +55,9 @@
 
 //uncomment for WAZISENSE v2
 //#define WAZISENSE
+
+//uncomment for IRD PCB
+//#define IRD_PCB
 
 ////////////////////////////////////////////////////////////////////
 #define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – May 15th, 2023\n"
@@ -281,42 +284,59 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 //
 
 #ifdef WAZISENSE
-//this is how you need to connect the analog soil humidity sensors
-#define SH1_ANALOG_PIN A2
-#define SH1_PWR_PIN A1
-//this is how you need to connect the DS18B20 soil temperature sensor
-//the analog soil humidity sensor and the DS18B20 shares the same pwr line
-#define TEMP_DIGITAL_PIN 5
-#define TEMP_PWR_PIN 6 //one of the sensor power pin
+  //this is how you need to connect the analog soil humidity sensors
+  #define SH1_ANALOG_PIN A2
+  #define SH1_PWR_PIN A1
+  //this is how you need to connect the DS18B20 soil temperature sensor
+  //the analog soil humidity sensor and the DS18B20 shares the same pwr line
+  #define TEMP_DIGITAL_PIN 5
+  #define TEMP_PWR_PIN 6 //one of the sensor power pin
+#elif defined IRD_PCB
+  //this is how you need to connect the analog soil humidity sensor
+  #define SH1_ANALOG_PIN A0
+  #define SH1_PWR_PIN A1
+  //this is how you need to connect the DS18B20 soil temperature sensor
+  //the analog soil humidity sensor and the DS18B20 shares the same pwr line
+  #define TEMP_DIGITAL_PIN A3
+  #define TEMP_PWR_PIN A1
 #else
-//this is how you need to connect the analog soil humidity sensor
-#define SH1_ANALOG_PIN A0
-#define SH1_PWR_PIN A1
-//this is how you need to connect the DS18B20 soil temperature sensor
-//the analog soil humidity sensor and the DS18B20 shares the same pwr line
-#define TEMP_DIGITAL_PIN 7
-#define TEMP_PWR_PIN A1
+  //this is how you need to connect the analog soil humidity sensor
+  #define SH1_ANALOG_PIN A0
+  #define SH1_PWR_PIN A1
+  //this is how you need to connect the DS18B20 soil temperature sensor
+  //the analog soil humidity sensor and the DS18B20 shares the same pwr line
+  #define TEMP_DIGITAL_PIN 7
+  #define TEMP_PWR_PIN A1
 #endif
 
 #ifdef WITH_WATERMARK
 #ifdef WAZISENSE
-//first Watermark
-#define WM1_PWR_PIN1 A4 //SDA
-#define WM1_PWR_PIN2 3
-#define WM1_ANALOG_PIN A1
-//second Watermark
-#define WM2_PWR_PIN1 A5 //SCL 
-#define WM2_PWR_PIN2 4 
-#define WM2_ANALOG_PIN A2
+  //first Watermark
+  #define WM1_PWR_PIN1 A4 //SDA
+  #define WM1_PWR_PIN2 3
+  #define WM1_ANALOG_PIN A1
+  //second Watermark
+  #define WM2_PWR_PIN1 A5 //SCL 
+  #define WM2_PWR_PIN2 4 
+  #define WM2_ANALOG_PIN A2
+#elif defined IRD_PCB
+  //first Watermark
+  #define WM1_PWR_PIN1 8
+  #define WM1_PWR_PIN2 9
+  #define WM1_ANALOG_PIN A2
+  //second Watermark
+  #define WM2_PWR_PIN1 6
+  #define WM2_PWR_PIN2 7
+  #define WM2_ANALOG_PIN A6
 #else
-//first Watermark
-#define WM1_PWR_PIN1 8
-#define WM1_PWR_PIN2 9
-#define WM1_ANALOG_PIN A2
-//second Watermark
-#define WM2_PWR_PIN1 5
-#define WM2_PWR_PIN2 6
-#define WM2_ANALOG_PIN A3
+  //first Watermark
+  #define WM1_PWR_PIN1 8
+  #define WM1_PWR_PIN2 9
+  #define WM1_ANALOG_PIN A2
+  //second Watermark
+  #define WM2_PWR_PIN1 5
+  #define WM2_PWR_PIN2 6
+  #define WM2_ANALOG_PIN A3
 #endif
 #endif
 
@@ -911,6 +931,10 @@ void setup() {
   //ST
   sensor_ptrs[sensor_index] = new DS18B20((char*)"ST", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+#ifdef WAZISENSE  
+  //it is because the soil temp is attached to a mosfet sensor pin
+  sensor_ptrs[sensor_index]->set_warmup_time(1500);
+#endif      
   soil_temp_sensor_index=sensor_index;
   sensor_index++;
 #endif

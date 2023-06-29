@@ -19,7 +19,7 @@
  *
  *****************************************************************************
  *
- * last update: June 17th, 2023 by C. Pham
+ * last update: June 29th, 2023 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -146,6 +146,10 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 //for other boards – pin 4 is not available when LoRa RST is on pin 4
 //#define OLED_GND235 //suitable even with 1 capacitive or 1 tensiometer+temp sensor attached
 #define OLED_9GND876 //9 as GND
+//to be used with IRD PCB on the WMs and DS18B20 connectors
+// WM1    WM2      TEMP
+// D8 D9  D6 D7 GND A1 A3 
+//#define OLED_GNDA186 
 
 /********************************************************************
   ___            _           _           
@@ -285,7 +289,13 @@ U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 12, /* data=*/ 14, /* reset=*
     #undef OLED_PWR_PIN
     #define OLED_PWR_PIN 5
   #endif  
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A5, /* data=*/ A4, /* reset=*/ U8X8_PIN_NONE);    
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A5, /* data=*/ A4, /* reset=*/ U8X8_PIN_NONE);
+#elif defined OLED_GNDA186   
+  #ifdef OLED_PWR_PIN
+    #undef OLED_PWR_PIN
+    #define OLED_PWR_PIN A1
+  #endif  
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 8, /* data=*/ 6, /* reset=*/ U8X8_PIN_NONE);    
 #else
   U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A5, /* data=*/ A4, /* reset=*/ U8X8_PIN_NONE);
 #endif

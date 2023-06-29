@@ -22,10 +22,6 @@ watermark::watermark(char* nomenclature, bool is_analog, bool is_connected, bool
 void watermark::update_data()
 {	
   if (get_is_connected()) {
-  	
-		// All pin high Z, probably not needed with only 1 watermark 
-		pinMode(get_pin_power(), INPUT);
-    pinMode(get_pin_trigger(), INPUT);
 
     // wait
     delay(get_warmup_time());
@@ -79,11 +75,7 @@ void watermark::update_data()
 
     //probably not needed with only 1 watermark 
     pinMode(get_pin_power(), INPUT); // hZ
-    pinMode(get_pin_trigger(), INPUT); // hZ
-
-  	// All pin low Z to avoid interferences
-		pinMode(get_pin_power(), OUTPUT);
-    pinMode(get_pin_trigger(), OUTPUT);       
+    pinMode(get_pin_trigger(), INPUT); // hZ      
   }
   else {
   		// if not connected, set a random value (for testing)  	
