@@ -6,7 +6,7 @@
         "desc": "Lora MAC, 125kHz, SF12, 868.1 MHz",
         "bandwidth": 125000,
         "spread_factor": 12,
-        "freq": 915200000
+        "freq": 916800000
         },
         "gateway_conf": {
                 "gateway_ID": "AA55A00000000000",
