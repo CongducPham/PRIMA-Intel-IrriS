@@ -12,10 +12,9 @@ docker exec -it --user root waziup.wazigate-lora.forwarders chown root:root /roo
 echo "RAK5146"
 echo "copy rak5146/global_conf/global_conf.${1^^}.json to rak5146 home folder"
 cp /home/pi/scripts/rak5146/global_conf/global_conf.${1^^}.json /home/pi/scripts/rak5146/global_conf.json 
-chown root:root /home/pi/scripts/rak5146/global_conf.json
 
 echo "configuring chirpstack-gateway-bridge.toml for ${1^^}"
-sed -i 's/region=.*/region="'"${1^^}"'"/g' /home/pi/scripts/chirpstack_conf/chirpstack-gateway-bridge.toml
+sed -i 's/ region=.*/ region="'"${1^^}"'"/g' /home/pi/scripts/chirpstack_conf/chirpstack-gateway-bridge.toml
 echo "copy chirpstack-gateway-bridge.toml to waziup.wazigate-lora.chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge/"
 docker cp /home/pi/scripts/chirpstack_conf/chirpstack-gateway-bridge.toml waziup.wazigate-lora.chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge/
 
