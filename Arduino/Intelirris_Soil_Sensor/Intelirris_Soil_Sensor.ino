@@ -1,6 +1,7 @@
 /*
  *  INTEL_IRRIS soil humidity sensor platform
- *  extended version with AES and custom Carrier Sense features
+ *  support limited LoRaWAN with raw LoRa SX12XX (such as RFM9X, NiveRF, ...)
+ *  support RAK3172 for native LoRaWAN
  *  
  *  Copyright (C) 2016-2023 Congduc Pham, University of Pau, France
  *
@@ -18,7 +19,9 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Jun 16th, 2023 by C. Pham
+ * last update: Sep. 22nd, 2023 by C. Pham
+ * 
+ * NEW: Support native LoRaWAN module RAK3172 with AT commands
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -37,30 +40,34 @@
                          |___/                                   
 ********************************************************************/
 
+//indicate in this file the radio module: SX126X, SX127X, SX128X or RAK3172
+#include "RadioSettings.h"
+
 ////////////////////////////////////////////////////////////////////
 // sends data to INTEL-IRRIS WaziGate edge-gateway
 #define TO_WAZIGATE
 
 ////////////////////////////////////////////////////////////////////
-// Frequency band - do not change in SX127X_RadioSettings.h anymore
-//#define BAND868
-//#define BAND915 
-#define BAND433
+// Frequency band - do not change in SX12XX_RadioSettings.h anymore
+// if using a native LoRaWAN module such as RAK3172, also select band in RadioSettings.h
+//#define EU868
+//#define AU915 
+#define EU433
 
 ////////////////////////////
 //uncomment to use a customized frequency.
 //#define MY_FREQUENCY 868100000
 //#define MY_FREQUENCY 433170000
-//#define MY_FREQUENCY 915200000
+//#define MY_FREQUENCY 916800000
 
-//uncomment for WAZISENSE v2
+//uncomment for WAZISENSE v2 board
 //#define WAZISENSE
 
-//uncomment for IRD PCB
+//uncomment for IRD PCB board
 //#define IRD_PCB
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – May 15th, 2023\n"
+#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – Sep 22nd, 2023\n"
 
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
@@ -116,7 +123,7 @@
 //add 4-byte AppKey filtering - only for non-LoRaWAN mode
 //#define WITH_APPKEY
 ////////////////////////////
-//request an ack from gateway - only for non-LoRaWAN mode
+//request an ack from gateway
 //#define WITH_ACK
 ////////////////////////////
 //if you are low on program memory, comment STRING_LIB to save about 2K
@@ -136,10 +143,7 @@
 //force normal measure and transmission even if low voltage detected
 //#define BYPASS_LOW_BAT
 ////////////////////////////
-//Use native LoRaWAN packet format to send to LoRaWAN gateway - beware it does not mean you device is a full LoRaWAN device
-#ifndef TO_WAZIGATE
-//#define LORAWAN
-#endif
+
 ////////////////////////////
 //Use LoRaWAN AES-like encryption
 //#define WITH_AES
@@ -226,7 +230,6 @@ unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xB1};
 //if you need another address for capacitive sensor device, use AA, AB, AC,..., AF
 unsigned char DevAddr[4] = {0x26, 0x01, 0x1D, 0xAA};
 #endif
-
 #else
 ///////////////////////////////////////////////////////////////////
 // DO NOT CHANGE HERE
@@ -297,7 +300,7 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
   #define SH1_PWR_PIN A1
   //this is how you need to connect the DS18B20 soil temperature sensor
   //the analog soil humidity sensor and the DS18B20 shares the same pwr line
-  #define TEMP_DIGITAL_PIN A3
+  #define TEMP_DIGITAL_PIN 6
   #define TEMP_PWR_PIN A1
 #else
   //this is how you need to connect the analog soil humidity sensor
@@ -325,9 +328,9 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
   #define WM1_PWR_PIN2 9
   #define WM1_ANALOG_PIN A2
   //second Watermark
-  #define WM2_PWR_PIN1 6
-  #define WM2_PWR_PIN2 7
-  #define WM2_ANALOG_PIN A6
+  #define WM2_PWR_PIN1 7
+  #define WM2_PWR_PIN2 9
+  #define WM2_ANALOG_PIN A2
 #else
   //first Watermark
   #define WM1_PWR_PIN1 8
@@ -349,11 +352,11 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
  |___|_| |_|\___|_|\__,_|\__,_|\___||___/
 ********************************************************************/                                         
 
+#ifdef WITH_SPI_COMMANDS
 #include <SPI.h>
 //this is the standard behaviour of library, use SPI Transaction switching
-#define USE_SPI_TRANSACTION  
-//indicate in this file the radio module: SX126X, SX127X or SX128X
-#include "RadioSettings.h"
+#define USE_SPI_TRANSACTION
+#endif
 
 #ifdef SX126X
 #include <SX126XLT.h>                                          
@@ -400,13 +403,19 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 
 ///////////////////////////////////////////////////////////////////
 // ENCRYPTION CONFIGURATION AND KEYS FOR LORAWAN
-#ifdef LORAWAN
+#if defined LORAWAN && defined CUSTOM_LORAWAN
 #ifndef WITH_AES
 #define WITH_AES
 #endif
 #endif
 #ifdef WITH_AES
 #include "local_lorawan.h"
+#endif
+
+#if defined LORAWAN && defined NATIVE_LORAWAN
+#ifdef WITH_AT_COMMANDS
+#include "native_at_lorawan.h"
+#endif
 #endif
 
 // SENSORS DEFINITION 
@@ -438,7 +447,8 @@ double soil_temp_sensor_value=SOIL_TEMP_UNDEFINED_VALUE;
 
 ///////////////////////////////////////////////////////////////////
 // IF YOU SEND A LONG STRING, INCREASE THE SIZE OF MESSAGE
-uint8_t message[80];
+#define MLENGTH 100
+uint8_t message[MLENGTH];
 ///////////////////////////////////////////////////////////////////
 
 //create a library class instance called LT
@@ -654,19 +664,21 @@ unsigned long nextTransmissionTime=0L;
 Sensor* sensor_ptrs[max_number_of_sensors];
 
 #ifdef WITH_EEPROM
-struct sx1272config {
+struct nodeConfig {
 
   uint8_t flag1;
   uint8_t flag2;
   uint8_t seq;
+#ifndef LORAWAN  
   uint8_t addr;
+#endif  
   unsigned int idle_period;
   uint8_t low_voltage_indication;  
   uint8_t overwrite;
   // can add other fields such as LoRa mode,...
 };
 
-sx1272config my_sx1272config;
+nodeConfig my_nodeConfig;
 #endif
 
 #ifdef WITH_RCVW
@@ -865,23 +877,27 @@ void setup() {
 #endif
 
 #ifdef WAZISENSE
-#define BUILTIN_LED1 8
-#define MOSFET1 6
-#define MOSFET2 7
+#define WAZISENSE_BUILTIN_LED1 8
+#define WAZISENSE_MOSFET1 6
+#define WAZISENSE_MOSFET2 7
 
-  pinMode(BUILTIN_LED1, OUTPUT);
-  digitalWrite(BUILTIN_LED1, HIGH);
+  pinMode(WAZISENSE_BUILTIN_LED1, OUTPUT);
+  digitalWrite(WAZISENSE_BUILTIN_LED1, HIGH);
   delay(200);
-  digitalWrite(BUILTIN_LED1, LOW);
+  digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);
   delay(200);
-  digitalWrite(BUILTIN_LED1, HIGH);
+  digitalWrite(WAZISENSE_BUILTIN_LED1, HIGH);
   delay(200);
-  digitalWrite(BUILTIN_LED1, LOW);    
+  digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);    
   
-  pinMode(MOSFET1, OUTPUT);
-  pinMode(MOSFET2, OUTPUT);
-  digitalWrite(MOSFET1, LOW);
-  digitalWrite(MOSFET2, LOW);
+  pinMode(WAZISENSE_MOSFET1, OUTPUT);
+  pinMode(WAZISENSE_MOSFET2, OUTPUT);
+  digitalWrite(WAZISENSE_MOSFET1, LOW);
+  digitalWrite(WAZISENSE_MOSFET2, LOW);
+#endif
+
+#ifdef WITH_AT_COMMANDS
+  pinMode(BOARD_BUILTIN_LED, OUTPUT);
 #endif
   
   delay(1000);
@@ -929,7 +945,7 @@ void setup() {
 #endif  
 #ifdef SOIL_TEMP_SENSOR
   //ST
-  sensor_ptrs[sensor_index] = new DS18B20((char*)"ST", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
+  sensor_ptrs[sensor_index] = new DS18B20("ST", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) TEMP_DIGITAL_PIN, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
   sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
 #ifdef WAZISENSE  
   //it is because the soil temp is attached to a mosfet sensor pin
@@ -1041,8 +1057,10 @@ void setup() {
   PRINT_CSTSTR("SAM3X8E ARM Cortex-M3 detected\n");
 #endif
 
+#if defined WITH_SPI_COMMANDS
   //start SPI bus communication
   SPI.begin();
+#endif
   
   //setup hardware pins used by device, then check if device is found
 #ifdef SX126X
@@ -1056,6 +1074,10 @@ void setup() {
 #ifdef SX128X
   if (LT.begin(NSS, NRESET, RFBUSY, DIO1, DIO2, DIO3, RX_EN, TX_EN, LORA_DEVICE))
 #endif
+
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS 
+  if (lorawan_module_setup(LORAWAN_MODULE_BAUD_RATE))
+#endif  
   {
     PRINT_CSTSTR("LoRa Device found\n");                                  
     delay(500);
@@ -1063,9 +1085,11 @@ void setup() {
   else
   {
     PRINT_CSTSTR("No device responding\n");
-    while (1){ }
+    while (1)
+      ;
   }
 
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS
 /*******************************************************************************************************
   Based from SX12XX example - Stuart Robinson 
 *******************************************************************************************************/
@@ -1173,53 +1197,66 @@ void setup() {
 /*******************************************************************************************************
   End from SX12XX example - Stuart Robinson 
 *******************************************************************************************************/
+#endif
 
 #ifdef WITH_EEPROM
 #if defined ARDUINO_ESP8266_ESP01 || defined ARDUINO_ESP8266_NODEMCU || defined ARDUINO_ARCH_ASR650X
   EEPROM.begin(512);
 #endif
   // get config from EEPROM
-  EEPROM.get(0, my_sx1272config);
+  EEPROM.get(0, my_nodeConfig);
 
   // found a valid config?
-  if (my_sx1272config.flag1==0x12 && my_sx1272config.flag2==0x35) {
+  if (my_nodeConfig.flag1==0x12 && my_nodeConfig.flag2==0x35) {
     PRINT_CSTSTR("Get back previous sx1272 config\n");
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+    // TODO with LoRaWAN frame counter
+    // Currently, RAK3172 cannot be set with an arbitrary frame counter
+    // it is set to 0 after a power up 
+#else     
     // set sequence number for SX1272 library
-    LT.setTXSeqNo(my_sx1272config.seq);
+    LT.setTXSeqNo(my_nodeConfig.seq);
     PRINT_CSTSTR("Using packet sequence number of ");
     PRINT_VALUE("%d", LT.readTXSeqNo());
     PRINTLN;
-
+#endif
     //when low voltage is detected, the device will still measure and transmit to indicate the low voltage
     //it will do so MAX_LOW_VOLTAGE_INDICATION times and this will be indicated in the low_voltage_indication
     //variable saved in EEPROM
-    low_voltage_indication=my_sx1272config.low_voltage_indication;     
+    low_voltage_indication=my_nodeConfig.low_voltage_indication;     
 
 #ifdef FORCE_DEFAULT_VALUE
     PRINT_CSTSTR("Forced to use default parameters\n");
-    my_sx1272config.flag1=0x12;
-    my_sx1272config.flag2=0x35;   
-    my_sx1272config.seq=LT.readTXSeqNo(); 
-    my_sx1272config.addr=node_addr;
-    my_sx1272config.idle_period=idlePeriodInMin;
-    my_sx1272config.low_voltage_indication=low_voltage_indication;    
-    my_sx1272config.overwrite=0;
-    EEPROM.put(0, my_sx1272config);
+    my_nodeConfig.flag1=0x12;
+    my_nodeConfig.flag2=0x35;
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+    my_nodeConfig.seq=0; 
+#else       
+    my_nodeConfig.seq=LT.readTXSeqNo(); 
+#endif
+#ifndef LORAWAN    
+    my_nodeConfig.addr=node_addr;
+#endif    
+    my_nodeConfig.idle_period=idlePeriodInMin;
+    my_nodeConfig.low_voltage_indication=low_voltage_indication;    
+    my_nodeConfig.overwrite=0;
+    EEPROM.put(0, my_nodeConfig);
 #else
+#ifndef LORAWAN
     // get back the node_addr
-    if (my_sx1272config.addr!=0 && my_sx1272config.overwrite==1) {
+    if (my_nodeConfig.addr!=0 && my_nodeConfig.overwrite==1) {
       
         PRINT_CSTSTR("Used stored address\n");
-        node_addr=my_sx1272config.addr;        
+        node_addr=my_nodeConfig.addr;        
     }
     else
         PRINT_CSTSTR("Stored node addr is null\n"); 
-
+#endif
     // get back the idle period
-    if (my_sx1272config.idle_period!=0 && my_sx1272config.overwrite==1) {
+    if (my_nodeConfig.idle_period!=0 && my_nodeConfig.overwrite==1) {
       
         PRINT_CSTSTR("Used stored idle period\n");
-        idlePeriodInMin=my_sx1272config.idle_period;        
+        idlePeriodInMin=my_nodeConfig.idle_period;        
     }
     else
         PRINT_CSTSTR("Stored idle period is null\n");                 
@@ -1227,10 +1264,13 @@ void setup() {
 
 #if defined WITH_AES && not defined EXTDEVADDR && not defined LORAWAN
     DevAddr[3] = (unsigned char)node_addr;
-#endif            
+#endif
+
+#ifndef LORAWAN
     PRINT_CSTSTR("Using node addr of ");
     PRINT_VALUE("%d", node_addr);
     PRINTLN;   
+#endif
 
     PRINT_CSTSTR("Using idle period of ");
     PRINT_VALUE("%d", idlePeriodInMin);
@@ -1238,24 +1278,34 @@ void setup() {
   }
   else {
     // otherwise, write config and start over
-    my_sx1272config.flag1=0x12;
-    my_sx1272config.flag2=0x35;  
-    my_sx1272config.seq=LT.readTXSeqNo(); 
-    my_sx1272config.addr=node_addr;
-    my_sx1272config.idle_period=idlePeriodInMin;
-    my_sx1272config.low_voltage_indication=0;
-    my_sx1272config.overwrite=0;
+    my_nodeConfig.flag1=0x12;
+    my_nodeConfig.flag2=0x35;
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+    my_nodeConfig.seq=0; 
+#else      
+    my_nodeConfig.seq=LT.readTXSeqNo();
+#endif    
+#ifndef LORAWAN     
+    my_nodeConfig.addr=node_addr;
+#endif    
+    my_nodeConfig.idle_period=idlePeriodInMin;
+    my_nodeConfig.low_voltage_indication=0;
+    my_nodeConfig.overwrite=0;
   }
 #endif
 
+#if defined RAW_LORA
   PRINT_CSTSTR("Setting Power: ");
   PRINT_VALUE("%d", MAX_DBM);
   PRINTLN;
+#endif  
 
+#ifndef LORAWAN
   LT.setDevAddr(node_addr);
   PRINT_CSTSTR("node addr: ");
   PRINT_VALUE("%d", node_addr);
   PRINTLN;
+#endif  
 
 #ifdef SX126X
   PRINT_CSTSTR("SX126X");
@@ -1265,7 +1315,10 @@ void setup() {
 #endif
 #ifdef SX128X
   PRINT_CSTSTR("SX128X");
-#endif 
+#endif
+#ifdef RAK3172
+  PRINT_CSTSTR("RAK3172");
+#endif
   
   // Print a success message
   PRINT_CSTSTR(" successfully configured\n");
@@ -1288,8 +1341,8 @@ void setup() {
 #ifdef WITH_EEPROM
     // reset low_voltage_indication
     low_voltage_indication=0;
-    my_sx1272config.low_voltage_indication=0;
-    EEPROM.put(0, my_sx1272config);
+    my_nodeConfig.low_voltage_indication=0;
+    EEPROM.put(0, my_nodeConfig);
 #endif 
   }
    
@@ -1548,11 +1601,9 @@ void measure_and_send( void)
 //here we transmit last_vcc, measured from last transmission cycle
 #if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE      
         lpp.addAnalogInput(6, last_vcc);
-        //lpp.addTemperature(6, last_vcc);
 #elif defined TRANSMIT_VOLTAGE
       if (last_vcc < VCC_LOW) {
         lpp.addAnalogInput(6, last_vcc);
-        //lpp.addTemperature(6, last_vcc);
       }
 #endif      
 #endif
@@ -1575,30 +1626,30 @@ void measure_and_send( void)
       PRINT_STR("%s",(char*)(message+app_key_offset));
       PRINTLN;
 
-#if defined USE_XLPP || defined USE_LPP
-      PRINT_CSTSTR("use LPP format for transmission to WaziGate");
-      PRINTLN;
-#else
       PRINT_CSTSTR("Real payload size is ");
-      PRINT_VALUE("%d", r_size);
-      PRINTLN;
+      PRINTLN_VALUE("%d", r_size);
 
+#if defined USE_XLPP || defined USE_LPP
+      PRINT_CSTSTR("use LPP format for transmission to gateway\n");
+#else
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS
       LT.printASCIIPacket(message, r_size);
       PRINTLN;
 #endif      
+#endif      
       int pl=r_size+app_key_offset;
 
+#ifdef RAW_LORA
       uint8_t p_type=PKT_TYPE_DATA;
-      
 #if defined WITH_AES
       // indicate that payload is encrypted
       p_type = p_type | PKT_FLAG_DATA_ENCRYPTED;
 #endif
-
 #ifdef WITH_APPKEY
       // indicate that we have an appkey
       p_type = p_type | PKT_FLAG_DATA_WAPPKEY;
 #endif     
+#endif
 
 /**********************************  
   ___   _____ _____ 
@@ -1627,16 +1678,40 @@ void measure_and_send( void)
 #endif
 ///////////////////////////////////
 
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+      PRINT_CSTSTR("plain payload hex\n");
+#if defined USE_XLPP
+      dumpHEXtoStr(serial_buff, lpp.buf, lpp.len);
+#elif defined USE_LPP 
+      dumpHEXtoStr(serial_buff, lpp.getBuffer(), lpp.getSize());     
+#else
+      dumpHEXtoStr(serial_buff, (char*)message, r_size);
+#endif
+      PRINTLN_STR("%s", serial_buff);
+#endif
+
       startSend=millis();
 
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS
       //LT.CarrierSense();
+#endif      
       
-#ifdef WITH_ACK
+#if defined RAW_LORA && defined WITH_ACK
       p_type=PKT_TYPE_DATA | PKT_FLAG_ACK_REQ;
       PRINTLN_CSTSTR("%s","Will request an ACK");         
 #endif
 
-#ifdef LORAWAN
+#ifdef WAZISENSE
+      digitalWrite(WAZISENSE_BUILTIN_LED1, HIGH);
+      delay(50);
+      digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);
+      delay(50);
+      digitalWrite(WAZISENSE_BUILTIN_LED1, HIGH);
+      delay(50);
+      digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);
+#endif
+
+#ifdef CUSTOM_LORAWAN
       //will return packet length sent if OK, otherwise 0 if transmit error
       //we use raw format for LoRaWAN
 #if defined USE_XLPP
@@ -1645,7 +1720,9 @@ void measure_and_send( void)
       if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX))
 #else      
       if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX))
-#endif       
+#endif
+#elif defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+      if (lorawan_transmit(serial_buff))        
 #else
       //will return packet length sent if OK, otherwise 0 if transmit error
       if (LT.transmitAddressed(message, pl, p_type, DEFAULT_DEST_ADDR, node_addr, 10000, MAX_DBM, WAIT_TX))  
@@ -1658,6 +1735,15 @@ void measure_and_send( void)
 #endif                
         endSend = millis();                                                  
         TXPacketCount++;
+
+#ifdef WAZISENSE
+        delay(200);
+        digitalWrite(WAZISENSE_BUILTIN_LED1, HIGH);
+        delay(500);
+        digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);
+#endif
+
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS        
         uint16_t localCRC = LT.CRCCCITT(message, pl, 0xFFFF);
         PRINT_CSTSTR("CRC,");
         PRINT_HEX("%d", localCRC);      
@@ -1668,7 +1754,11 @@ void measure_and_send( void)
           PRINTLN_VALUE("%d", LT.readRXSource());
           PRINT_CSTSTR("SNR of transmitted pkt is ");
           PRINTLN_VALUE("%d", LT.readPacketSNRinACK());          
-        }          
+        }
+#endif
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+        //nothing particular right now
+#endif                  
       }
       else
       {
@@ -1677,14 +1767,36 @@ void measure_and_send( void)
         //low voltage, so last_vcc = vcc.Read_Volts(); is not executed
         last_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.0;     
 #endif        
-        endSend=millis();       
+        endSend=millis();
+        
+#ifdef WAZISENSE
+        //error
+        delay(200);
+        digitalWrite(WAZISENSE_BUILTIN_LED1, HIGH);
+        delay(200);
+        digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);
+        delay(200);
+        digitalWrite(WAZISENSE_BUILTIN_LED1, HIGH);
+        delay(200);
+        digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);
+        delay(200);
+        digitalWrite(WAZISENSE_BUILTIN_LED1, HIGH);
+        delay(200);
+        digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);
+#endif
+
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS               
         //if here there was an error transmitting packet
         uint16_t IRQStatus;
         IRQStatus = LT.readIrqStatus();
         PRINT_CSTSTR("SendError,");
         PRINT_CSTSTR(",IRQreg,");
         PRINT_HEX("%d", IRQStatus);
-        LT.printIrqStatus(); 
+        LT.printIrqStatus();
+#endif
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+        //nothing particular right now   
+#endif              
       }
 
 ///////////////////////////////////////////////////////////////////
@@ -1693,6 +1805,10 @@ void measure_and_send( void)
 ///////////////////////////////////////////////////////////////////
 
 #ifdef WITH_RCVW
+
+uint8_t RXPacketL=0;
+
+#ifndef NATIVE_LORAWAN 
 #ifdef LORAWAN 
       uint8_t rxw_max=2;
 #else
@@ -1705,8 +1821,7 @@ void measure_and_send( void)
       LT.invertIQ(true);
 #endif
       uint8_t rxw=1;
-      uint8_t RXPacketL;
-                              
+                   
       do {
           PRINT_CSTSTR("Wait for ");
           PRINTLN_VALUE("%d", (endSend+rxw*DELAY_BEFORE_RCVW) - millis());
@@ -1728,15 +1843,15 @@ void measure_and_send( void)
           else
             // try RX2 only if we are in LoRaWAN mode and nothing has been received in RX1
             if (++rxw<=rxw_max) {
-#ifdef BAND868
+#ifdef EU868
               //change freq to 869.525 as we are targeting RX2 window
               PRINT_CSTSTR("Set downlink frequency to 869.525MHz\n");
               LT.setRfFrequency(869525000, Offset);
-#elif defined BAND915
+#elif defined AU915
               //change freq to 923.3 as we are targeting RX2 window
               PRINT_CSTSTR("Set downlink frequency to 923.3MHz\n");
               LT.setRfFrequency(923300000, Offset);
-#elif defined BAND433
+#elif defined EU433
               //change freq to 434.665 as we are targeting RX2 window
               PRINT_CSTSTR("Set downlink frequency to 434.665MHz\n");
               LT.setRfFrequency(434655000, Offset);
@@ -1779,12 +1894,16 @@ void measure_and_send( void)
       PRINTLN_CSTSTR("I/Q back to normal");
       LT.invertIQ(false);
 #endif      
+
+#endif //#ifndef NATIVE_LORAWAN
+
       // we have received a downlink message
       //
       if (RXPacketL) {  
         int i=0;
         long cmdValue;
 
+#if defined RAW_LORA && defined WITH_SPI_COMMANDS
 #ifndef LORAWAN
         char print_buff[50];
 
@@ -1818,7 +1937,7 @@ void measure_and_send( void)
         //set the null character at the end of the payload in case it is a string
         message[RXPacketL-4]=(char)'\0';       
 #endif
-
+#endif
         PRINTLN;
         FLUSHOUTPUT;
        
@@ -1862,9 +1981,9 @@ void measure_and_send( void)
 
 #ifdef WITH_EEPROM
                       // save new node_addr in case of reboot
-                      my_sx1272config.addr=node_addr;
-                      my_sx1272config.overwrite=1;
-                      EEPROM.put(0, my_sx1272config);
+                      my_nodeConfig.addr=node_addr;
+                      my_nodeConfig.overwrite=1;
+                      EEPROM.put(0, my_nodeConfig);
 #endif
                       break;        
 #endif
@@ -1885,10 +2004,10 @@ void measure_and_send( void)
                       PRINTLN;         
 
 #ifdef WITH_EEPROM
-                      // save new node_addr in case of reboot
-                      my_sx1272config.idle_period=idlePeriodInMin;
-                      my_sx1272config.overwrite=1;
-                      EEPROM.put(0, my_sx1272config);
+                      // save new idle_period in case of reboot
+                      my_nodeConfig.idle_period=idlePeriodInMin;
+                      my_nodeConfig.overwrite=1;
+                      EEPROM.put(0, my_nodeConfig);
 #endif
 
                       break;  
@@ -1936,19 +2055,28 @@ void measure_and_send( void)
 #endif         
 
 #ifdef WITH_EEPROM
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+      my_nodeConfig.seq=TXPacketCount;
+#else
       // save packet number for next packet in case of reboot     
-      my_sx1272config.seq=LT.readTXSeqNo();
-      EEPROM.put(0, my_sx1272config);
+      my_nodeConfig.seq=LT.readTXSeqNo();
+#endif      
+      EEPROM.put(0, my_nodeConfig);
 #endif
       PRINTLN;
       PRINT_CSTSTR("LoRa pkt size ");
       PRINT_VALUE("%d", pl);
       PRINTLN;
-      
+
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+      PRINT_CSTSTR("LoRa pkt seq ");   
+      PRINT_VALUE("%d", TXPacketCount?0:TXPacketCount-1);
+      PRINTLN; 
+#else      
       PRINT_CSTSTR("LoRa pkt seq ");   
       PRINT_VALUE("%d", LT.readTXSeqNo()-1);
       PRINTLN;
-    
+#endif    
       PRINT_CSTSTR("LoRa Sent in ");
       PRINT_VALUE("%ld", endSend-startSend);
       PRINTLN;
@@ -2003,8 +2131,8 @@ void loop(void)
           low_voltage_indication++;
 #ifdef WITH_EEPROM
           // save new low_voltage_indication
-          my_sx1272config.low_voltage_indication=low_voltage_indication;
-          EEPROM.put(0, my_sx1272config);
+          my_nodeConfig.low_voltage_indication=low_voltage_indication;
+          EEPROM.put(0, my_nodeConfig);
 #endif          
         }
         else {
@@ -2041,16 +2169,16 @@ void loop(void)
           low_voltage_indication = MAX_LOW_VOLTAGE_INDICATION+1;
 #ifdef WITH_EEPROM
           // set new low_voltage_indication
-          my_sx1272config.low_voltage_indication=low_voltage_indication;
-          EEPROM.put(0, my_sx1272config);
+          my_nodeConfig.low_voltage_indication=low_voltage_indication;
+          EEPROM.put(0, my_nodeConfig);
 #endif          
         }          
         
         if (low_voltage_indication && last_vcc > VCC_LOW) {
 #ifdef WITH_EEPROM
           // reset low_voltage_indication
-          my_sx1272config.low_voltage_indication=0;
-          EEPROM.put(0, my_sx1272config);
+          my_nodeConfig.low_voltage_indication=0;
+          EEPROM.put(0, my_nodeConfig);
 #endif                 
         }
         measure_and_send();
@@ -2069,10 +2197,6 @@ void loop(void)
 #if defined LOW_POWER && not defined ARDUINO_SAM_DUE
       PRINT_CSTSTR("Switch to power saving mode\n");
 
-      //CONFIGURATION_RETENTION=RETAIN_DATA_RAM on SX128X
-      //parameter is ignored on SX127X
-      LT.setSleep(CONFIGURATION_RETENTION);
-
       //how much do we still have to wait, in millisec?
       unsigned long now_millis=millis();
 
@@ -2087,10 +2211,25 @@ void loop(void)
       //PRINTLN_VALUE("%ld",waiting_t);
       FLUSHOUTPUT;
 
+      // first power down the radio module
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+      // sleep until we wake the module with an AT command on the serial line
+      lorawan_sleep(0 /*waiting_t*/);
+#else
+      //CONFIGURATION_RETENTION=RETAIN_DATA_RAM on SX128X
+      //parameter is ignored on SX127X
+      LT.setSleep(CONFIGURATION_RETENTION);
+#endif
+
+      // then power down the microcontroller
       lowPower(waiting_t);
       
       PRINT_CSTSTR("Wake from power saving mode\n");
-      LT.wake();      
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+      lorawan_wake();
+#else      
+      LT.wake(); 
+#endif           
 #else
       PRINTLN;
       PRINT_CSTSTR("Will send next value at\n");

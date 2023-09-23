@@ -10,7 +10,7 @@
 
 class sen0308 : public rawAnalog {
   public:    
-    sen0308(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power);
+    sen0308(const char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power);
   double convert_value(double v1, double v2, double v3);
 };
 

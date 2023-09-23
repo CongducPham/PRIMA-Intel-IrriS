@@ -7,7 +7,7 @@
 
 #include "rawAnalog.h"
 
-rawAnalog::rawAnalog(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power){
+rawAnalog::rawAnalog(const char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power){
   if (get_is_connected()){
 
     if (get_pin_read()!=-1)

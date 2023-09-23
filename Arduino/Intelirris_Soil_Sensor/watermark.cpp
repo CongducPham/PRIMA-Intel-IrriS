@@ -9,7 +9,7 @@
 #include "watermark.h"
 #include <math.h>
 
-watermark::watermark(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power, int pin_trigger):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power, pin_trigger){
+watermark::watermark(const char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power, int pin_trigger):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power, pin_trigger){
   if (get_is_connected()){
 
     if (get_pin_read()!=-1)

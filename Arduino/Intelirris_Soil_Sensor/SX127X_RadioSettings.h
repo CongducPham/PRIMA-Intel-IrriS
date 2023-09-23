@@ -73,9 +73,9 @@ const uint8_t IQ_Setting = LORA_IQ_NORMAL;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // please uncomment only 1 choice
-//#define BAND868
-//#define BAND900
-//#define BAND433
+//#define EU868
+//#define AU915
+//#define EU433
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,30 +143,30 @@ const uint32_t CH_03_433 = 434300000;
 #ifdef LORAWAN
 
 // Select frequency channel
-#ifdef BAND868
+#ifdef EU868
 //868.1MHz
 const uint32_t DEFAULT_CHANNEL=CH_18_868;
-#elif defined BAND915
+#elif defined AU915
 //hardcoded with the first LoRaWAN frequency
-const uint32_t DEFAULT_CHANNEL=915200000;
-#elif defined BAND433
+const uint32_t DEFAULT_CHANNEL=916800000;
+#elif defined EU433
 //hardcoded with the first LoRaWAN frequency
 const uint32_t DEFAULT_CHANNEL=433175000;
 #endif 
 
 #else //NO LORAWAN
 
-#ifdef BAND868
+#ifdef EU868
 #ifdef SENEGAL_REGULATION
 const uint32_t DEFAULT_CHANNEL=CH_04_868;
 #else
 const uint32_t DEFAULT_CHANNEL=CH_10_868;
 #endif
-#elif defined BAND900
+#elif defined AU915
 const uint32_t DEFAULT_CHANNEL=CH_05_900;
 //For HongKong, Japan, Malaysia, Singapore, Thailand, Vietnam: 920.36MHz     
 //const uint32_t DEFAULT_CHANNEL=CH_08_900;
-#elif defined BAND433
+#elif defined EU433
 const uint32_t DEFAULT_CHANNEL=CH_00_433;
 #endif
 

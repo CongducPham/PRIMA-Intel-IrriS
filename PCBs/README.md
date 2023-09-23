@@ -1,7 +1,7 @@
-PCBs
+PCB v2
 ----
 
-The PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototyping and even integration purpose. Beware that A4 and A5 (which are usually SDA and SCL pin of the I2C bus) are not connected on the PCB. If you need to use them, use these 2 pins from the Arduino board itself.
+This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototyping and even integration purpose. Beware that A4 and A5 (which are usually SDA and SCL pin of the I2C bus) are not connected on the PCB. If you need to use them, use these 2 pins from the Arduino board itself.
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-RFM95W-top.png" width="300">
 
@@ -21,3 +21,28 @@ You can download all the Gerber zipped archive and view them on an [online Gerbe
 - Arduino ProMini v2 PCB for NiceRF SX1280 zipped Gerber archive, 2 layer board of 30x77mm [.zip](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/MySecondProMiniLoRaBreakout_SX128X_2022-01-20.zip)
 
 You can easily make them produced on many online PCB manufacturers. Usually, you just need to provide the zip archive and both size and number of layers are detected. You can dramatically decrease the price by using "panelize" option. We use 3x1 for ProMini PCBs. For instance, we ordered them from [JLCPCB](https://jlcpcb.com/) and the cost of 10 panels (i.e. 30 ProMini breakout) is about $4! 
+
+PCB IRD v2
+----
+
+This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototyping and even integration purpose. it allows much simpler wiring of the soil humidity sensor, the watermark sensors and the soil temperature sensor (placeholder for associated resistors are already there).
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-IRD-RFM95W-top.png" width="300">
+
+This new PCB also integrates by default a low-cost solar charging circuit to add solar panel and rechargeable batteries. The whole solar circuit appears on the back of the PCB (left side) as illustrated below.
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-IRD-RFM95W-bottom.png" width="300">
+
+The raw PCB will of course not have these additional electronic components. While it is possible to add these component manually, in practice it is not recommended as the components are small and manually soldering them is prone to errors. Instead, the fully assembled PCB with solar circuit will be ordered fully assembled from PCB manufacturer.
+
+Read [INTEL-IRRIS Newsletter #4](https://intel-irris.eu/intel-irris-newsletter-4) for a brief description and additional images.
+
+PCB RAK3172 v1
+-----
+
+We have designed a PCB which integrates the LoRaWAN RAK3172 radio chip to provide full LoRaWAN connectivity. It also provides simpler wiring of sensors, similarly to the IRD’s PCB. There is no solar circuit however, as the main objective is to support full LoRaWAN connectivity for large-scale and worldwide deployment scenarios.
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-RAK3172-top.png" width="300">
+
+Read [INTEL-IRRIS Newsletter #4](https://intel-irris.eu/intel-irris-newsletter-4) for a brief description and additional images.
+

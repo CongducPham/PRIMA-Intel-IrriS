@@ -15,7 +15,7 @@
 
 class DS18B20 : public Sensor {
   public:
-    DS18B20(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power);
+    DS18B20(const char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power);
     double get_value();
     void update_data();
     

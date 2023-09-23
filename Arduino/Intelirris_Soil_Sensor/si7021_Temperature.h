@@ -10,7 +10,7 @@
 
 class si7021_Temperature : public Sensor {
   public:    
-    si7021_Temperature(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power);
+    si7021_Temperature(const char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power);
     void update_data();
     double get_value();
   //private:

@@ -7,7 +7,7 @@
 
 #include "sen0308.h"
 
-sen0308::sen0308(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power):rawAnalog(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power){
+sen0308::sen0308(const char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power):rawAnalog(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power){
   //no specific init
 }
 

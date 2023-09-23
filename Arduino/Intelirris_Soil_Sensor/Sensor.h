@@ -40,7 +40,7 @@
 
 class Sensor {
   public:  
-    Sensor(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power, int pin_trigger=-1);
+    Sensor(const char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power, int pin_trigger=-1);
     
     // getters
     //////////

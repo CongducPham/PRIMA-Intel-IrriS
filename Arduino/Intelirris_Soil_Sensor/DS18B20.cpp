@@ -6,7 +6,7 @@
 
 #include "DS18B20.h"
 
-DS18B20::DS18B20(char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power){
+DS18B20::DS18B20(const char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power){
   if (get_is_connected()){
   
     if (get_pin_power()!=-1) {	
@@ -50,7 +50,10 @@ void DS18B20::update_data()
     
     // call sensors.requestTemperatures() to issue a global temperature 
  	  // request to all devices on the bus 
-    sensors->requestTemperatures(); // Send the command to get temperature readings  
+    sensors->requestTemperatures(); // Send the command to get temperature readings
+    //in some firmware, the first reading is always 85°C
+    //so we read twice
+    sensors->requestTemperatures(); // Send the command to get temperature readings      
     temp = sensors->getTempCByIndex(0); // Why "byIndex"?  
     // You can have more than one DS18B20 on the same bus.  
     // 0 refers to the first IC on the wire 
@@ -64,7 +67,7 @@ void DS18B20::update_data()
   else { 
   	// if not connected, set a random value (for testing)  	
   	if (has_fake_data())
-  		set_data((double)random(-20, 40));
+  		set_data((double)random(20, 40));
   }
 }
 
