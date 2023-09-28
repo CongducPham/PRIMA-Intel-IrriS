@@ -38,6 +38,8 @@ fi;
 export WAZIGATE_ID=${WAZIGATE_ID//:}
 SSID="WAZIGATE_${WAZIGATE_ID^^}"
 
+#added for INTEL-IRRIS oled service
+qrencode -t PNG -o /home/pi/oled/wifi.png "WIFI:S:$SSID;T:WPA2;P:loragateway;;"
 ################################################################################
 
 log 1 "Enabling interfaces: "

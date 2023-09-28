@@ -63,6 +63,8 @@ then
 		sudo cp wazigate/setup.sh /var/lib/wazigate/
 	else
 		#WaziGate v2
+		echo "update /var/lib/wazigate/start.sh"
+		sudo cp wazigate/start.sh /var/lib/wazigate/		
 		echo "Enabling auto-config service at boot"
 		sudo cp intel-irris-auto-config-service.service.txt /etc/systemd/system/intel-irris-auto-config-service.service
 		sudo systemctl enable intel-irris-auto-config-service.service	
