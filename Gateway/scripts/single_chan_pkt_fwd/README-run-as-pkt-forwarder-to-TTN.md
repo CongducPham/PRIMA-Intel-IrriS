@@ -1,3 +1,20 @@
+IMPORTANT
+---------
+
+`config_band.sh` now takes care of configuring for TTN or using the full edge mode. Run as follows to configure for TTN:
+
+	> cd scripts
+	> ./config_band.sh eu868 B827EBFFFE36AAAA eu1.cloud.thethings.network
+
+To get back to edge mode (local Chirstack is the network server to the WaziGate dashboard), run as follows:
+
+	> cd scripts
+	> ./config_band.sh eu868
+
+The information below is for your information only, to understand what `config_band.sh` is actually doing.
+
+/////
+
 To use the wazigate as a simple, single-channel, LoRa packet forwarder to TTN for instance, you do as follows:
 
 1. Get the MAC address of your wazigate

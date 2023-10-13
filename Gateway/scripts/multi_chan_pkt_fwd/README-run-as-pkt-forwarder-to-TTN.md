@@ -1,3 +1,20 @@
+IMPORTANT
+---------
+
+`config_band.sh` now takes care of configuring for TTN or using the full edge mode. Run as follows to configure for TTN:
+
+	> cd scripts
+	> ./config_band.sh eu868 B827EBFFFE36AAAA eu1.cloud.thethings.network
+
+To get back to edge mode (local Chirstack is the network server to the WaziGate dashboard), run as follows:
+
+	> cd scripts
+	> ./config_band.sh eu868
+
+The information below is for your information only, to understand what `config_band.sh` is actually doing.
+
+/////
+
 This is for RAK2245 LoRa concentrator hat. For the new RAK5146 LoRa concentrator hat, the `global_conf.json` files are in the `rak5146/global_conf` folder. You will then need to replace the `rak5146/global_conf.json` file by the one in `rak5146/global_conf` folder according to your frequency plan. Then the procedure is the same, except that you do not need to log into the docker container (steps 2, 3, 4, 8, 9) as the support of RAK5146 is currently out of any container. You just need to perform steps 1, 5, 6, 7, 10 and 11, and run `sudo ./start.sh` in `rak5146` folder.
 
 RAK2245
