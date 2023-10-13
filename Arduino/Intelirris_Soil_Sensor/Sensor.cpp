@@ -3,7 +3,7 @@
 *
 * nicolas.bertuol@etud.univ-pau.fr
 *
-* Modified by C. Pham, University of Pau, France
+* Modified and maintained by C. Pham, University of Pau, France
 */
 
 #include "Sensor.h"

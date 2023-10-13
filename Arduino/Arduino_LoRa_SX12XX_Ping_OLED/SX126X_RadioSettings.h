@@ -76,7 +76,7 @@ const uint8_t IQ_Setting = LORA_IQ_NORMAL;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // please uncomment only 1 choice
-#define BAND868
+//#define BAND868
 //#define BAND900
 //#define BAND433
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -137,13 +137,16 @@ const uint32_t CH_03_433 = 434300000;
 #ifdef LORAWAN
 
 // Select frequency channel
-#ifdef BAND868
+#ifdef EU868
 //868.1MHz
 const uint32_t DEFAULT_CHANNEL=CH_18_868;
-#elif defined BAND915
+#elif defined AU915
 //hardcoded with the first LoRaWAN frequency
-const uint32_t DEFAULT_CHANNEL=915200000;
-#elif defined BAND433
+const uint32_t DEFAULT_CHANNEL=916800000;
+#elif defined AS923-2
+//hardcoded with the first LoRaWAN frequency
+const uint32_t DEFAULT_CHANNEL=921400000;
+#elif defined EU433
 //hardcoded with the first LoRaWAN frequency
 const uint32_t DEFAULT_CHANNEL=433175000;
 #endif 

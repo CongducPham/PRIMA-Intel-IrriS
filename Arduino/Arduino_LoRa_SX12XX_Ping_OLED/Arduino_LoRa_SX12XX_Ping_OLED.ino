@@ -19,7 +19,7 @@
  *
  *****************************************************************************
  *
- * last update: June 29th, 2023 by C. Pham
+ * last update: Oct. 13th, 2023 by C. Pham
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -52,9 +52,10 @@
 
 ////////////////////////////////////////////////////////////////////
 // Frequency band - do not change in SX127X_RadioSettings.h anymore
-//#define BAND868
-//#define BAND915 
-#define BAND433
+//#define EU868
+//#define AU915 
+#define EU433
+//#define AS923-2
 
 ////////////////////////////////////////////////////////////////////
 #define BOOT_START_MSG  "\nField tester for LoRa/LoRaWAN coverage\n"
@@ -260,6 +261,8 @@ uint32_t TXPacketSuccess=0;
 #ifdef WITH_EEPROM
 #include <EEPROM.h>
 #endif
+
+#define HELTEC_LORA
 
 #ifdef OLED
 #include <U8x8lib.h>
@@ -711,7 +714,7 @@ void loop(void)
 
     //LT.CarrierSense();
 
-    uint8_t p_type=PKT_TYPE_DATA | PKT_FLAG_ACK_REQ;
+    //uint8_t p_type=PKT_TYPE_DATA | PKT_FLAG_ACK_REQ;
       
     PRINT_CSTSTR("Will request an ACK\n"); 
 

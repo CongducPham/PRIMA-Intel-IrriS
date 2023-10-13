@@ -1,18 +1,58 @@
 #!/bin/bash
 
+# Ex: ./config_band.sh EU868
+# Ex: ./config_band.sh EU868 B827EBFFFEAAAAAA eu1.cloud.thethings.network
+
+# LoRaWAN band to use.
+#
+# Valid values are:
+# * AS923    (AS923 without frequency offset) 923.2MHz for single-channel
+# * AS923-2  (AS923 with -1.80 MHz frequency offset) 921.4MHz for single-channel
+# * AS923-3  (AS923 with -6.60 MHz frequency offset) 916.6MHz for single-channel
+# * AS923-4  (AS923 with -5.90 MHz frequency offset) 917.3MHz for single-channel
+# * AU915 916.8MHz for single-channel
+# * CN470 
+# * CN779 
+# * EU433 433.175MHz for single-channel
+# * EU868 868.1MHz for single-channel
+# * IN865 865.0625MHz for single-channel
+# * KR920 922.1MHz for single-channel
+# * RU864 864.1MHz for single-channel
+# * US915 903.9MHz for single-channel
+# * ISM2400  (LoRaWAN 2.4GHz)
+
 echo "copy single_chan_pkt_fwd/${1^^}/global_conf.json to waziup.wazigate-lora.forwarders:/root/conf/single_chan_pkt_fwd/"
-docker cp /home/pi/scripts/single_chan_pkt_fwd/${1^^}/global_conf.json waziup.wazigate-lora.forwarders:/root/conf/single_chan_pkt_fwd/
+cp /home/pi/scripts/single_chan_pkt_fwd/${1^^}/global_conf.json /home/pi/scripts/single_chan_pkt_fwd/
+if [ $# -eq 3 ]
+then
+echo "configure for TTN: gw eui $2 using $3 TTN server"
+sed -i 's/AA55A00000000000/'"${2^^}"'/g' /home/pi/scripts/single_chan_pkt_fwd/global_conf.json
+sed -i 's/waziup.wazigate-lora.chirpstack-gateway-bridge/'"${3}"'/g' /home/pi/scripts/single_chan_pkt_fwd/global_conf.json
+fi
+docker cp /home/pi/scripts/single_chan_pkt_fwd/global_conf.json waziup.wazigate-lora.forwarders:/root/conf/single_chan_pkt_fwd/
 docker exec -it --user root waziup.wazigate-lora.forwarders chown root:root /root/conf/single_chan_pkt_fwd/global_conf.json
 
 echo "RAK2245"
 echo "copy multi_chan_pkt_fwd/${1^^}/global_conf.json to waziup.wazigate-lora.forwarders:/root/conf/multi_chan_pkt_fwd/"
-docker cp /home/pi/scripts/multi_chan_pkt_fwd/${1^^}/global_conf.json waziup.wazigate-lora.forwarders:/root/conf/multi_chan_pkt_fwd/
+cp /home/pi/scripts/multi_chan_pkt_fwd/${1^^}/global_conf.json /home/pi/scripts/multi_chan_pkt_fwd/
+if [ $# -eq 3 ]
+then
+echo "configure for TTN: gw eui $2 using $3 TTN server"
+sed -i 's/AA55A00000000000/'"${2^^}"'/g' /home/pi/scripts/multi_chan_pkt_fwd/global_conf.json
+sed -i 's/waziup.wazigate-lora.chirpstack-gateway-bridge/'"${3}"'/g' /home/pi/scripts/multi_chan_pkt_fwd/global_conf.json
+fi
+docker cp /home/pi/scripts/multi_chan_pkt_fwd/global_conf.json waziup.wazigate-lora.forwarders:/root/conf/multi_chan_pkt_fwd/
 docker exec -it --user root waziup.wazigate-lora.forwarders chown root:root /root/conf/multi_chan_pkt_fwd/global_conf.json
 
 echo "RAK5146"
 echo "copy rak5146/global_conf/global_conf.${1^^}.json to rak5146 home folder"
 cp /home/pi/scripts/rak5146/global_conf/global_conf.${1^^}.json /home/pi/scripts/rak5146/global_conf.json 
-
+if [ $# -eq 3 ]
+then
+echo "configure for TTN: gw eui $2 using $3 TTN server"
+sed -i 's/AA55A00000000000/'"${2^^}"'/g' /home/pi/scripts/rak5146/global_conf.json
+sed -i 's/wazigate.local/'"${3}"'/g' /home/pi/scripts/rak5146/global_conf.json
+fi
 echo "configuring chirpstack-gateway-bridge.toml for ${1^^}"
 sed -i 's/ region=.*/ region="'"${1^^}"'"/g' /home/pi/scripts/chirpstack_conf/chirpstack-gateway-bridge.toml
 echo "copy chirpstack-gateway-bridge.toml to waziup.wazigate-lora.chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge/"

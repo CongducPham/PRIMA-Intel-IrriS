@@ -19,7 +19,7 @@ DATE=`date +"%Y-%m-%dT06:00:00.001Z"`
 
 echo "--> Use date of $DATE"
 
-if [ $# -eq 3]
+if [ $# -eq 3 ]
 then
 
 # a specific device id has been given

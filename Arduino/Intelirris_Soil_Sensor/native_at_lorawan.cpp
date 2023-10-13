@@ -60,6 +60,7 @@
 
 //WaziGate default
 char* AppSkeyStr="23158D3BBC31E6AF670D195B5AED5525";
+//char* AppSkeyStr="23158D3BBC31E6AF670D195B5AEDABCD";
 
 ///////////////////////////////////////////////////////////////////
 //ENTER HERE your Network Session Key from the TTN device info (same order, i.e. msb)
@@ -67,6 +68,7 @@ char* AppSkeyStr="23158D3BBC31E6AF670D195B5AED5525";
 
 //WaziGate default
 char* NwkSkeyStr="23158D3BBC31E6AF670D195B5AED5525";
+//char* NwkSkeyStr="23158D3BBC31E6AF670D195B5AEDABCD";
 
 //to drive an UART LoRaWAN module such as RAK3172
 #include <SoftwareSerial.h>
@@ -310,6 +312,8 @@ bool lorawan_module_setup(int speed) {
     write_lorawan_module("AT+CHE=2\r\n\0");
 #elif defined EU433
     write_lorawan_module("AT+BAND=0\r\n\0");
+#elif defined AS923-2
+    write_lorawan_module("AT+BAND=9\r\n\0");
 #endif    
     read_lorawan_module();
   

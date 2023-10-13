@@ -1,9 +1,10 @@
 /*
-* Copyright (C) 2016-2021 Congduc Pham, University of Pau, France
+* Copyright (C) 2016-2023 Congduc Pham, University of Pau, France
 *
 * Congduc.Pham@univ-pau.fr
 */
 
+#include "BoardSettings.h"
 #include "DS18B20.h"
 
 DS18B20::DS18B20(const char* nomenclature, bool is_analog, bool is_connected, bool is_low_power, int pin_read, int pin_power):Sensor(nomenclature, is_analog, is_connected, is_low_power, pin_read, pin_power){
@@ -11,14 +12,19 @@ DS18B20::DS18B20(const char* nomenclature, bool is_analog, bool is_connected, bo
   
     if (get_pin_power()!=-1) {	
     	pinMode(get_pin_power(),OUTPUT);
+      digitalWrite(get_pin_power(), PWR_LOW);
 
-    if (get_pin_read()!=-1)
-      pinMode(get_pin_read(), INPUT);       
+      if (get_pin_read()!=-1)
+        pinMode(get_pin_read(), INPUT);       
     
 			if (get_is_low_power())
-       	digitalWrite(get_pin_power(),LOW);
+       	digitalWrite(get_pin_power(), PWR_LOW);
     	else
-				digitalWrite(get_pin_power(),HIGH);
+#if defined IRD_PCB && defined SOLAR_BAT
+        power_soft_start(get_pin_power());
+#else
+				digitalWrite(get_pin_power(), PWR_HIGH);
+#endif        
 		}
 		  
     // start OneWire
@@ -40,8 +46,11 @@ void DS18B20::update_data()
   	
     // if we use a digital pin to power the sensor...
     if (get_is_low_power())
+#if defined IRD_PCB && defined SOLAR_BAT
+      power_soft_start(get_pin_power());
+#else
     	digitalWrite(get_pin_power(),HIGH);  	
-
+#endif
     // wait
     delay(get_warmup_time());
 

@@ -19,7 +19,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Sep. 22nd, 2023 by C. Pham
+ * last update: Oct. 10th, 2023 by C. Pham
  * 
  * NEW: Support native LoRaWAN module RAK3172 with AT commands
  * 
@@ -42,6 +42,8 @@
 
 //indicate in this file the radio module: SX126X, SX127X, SX128X or RAK3172
 #include "RadioSettings.h"
+//indicate in this file the board: simple PCB v2, IRD PCB or WaziSense v2
+#include "BoardSettings.h"
 
 ////////////////////////////////////////////////////////////////////
 // sends data to INTEL-IRRIS WaziGate edge-gateway
@@ -53,6 +55,7 @@
 //#define EU868
 //#define AU915 
 #define EU433
+//#define AS923-2
 
 ////////////////////////////
 //uncomment to use a customized frequency.
@@ -60,14 +63,8 @@
 //#define MY_FREQUENCY 433170000
 //#define MY_FREQUENCY 916800000
 
-//uncomment for WAZISENSE v2 board
-//#define WAZISENSE
-
-//uncomment for IRD PCB board
-//#define IRD_PCB
-
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – Sep 22nd, 2023\n"
+#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – Oct 10th, 2023\n"
 
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor
@@ -96,6 +93,12 @@
 
 //uncomment for an onboard SI7021 sensor
 //#define SI7021_SENSOR
+
+////////////////////////////////////////////////////////////////////
+// uncomment to have an additional decagon EC-5 sensor, ONLY ON IRD_PCB
+//#define SOIL_EC5_SENSOR
+// uncomment to have an additional CO2 sensor, ONLY ON IRD_PCB
+//#define CO2_SCD30_SENSOR
 
 //uncomment to use LPP format to send to WAZIGATE for instance
 //so uncomment LPP only with LORAWAN to WAZIGATE
@@ -298,6 +301,9 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
   //this is how you need to connect the analog soil humidity sensor
   #define SH1_ANALOG_PIN A0
   #define SH1_PWR_PIN A1
+  //this is how you need to connect the second analog soil humidity sensor
+  #define SH2_ANALOG_PIN A3
+  #define SH2_PWR_PIN A1  
   //this is how you need to connect the DS18B20 soil temperature sensor
   //the analog soil humidity sensor and the DS18B20 shares the same pwr line
   #define TEMP_DIGITAL_PIN 6
@@ -373,6 +379,8 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #include "SX128X_RadioSettings.h"
 #endif       
 
+#include "TempInternal.h"
+
 // Include sensors
 #include "Sensor.h"
 #ifdef SI7021_SENSOR
@@ -393,6 +401,10 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #include "DS18B20.h"
 #endif
 
+#ifdef CO2_SCD30_SENSOR
+#include "CO2_SCD30.h"
+#endif
+
 #ifdef USE_XLPP
 #include <xlpp.h>
 #endif
@@ -400,6 +412,7 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #ifdef USE_LPP
 #include <CayenneLPP.h>
 #endif
+
 
 ///////////////////////////////////////////////////////////////////
 // ENCRYPTION CONFIGURATION AND KEYS FOR LORAWAN
@@ -430,8 +443,13 @@ uint8_t si7021_hum_index;
 //capacitive|watermark; 2nd watermark; soil temperature; SI7021 temp+hum; 
 const int max_number_of_sensors = 5;
 #else
+#ifdef IRD_PCB
+// capacitive or watermark; 2nd watermark; soil temperature; EC5 decagon; CO2 sensor 
+const int max_number_of_sensors = 5;
+#else
 // capacitive or watermark; 2nd watermark; soil temperature; 
 const int max_number_of_sensors = 3;
+#endif
 #endif
 
 uint8_t number_of_sensors=max_number_of_sensors;
@@ -550,6 +568,43 @@ uint8_t low_bat_counter = 0;
 float last_vcc = 0.0;
 float current_vcc = 0.0;
 #endif
+
+#include "TempInternal.h"
+
+// IRD PCB with solar panel
+//
+#if defined IRD_PCB && defined SOLAR_BAT
+#define PANEL_AUTO  0
+#define PANEL_ON    1
+
+#ifdef NIMH
+#define BATT_GOOD         4350   // 4.35 V = 3x1.45 NiMH. (4.2 enough ?)
+#define BATT_TEMP_MINI    -150   // no freeze protection needed for NiMH 
+#define BATT_HYST          100   // start charge if pv >= v_bat + 0.1 V
+#define BAT_OK            4050   // 4.05 V = 3x1.35 V
+#define BAT_LOW           3600   // 3.6 V   0% NiMH en decharge sans charge solaire
+#else // Lithium
+#define BATT_GOOD         4050   // 4.05 V lithium 80%
+#define BATT_TEMP_MINI       5   // do not charge lipo when freeze
+#define BATT_HYST          100   // start charge if pv >= v_bat + 0.1 V
+#define BAT_OK            3600   // 3.6 V
+#define BAT_LOW           3400   // 3.4 V   0% lithium
+#define BAT_FULL          4200   // 4.2 V 100% lithium
+#endif
+#define BAT_MINIMUM       3000   // 3.0 V pendant la radio
+
+//#define TIME_C3             10  // wait 10 ms C3  33 nF
+#define TIME_C3              1  // wait  1 ms for C3 330 pF
+// to debug : replacing the PV by a lab power supply with a resistor in serial (capacitor inside)
+
+#define STATE_MOSFETS_OFF 0
+#define STATE_MOSFETS_ON  1
+
+uint16_t v_pv = 0;
+uint16_t v_bat = 0;
+uint16_t last_v_bat = 0;
+uint16_t recovery_charging = 0;
+#endif // SOLAR_BAT
 
 /*****************************
  _____           _      
@@ -811,6 +866,10 @@ void lowPower(unsigned long time_ms) {
 #endif
         waiting_t = 0;
       }
+
+#if defined IRD_PCB && defined SOLAR_BAT
+  manage_battery(PANEL_AUTO);
+#endif
   
 #ifdef SHOW_LOW_POWER_CYCLE
       FLUSHOUTPUT;
@@ -865,7 +924,15 @@ void lowPower(unsigned long time_ms) {
 ******************************/
 
 void setup() {
-  
+
+#if defined IRD_PCB && defined SOLAR_BAT
+  manage_battery(PANEL_AUTO);
+  if (v_bat < BAT_LOW)
+  {
+    recovery_charging = 1;
+  }
+#endif
+
 #ifdef LOW_POWER
   bool low_power_status = IS_LOWPOWER;  
 #ifdef __SAMD21G18A__
@@ -908,6 +975,10 @@ void setup() {
   Serial.begin(38400);  
 #endif
 
+#if defined IRD_PCB && defined SOLAR_BAT
+  manage_battery(PANEL_AUTO);
+#endif
+
 #ifdef OLED_PWR_PIN
   pinMode(OLED_PWR_PIN, OUTPUT);
   digitalWrite(OLED_PWR_PIN, HIGH);
@@ -942,6 +1013,13 @@ void setup() {
   sensor_ptrs[sensor_index]->set_warmup_time(200);
   capacitive_sensor_index=sensor_index;
   sensor_index++;
+#endif
+#ifdef SOIL_EC5_SENSOR
+  // SH2 // IRD_PCB
+  sensor_ptrs[sensor_index] = new rawAnalog("SH2", IS_ANALOG, IS_CONNECTED, low_power_status, (uint8_t) SH2_ANALOG_PIN, (uint8_t) SH2_PWR_PIN /*no pin trigger*/);
+  sensor_ptrs[sensor_index]->set_n_sample(NSAMPLE);
+  sensor_ptrs[sensor_index]->set_warmup_time(200);
+  sensor_index++;
 #endif  
 #ifdef SOIL_TEMP_SENSOR
   //ST
@@ -952,6 +1030,12 @@ void setup() {
   sensor_ptrs[sensor_index]->set_warmup_time(1500);
 #endif      
   soil_temp_sensor_index=sensor_index;
+  sensor_index++;
+#endif
+#ifdef CO2_SCD30_SENSOR
+  //CO2  // IRD_PCB
+  sensor_ptrs[sensor_index] = new CO2_SCD30((char*)"CO2", IS_NOT_ANALOG, IS_CONNECTED, low_power_status, -1, (uint8_t) TEMP_PWR_PIN /*no pin trigger*/);
+  sensor_ptrs[sensor_index]->set_n_sample( 1);
   sensor_index++;
 #endif
   
@@ -1349,7 +1433,131 @@ void setup() {
   PRINT_CSTSTR("low_voltage_indication=");
   PRINTLN_VALUE("%d", low_voltage_indication);  
 #endif
+
+#if defined IRD_PCB && defined SOLAR_BAT
+  manage_battery(PANEL_AUTO);
+#endif
+
+#ifdef WITH_AES
+  local_lorawan_init();
+#endif  
 }
+
+#if defined IRD_PCB && defined SOLAR_BAT
+// read micro controler temperature
+#define TEMP_INTERNAL  
+#define SOLAR_PANEL_ANA   A7  // analog input
+#define SOLAR_PANEL_PIN   5   // mosfet command Q4
+
+//////////////////////////////////////////////////////////////
+//
+uint16_t solar_analogRead( void)
+{
+  uint16_t v;
+  
+  v = analogRead( SOLAR_PANEL_ANA);
+  v = (uint16_t) ((uint32_t) v * 3300 / 1023); // 10 bits
+  v = (uint16_t) ((uint32_t) v * 5300 / 1000); // R5 430k R4 100k /5.3 15.3 V maxi
+
+  return v;
+}
+
+void manage_battery( uint8_t force_on)
+{
+  static uint8_t v_state = STATE_MOSFETS_OFF;
+#ifdef TEMP_INTERNAL
+  int8_t tempInternal;
+  
+  tempInternal = GetTempInternal();
+#endif
+
+  switch( v_state)
+  {
+    case STATE_MOSFETS_OFF:
+    default:
+      v_pv = solar_analogRead();
+
+      // connect battery for measure : pannel can consume 0.5 mA at night
+      pinMode( SOLAR_PANEL_PIN, OUTPUT);
+      digitalWrite( SOLAR_PANEL_PIN, HIGH);      
+      delay( TIME_C3);  
+      v_bat = solar_analogRead();
+
+#ifdef TEMP_INTERNAL
+      if ((v_pv > (v_bat + BATT_HYST)  &&  v_bat < BATT_GOOD  &&  tempInternal > BATT_TEMP_MINI)  ||  force_on)
+#else
+      if ((v_pv > (v_bat + BATT_HYST)  &&  v_bat < BATT_GOOD)  ||  force_on)
+#endif
+      {
+        // sun or daylight OR radio
+        v_state = STATE_MOSFETS_ON;
+        break;
+      }
+
+      pinMode( SOLAR_PANEL_PIN, OUTPUT);
+      digitalWrite( SOLAR_PANEL_PIN, LOW);
+      break;
+
+    case STATE_MOSFETS_ON:
+      v_bat = solar_analogRead();
+      if (v_bat > BATT_GOOD  &&  !force_on)
+      {
+        // battery stop charge
+        pinMode( SOLAR_PANEL_PIN, OUTPUT);
+        digitalWrite( SOLAR_PANEL_PIN, LOW);
+        v_state = STATE_MOSFETS_OFF;
+        break;
+      }
+
+      // disconnect battery for solar measure
+      pinMode( SOLAR_PANEL_PIN, OUTPUT);
+      digitalWrite( SOLAR_PANEL_PIN, LOW);      
+      delay( TIME_C3);
+      v_pv = solar_analogRead();
+      if (v_pv <= v_bat)
+      {
+        // night
+        v_state = STATE_MOSFETS_OFF;
+        break;
+      }
+
+      pinMode( SOLAR_PANEL_PIN, OUTPUT);
+      digitalWrite( SOLAR_PANEL_PIN, HIGH);
+      break;
+  }
+
+#ifdef SHOW_LOW_POWER_CYCLE                   
+  PRINT_CSTSTR("PV=");
+  PRINT_VALUE("%d", v_pv);
+  PRINT_CSTSTR("bat=");
+  PRINT_VALUE("%d", v_bat);
+  PRINT_CSTSTR("r=");
+  PRINT_VALUE("%d", last_v_bat);
+#ifdef TEMP_INTERNAL
+  PRINT_CSTSTR("T=");
+  PRINT_VALUE("%d", tempInternal);
+#endif
+  PRINT_CSTSTR(" ");
+  PRINT_VALUE("%d", v_state);
+  PRINT_CSTSTR("\n");
+#endif
+}
+
+#ifndef NIMH
+// lipo cell battery level
+// return percent (can be more than 100% if voltage is too hi)
+//
+uint8_t bat_level( uint16_t vbat)
+{
+  if (vbat <= BAT_LOW)
+  {
+    return 0;
+  }
+
+  return (uint8_t) ((vbat - BAT_LOW) / ((BAT_FULL - BAT_LOW) / 100));
+}
+#endif
+#endif // SOLAR_BAT
 
 //////////////////////////////////////////////////////////////
 // called by loop
@@ -1558,6 +1766,14 @@ void measure_and_send( void)
               }
 #endif
 
+#ifdef CO2_SCD30_SENSOR
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"CO2",3)==0) {
+                //we always use channel 8 for co2
+                lpp.addTemperature(8, tmp_value);
+              }
+#endif
+
+
 #else
 
 #ifdef SOIL_TEMP_SENSOR
@@ -1565,6 +1781,13 @@ void measure_and_send( void)
               if (strncmp(sensor_ptrs[i]->get_nomenclature(),"ST",2)==0) {
                 //we always use channel 5 for soil temperature
                 ch=5;
+              }
+#endif
+
+#ifdef CO2_SCD30_SENSOR
+              if (strncmp(sensor_ptrs[i]->get_nomenclature(),"CO2",3)==0) {
+                //we always use channel 8 for co2
+                lpp.addTemperature(8, tmp_value);
               }
 #endif
               //the soil capacitive sensor
@@ -1591,10 +1814,26 @@ void measure_and_send( void)
           }
       }
 
+#if defined IRD_PCB && defined SOLAR_BAT
+      manage_battery( PANEL_AUTO);
+#endif
+
       for (int i=0; i<number_of_sensors; i++) {
         //there might be specific post-init operations for some sensors
         sensor_ptrs[i]->post_init();   
       }      
+
+#if defined IRD_PCB && defined SOLAR_BAT && defined TRANSMIT_VOLTAGE
+#if defined USE_XLPP || defined USE_LPP
+      lpp.addAnalogInput(6, (float) last_v_bat / 1000.0);
+#ifdef NIMH
+      //lpp.addAnalogInput(7, (float) v_bat / 1000.0);   // volt
+#else
+      //lpp.addAnalogInput(7, (float) v_bat / 1000.0);   // volt pour test
+      //lpp.addAnalogInput(7, (float) bat_level(v_bat)); // percent for lithium
+#endif
+#endif
+#endif
 
 #ifdef MONITOR_BAT_VOLTAGE
 #if defined USE_XLPP || defined USE_LPP
@@ -1688,6 +1927,11 @@ void measure_and_send( void)
       dumpHEXtoStr(serial_buff, (char*)message, r_size);
 #endif
       PRINTLN_STR("%s", serial_buff);
+#endif
+
+#if defined IRD_PCB && defined SOLAR_BAT
+      manage_battery( PANEL_ON); // use solar to reduce battery current
+      last_v_bat = v_bat;        // reset minimum battery value
 #endif
 
       startSend=millis();
@@ -1796,7 +2040,11 @@ void measure_and_send( void)
 #endif
 #if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
         //nothing particular right now   
-#endif              
+#endif      
+
+#if defined IRD_PCB && defined SOLAR_BAT
+      manage_battery( PANEL_ON); // last_v_bat is read in LT.transmit if modified in library
+#endif        
       }
 
 ///////////////////////////////////////////////////////////////////
@@ -2104,7 +2352,19 @@ void loop(void)
       //PRINTLN_VALUE("%ld",nextTransmissionTime);
       //PRINTLN_VALUE("%ld",(idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
 
-#ifdef MONITOR_BAT_VOLTAGE        
+#if defined IRD_PCB && defined SOLAR_BAT
+      if (recovery_charging  &&  v_bat > BAT_OK) {
+        recovery_charging = 0;
+      }
+
+      if (!recovery_charging  &&  v_bat > BAT_LOW  &&  (last_v_bat > BAT_MINIMUM  ||  last_v_bat == 0)) {
+        measure_and_send();
+      }
+      else {
+        PRINT_CSTSTR("!LOW BATTERY ");
+        PRINTLN_VALUE("%d", recovery_charging);
+      }
+#elif defined MONITOR_BAT_VOLTAGE        
 
       current_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.0;
 

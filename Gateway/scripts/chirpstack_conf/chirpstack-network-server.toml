@@ -19,10 +19,10 @@ net_id="000000"
 # LoRaWAN band to use.
 #
 # Valid values are:
-# * AS923    (AS923 without frequency offset)
-# * AS923-2  (AS923 with -1.80 MHz frequency offset)
-# * AS923-3  (AS923 with -6.60 MHz frequency offset)
-# * AS923-4  (AS923 with -5.90 MHz frequency offset)
+# * AS923    (AS923 without frequency offset) 923.2MHz
+# * AS923-2  (AS923 with -1.80 MHz frequency offset) 921.4MHz
+# * AS923-3  (AS923 with -6.60 MHz frequency offset) 916.6MHz
+# * AS923-4  (AS923 with -5.90 MHz frequency offset) 917.3MHz
 # * AU915
 # * CN470
 # * CN779
