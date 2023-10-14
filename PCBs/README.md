@@ -7,7 +7,7 @@ This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototypin
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-SX128X-top.png" width="400">
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-RFM95W-board.png" width="400">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-RFM95W-board.jpg" width="400">
 
 All the PCBs have footprint for an SMA connector or uFl and replicated rows for all the pins. They also have extra VCC and GND rails. They also have 4 solder pads that can be soldered together if you want to connect various DIO pins. Some of these pads are by default connected. If you want to use the connected Arduino pins for other purposes, just cut the wire between the pads with a cutter and test for discontinuity.
 
