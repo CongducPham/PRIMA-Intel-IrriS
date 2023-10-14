@@ -7,6 +7,8 @@ This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototypin
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-SX128X-top.png" width="400">
 
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-RFM95W-board.png" width="400">
+
 All the PCBs have footprint for an SMA connector or uFl and replicated rows for all the pins. They also have extra VCC and GND rails. They also have 4 solder pads that can be soldered together if you want to connect various DIO pins. Some of these pads are by default connected. If you want to use the connected Arduino pins for other purposes, just cut the wire between the pads with a cutter and test for discontinuity.
 
 - for RFM95W/RFM96W. Connected by default: DIO0 to D2, DIO1 to D3, RST to D4. Not connected by default: DIO2 to D5
@@ -31,7 +33,7 @@ This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototypin
 
 This new PCB also integrates by default a low-cost solar charging circuit to add solar panel and rechargeable NiMh batteries. The whole solar circuit appears on the back of the PCB (left part of the PCB) as illustrated below.
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ird-pcb-4-1-raw-bottom.png" width="300">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ird-pcb-4-1-raw-bottom.png" width="400">
 
 You can download the Gerber zipped archive and view them on an [online Gerber viewer](https://www.pcbgogo.com/GerberViewer.html).
 
@@ -59,6 +61,10 @@ PCB RAK3172 v1
 We have designed a PCB which integrates the LoRaWAN RAK3172 radio chip to provide full LoRaWAN connectivity. It also provides simpler wiring of sensors, similarly to the IRD’s PCB. There is no solar circuit however, as the main objective is to support full LoRaWAN connectivity for large-scale and worldwide deployment scenarios.
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-RAK3172-top.png" width="400">
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-RAK3172-board.jpg" width="400">
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/RAK_W_IRD_PCB.jpg" width="400">
 
 Read [INTEL-IRRIS Newsletter #4](https://intel-irris.eu/intel-irris-newsletter-4) for a brief description and additional images.
 
