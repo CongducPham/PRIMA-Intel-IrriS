@@ -95,8 +95,9 @@ NFILE=`ls -l $3.capacitive.temperatureSensor_0.data_split* | wc -l`
 
 for (( i = 0; i < $NFILE; i++ ))
 do
-	echo "--> Get temperatureSensor_0 sensor's values from $3.capacitive.temperatureSensor_0.data_split_${i}.json"
-	DATA=`cat $3.capacitive.temperatureSensor_0.data_split_${i}.json`
+	sn=$(printf "%03d" $i)
+	echo "--> Get temperatureSensor_0 sensor's values from $3.capacitive.temperatureSensor_0.data_split_${sn}.json"
+	DATA=`cat $3.capacitive.temperatureSensor_0.data_split_${sn}.json`
 
 	echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_0"
 	curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
@@ -136,8 +137,9 @@ if [ -f "$3.capacitive.temperatureSensor_5.data.json" ]; then
 
 	for (( i = 0; i < $NFILE; i++ ))
 	do
-		echo "--> Get temperatureSensor_5 sensor's values from $3.capacitive.temperatureSensor_5.data_split_${i}.json"
-		DATA=`cat $3.capacitive.temperatureSensor_5.data_split_${i}.json`
+		sn=$(printf "%03d" $i)	
+		echo "--> Get temperatureSensor_5 sensor's values from $3.capacitive.temperatureSensor_5.data_split_${sn}.json"
+		DATA=`cat $3.capacitive.temperatureSensor_5.data_split_${sn}.json`
 
 		echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_5"
 		curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_5/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
@@ -179,8 +181,9 @@ if [ -f "$3.capacitive.analogInput_6.data.json" ]; then
 
 	for (( i = 0; i < $NFILE; i++ ))
 	do
-		echo "--> Get analogInput_6 sensor's values from $3.capacitive.analogInput_6.data_split_${i}.json"
-		DATA=`cat $3.capacitive.analogInput_6.data_split_${i}.json`
+		sn=$(printf "%03d" $i)
+		echo "--> Get analogInput_6 sensor's values from $3.capacitive.analogInput_6.data_split_${sn}.json"
+		DATA=`cat $3.capacitive.analogInput_6.data_split_${sn}.json`
 
 		echo "--> Set sensor's values to device $DEVICE sensor analogInput_6"
 		curl -X POST "http://localhost/devices/${DEVICE}/sensors/analogInput_6/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
