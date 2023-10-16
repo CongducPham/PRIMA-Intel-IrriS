@@ -107,6 +107,8 @@ class SX126XLT  {
     void printRegisters(uint16_t Start, uint16_t End);
     void printASCIIPacket(uint8_t *buff, uint8_t tsize);
     uint8_t transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txpower, uint8_t wait);
+    // variant of SX127XLT::transmit() where a user-provided pointer function and voltage value are passed as arguments
+    uint8_t transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txPower, uint8_t wait, uint16_t (*f)(void), uint16_t *v);    
     void setTxParams(int8_t TXpower, uint8_t RampTime);
     void setTx(uint32_t timeout);
     void clearIrqStatus( uint16_t irq );

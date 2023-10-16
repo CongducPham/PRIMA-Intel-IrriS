@@ -154,6 +154,8 @@ class SX127XLT
     uint8_t readPacketAddressed(uint8_t *rxbuffer, uint8_t size);           //needed for when receive used with NO_WAIT
 
     uint8_t transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txPower, uint8_t wait);
+    // variant of SX127XLT::transmit() where a user-provided pointer function and voltage value are passed as arguments
+    uint8_t transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txPower, uint8_t wait, uint16_t (*f)(void), uint16_t *v);
     uint8_t transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait);
 
     //*******************************************************************************

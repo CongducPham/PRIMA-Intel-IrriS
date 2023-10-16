@@ -1678,6 +1678,125 @@ uint8_t SX126XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, 
   }
 }
 
+// variant of SX126XLT::transmit() where a user-provided pointer function and voltage value are passed as arguments
+//
+uint8_t SX126XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txpower, uint8_t wait, uint16_t (*f)(void), uint16_t *v)
+{
+#ifdef SX126XDEBUG1
+  PRINTLN_CSTSTR("transmit()");
+#endif
+  uint8_t index;
+  uint8_t bufferdata;
+
+  if (size == 0)
+  {
+    return false;
+  }
+
+  setMode(MODE_STDBY_RC);
+  setBufferBaseAddress(0, 0);
+  
+  checkBusy();
+
+#ifdef USE_SPI_TRANSACTION     //to use SPI_TRANSACTION enable define at beginning of CPP file 
+  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+#endif
+
+  digitalWrite(_NSS, LOW);
+#if defined ARDUINO || defined USE_ARDUPI  
+  SPI.transfer(RADIO_WRITE_BUFFER);
+  SPI.transfer(0);
+
+  for (index = 0; index < size; index++)
+  {
+    bufferdata = txbuffer[index];
+    SPI.transfer(bufferdata);
+  }
+#else
+	uint8_t spibuf[size+2];
+	spibuf[0] = RADIO_WRITE_BUFFER;
+	spibuf[1] = 0;			
+	
+	for (index = 0; index < size; index++)
+	{
+		bufferdata = txbuffer[index];	
+		spibuf[2+index]=bufferdata;
+	}	
+	
+	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, size+2); 
+#endif
+  digitalWrite(_NSS, HIGH);
+
+#ifdef USE_SPI_TRANSACTION
+  SPI.endTransaction();
+#endif
+
+  _TXPacketL = size;
+  writeRegister(REG_LR_PAYLOADLENGTH, _TXPacketL);
+  setTxParams(txpower, RADIO_RAMP_200_US);
+  
+  setDioIrqParams(IRQ_RADIO_ALL, (IRQ_TX_DONE + IRQ_RX_TX_TIMEOUT), 0, 0);   //set for IRQ on TX done and timeout on DIO1
+  setTx(txtimeout);                                                          //this starts the TX
+
+  /**************************************************************************
+	Added by C. Pham - Oct. 2020
+  **************************************************************************/  
+  
+  // increment packet sequence number
+  _TXSeqNo++;
+
+  /**************************************************************************
+	End by C. Pham - Oct. 2020
+  **************************************************************************/
+  
+  if (!wait)
+  {
+    return _TXPacketL;
+  }
+
+  /**************************************************************************
+	Modified by C. Pham - Oct. 2020
+  **************************************************************************/
+
+#ifdef USE_POLLING
+
+	uint16_t regdata;
+
+  uint16_t v_bat;
+      	
+	do {
+		regdata = readIrqStatus();
+		
+		// we read bat voltage during the polling
+		v_bat = f();
+		
+		if (v_bat < *v)
+		{
+			*v = v_bat; // keep the minimum
+		}		
+	} while ( !(regdata & IRQ_TX_DONE) && !(regdata & IRQ_RX_TX_TIMEOUT) );
+	
+	if (regdata & IRQ_RX_TX_TIMEOUT )                        //check for timeout
+		
+#else		 
+  
+  while (!digitalRead(_TXDonePin));       //Wait for DIO1 to go high
+  
+  if (readIrqStatus() & IRQ_RX_TX_TIMEOUT )                        //check for timeout
+#endif  
+
+  /**************************************************************************
+	End by C. Pham - Oct. 2020
+  **************************************************************************/
+  {
+    return 0;
+  }
+  else
+  {
+    return _TXPacketL;
+  }
+}
+
 
 void SX126XLT::printIrqStatus()
 {
@@ -5175,7 +5294,7 @@ uint16_t SX126XLT::CollisionAvoidance0(uint8_t pl, uint8_t cad_number) {
     PRINTLN;    
   }
   else
-  	e==0;
+  	e=0;
   
   // we detected activity!
   // since there is low probability of false positive

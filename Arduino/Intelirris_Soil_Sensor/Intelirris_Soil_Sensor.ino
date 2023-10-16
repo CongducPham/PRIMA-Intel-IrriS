@@ -1959,11 +1959,23 @@ void measure_and_send( void)
       //will return packet length sent if OK, otherwise 0 if transmit error
       //we use raw format for LoRaWAN
 #if defined USE_XLPP
+#if defined IRD_PCB && defined SOLAR_BAT
+      if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
+#else
       if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX))
+#endif      
 #elif defined USE_LPP 
+#if defined IRD_PCB && defined SOLAR_BAT
+      if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
+#else
       if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX))
+#endif      
+#else
+#if defined IRD_PCB && defined SOLAR_BAT
+      if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
 #else      
       if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX))
+#endif      
 #endif
 #elif defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
       if (lorawan_transmit(serial_buff))        

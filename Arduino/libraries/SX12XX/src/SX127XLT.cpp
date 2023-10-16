@@ -3061,6 +3061,140 @@ uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, 
   return _TXPacketL;                                                     //no timeout, so TXdone must have been set
 }
 
+// variant of SX127XLT::transmit() where a user-provided pointer function and voltage value are passed as arguments
+//
+uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txpower, uint8_t wait, uint16_t (*f)(void), uint16_t *v)
+{
+#ifdef SX127XDEBUG1
+  PRINTLN_CSTSTR("transmit()");
+#endif
+
+  uint8_t index, ptr;
+  uint8_t bufferdata;
+  uint32_t endtimeoutmS;
+
+  if (size == 0)
+  {
+    return false;
+  }
+
+  setMode(MODE_STDBY_RC);
+  ptr = readRegister(REG_FIFOTXBASEADDR);       //retrieve the TXbase address pointer
+  writeRegister(REG_FIFOADDRPTR, ptr);          //and save in FIFO access ptr
+
+#ifdef USE_SPI_TRANSACTION                   //to use SPI_TRANSACTION enable define at beginning of CPP file 
+  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+#endif
+
+  digitalWrite(_NSS, LOW);
+  
+#if defined ARDUINO || defined USE_ARDUPI  
+  SPI.transfer(WREG_FIFO);
+#endif
+
+  for (index = 0; index < size; index++)
+  {
+    bufferdata = txbuffer[index];
+#if defined ARDUINO || defined USE_ARDUPI    
+    SPI.transfer(bufferdata);
+#else
+		writeRegister(WREG_FIFO, bufferdata);
+#endif    
+  }
+  digitalWrite(_NSS, HIGH);
+
+#ifdef USE_SPI_TRANSACTION
+  SPI.endTransaction();
+#endif
+
+  _TXPacketL = size;
+  writeRegister(REG_PAYLOADLENGTH, _TXPacketL);
+
+  setTxParams(txpower, RADIO_RAMP_DEFAULT);            //TX power and ramp time
+
+  setDioIrqParams(IRQ_RADIO_ALL, IRQ_TX_DONE, 0, 0);   //set for IRQ on TX done on first DIO pin
+  setTx(0);                                            //TX timeout is not handled in setTX()
+
+  /**************************************************************************
+	Added by C. Pham - Oct. 2020
+  **************************************************************************/  
+  
+  // increment packet sequence number
+  _TXSeqNo++;
+
+  /**************************************************************************
+	End by C. Pham - Oct. 2020
+  **************************************************************************/
+  
+  if (!wait)
+  {
+    return _TXPacketL;
+  }
+
+  /**************************************************************************
+	Modified by C. Pham - Oct. 2020
+  **************************************************************************/
+  
+  if (txtimeout == 0)
+  {
+#ifdef USE_POLLING
+    index = readRegister(REG_IRQFLAGS);
+    //poll the irq register for TXDone, bit 3
+    while ((bitRead(index, 3) == 0))
+      {
+        index = readRegister(REG_IRQFLAGS);
+      }
+#else  
+    while (!digitalRead(_TXDonePin));                  //Wait for pin to go high, TX finished
+#endif    
+  }
+  else
+  {
+    endtimeoutmS = (millis() + txtimeout);
+#ifdef USE_POLLING
+
+#ifdef SX127XDEBUG1
+  	PRINTLN_CSTSTR("TXDone using polling");
+#endif  
+    index = readRegister(REG_IRQFLAGS);
+    
+    uint16_t v_bat;
+    //poll the irq register for TXDone, bit 3
+    while ((bitRead(index, 3) == 0) && (millis() < endtimeoutmS))
+      {
+        index = readRegister(REG_IRQFLAGS);
+				
+				// we read bat voltage during the polling
+				v_bat = f();
+				
+				if (v_bat < *v)
+				{
+					*v = v_bat; // keep the minimum
+				}
+      }
+#else    
+    while (!digitalRead(_TXDonePin) && (millis() < endtimeoutmS));
+#endif    
+  }
+
+  setMode(MODE_STDBY_RC);                                            //ensure we leave function with TX off
+
+#ifdef USE_POLLING
+  if (bitRead(index, 3) == 0)
+#else
+  if (!digitalRead(_TXDonePin))
+#endif  
+  {
+    _IRQmsb = IRQ_TX_TIMEOUT;
+    return 0;
+  }
+
+  /**************************************************************************
+	End by C. Pham - Oct. 2020
+  **************************************************************************/
+  
+  return _TXPacketL;                                                     //no timeout, so TXdone must have been set
+}
 
 uint8_t SX127XLT::transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait )
 {
@@ -6667,7 +6801,7 @@ uint16_t SX127XLT::CollisionAvoidance0(uint8_t pl, uint8_t cad_number) {
     PRINTLN;    
   }
   else
-  	e==0;
+  	e=0;
   
   // we detected activity!
   // since there is low probability of false positive
