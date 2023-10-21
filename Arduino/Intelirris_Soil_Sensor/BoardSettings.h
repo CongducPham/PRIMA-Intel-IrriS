@@ -19,7 +19,7 @@
 // uncomment only if the IRD PCB is running on solar panel
 // MUST be commented if running on alkaline battery
 // code for SOLAR_BAT has been written by Jean-François Printanier from IRD
-#define SOLAR_BAT
+//#define SOLAR_BAT
 // do not change if you are not knowing what you are doing
 #define NIMH
 

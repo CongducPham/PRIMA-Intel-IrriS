@@ -60,7 +60,7 @@ void rawAnalog::update_data()
 	}
 	
     if (get_is_low_power())        
-        digitalWrite(get_pin_power(),LOW);
+        digitalWrite(get_pin_power(), PWR_LOW);
         
     // getting the average
     //Serial.println(value);

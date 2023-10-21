@@ -10,7 +10,7 @@
 # * AS923-2  (AS923 with -1.80 MHz frequency offset) 921.4MHz for single-channel
 # * AS923-3  (AS923 with -6.60 MHz frequency offset) 916.6MHz for single-channel
 # * AS923-4  (AS923 with -5.90 MHz frequency offset) 917.3MHz for single-channel
-# * AU915 916.8MHz for single-channel
+# * AU915 916.8MHz for single-channel (sub-band-2)
 # * CN470 
 # * CN779 
 # * EU433 433.175MHz for single-channel
@@ -53,6 +53,12 @@ echo "configure for TTN: gw eui $2 using $3 TTN server"
 sed -i 's/AA55A00000000000/'"${2^^}"'/g' /home/pi/scripts/rak5146/global_conf.json
 sed -i 's/wazigate.local/'"${3}"'/g' /home/pi/scripts/rak5146/global_conf.json
 fi
+
+if [ $# -eq 3 ]
+then
+echo "configure for TTN: skipping configuration of chirpstack-gateway-bridge.toml for ${1^^}"
+echo "configure for TTN: skipping configuration of chirpstack-network-server.toml for ${1^^}"
+else
 echo "configuring chirpstack-gateway-bridge.toml for ${1^^}"
 sed -i 's/ region=.*/ region="'"${1^^}"'"/g' /home/pi/scripts/chirpstack_conf/chirpstack-gateway-bridge.toml
 echo "copy chirpstack-gateway-bridge.toml to waziup.wazigate-lora.chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge/"
@@ -62,3 +68,21 @@ echo "configuring chirpstack-network-server.toml for ${1^^}"
 sed -i 's/^name=.*/name="'"${1^^}"'"/g' /home/pi/scripts/chirpstack_conf/chirpstack-network-server.toml
 echo "copy chirpstack-network-server.toml to waziup.wazigate-lora.chirpstack-network-server:/etc/chirpstack-network-server/"
 docker cp /home/pi/scripts/chirpstack_conf/chirpstack-network-server.toml waziup.wazigate-lora.chirpstack-network-server:/etc/chirpstack-network-server/
+fi
+
+if [ $# -eq 3 ]
+then
+echo "you are configuring for TTN, disabling Chirpstack containers for lighter version of WaziGate"
+echo "replacing /var/lib/wazigate/docker-compose.yml by /home/pi/wazigate/docker-compose.yml.ttn"
+sudo cp /home/pi/wazigate/docker-compose.yml.ttn /var/lib/wazigate/docker-compose.yml
+else
+echo "you are configuring for regular WaziGate, enabling Chirpstack containers"
+echo "restoring /var/lib/wazigate/docker-compose.yml with /home/pi/wazigate/docker-compose.yml.orig"
+sudo cp /home/pi/wazigate/docker-compose.yml.orig /var/lib/wazigate/docker-compose.yml
+fi
+
+echo "starting new container configuration"
+echo "issuing sudo docker-compose up --remove-orphans -d in /var/lib/wazigate"
+pushd /var/lib/wazigate
+sudo docker-compose up --remove-orphans -d
+popd

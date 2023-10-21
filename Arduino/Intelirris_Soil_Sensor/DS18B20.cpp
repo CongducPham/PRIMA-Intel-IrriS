@@ -69,7 +69,7 @@ void DS18B20::update_data()
     //delay(1000);  
 	
     if (get_is_low_power())
-        digitalWrite(get_pin_power(),LOW);
+        digitalWrite(get_pin_power(), PWR_LOW);
         
 	  set_data(temp);
   }
