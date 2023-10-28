@@ -6,7 +6,7 @@ Low-cost LoRa IoT platform for the PRIMA INTEL-IRRIS project
 Latest news
 -----------
 
-- **NEW-Nov-21** We created the GitHub repository for the PRIMA/EU INTEL-IRRIS project. Check project [web site](http://intel-irris.eu/) and follow us on [Twitter](https://twitter.com/Intel_IrriS).
+- **NEW-Nov-21** We created the GitHub repository for the PRIMA/EU INTEL-IRRIS project. Check project [web site](http://intel-irris.eu/), the dedicated [News section](https://intel-irris.eu/news) and follow us on [Twitter](https://twitter.com/Intel_IrriS).
 
 
 Quick start
@@ -66,7 +66,9 @@ The WaziGate edge-enabled IoT gateway framework developed by WAZIUP
 
 INTEL-IRRIS specific tutorials
 
-- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform.pdf). Slides. Related videos: Video n°1, Video n°2 and Video n°3.
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (all versions)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-all-version.pdf). Slides. Related videos: Video n°1, Video n°2 and Video n°3.
+
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (IRD PCB v4.1)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-PCBv4-PCBA.pdf). Slides. Related videos: Video n°1, Video n°2 and Video n°3.
 
 - [Building the INTEL-IRRIS IoT platform. Part 2: edge-enabled gateway (WaziGate)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-edge-gateway.pdf). Slides. Related videos: Video n°4.
 
@@ -82,7 +84,7 @@ INTEL-IRRIS specific tutorials
 
 - Video n°5: [Non-technical video showing the production of the starter-kit](https://youtu.be/5nznRcIoe40). **YouTube video**.
 
-- [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB.pdf). Slides.
+- [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs, including PCBA](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB-update-PCBA.pdf). Slides.
 
 - [List of hardware parts for the INTEL-IRRIS soil sensor device](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-IrriS-low-cost-sensor-hardware-parts.pdf). Document.
 
