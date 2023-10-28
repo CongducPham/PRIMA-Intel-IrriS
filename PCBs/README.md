@@ -41,9 +41,9 @@ You can download the Gerber zipped archive and view them on an [online Gerber vi
 
 The raw PCB will of course not have the additional electronic components. While it is possible to add these component manually, in practice it is not recommended as the components are small and manually soldering them is prone to errors. Instead, the fully assembled PCB with solar circuit can be ordered fully assembled from PCB manufacturers.
 
-You can download the BOM file to order the fully assembled board from PCB manufacturers.
+You can download the BOM file to order the fully assembled board from PCB manufacturers. You can look at our tutorial on how to order PCB that are fully assembled by the manufacturer: [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs, including PCBA](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB-update-PCBA.pdf). 
 
-- Bill of Materiels (BOM) file for the IRD PCB v4.1 [.xls](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_4_1/BOM_SMT_TB_RFM95_868_IISS_PCB4_1.xlsx)
+- Bill of Materiels (BOM) file for the IRD PCB v4.1 RFM95W 868 [.xls](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_4_1/BOM_SMT_TB_RFM95_868_IISS_PCB4_1_wH2.xlsx)
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ird-pcb-4-1-3D-top.png" width="400">
 
