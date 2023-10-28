@@ -21,6 +21,28 @@
 # * US915 903.9MHz for single-channel
 # * ISM2400  (LoRaWAN 2.4GHz)
 
+if [ $# -eq 3 ]
+then
+echo "you are configuring for TTN, disabling Chirpstack containers for lighter version of WaziGate"
+echo "replacing /var/lib/wazigate/docker-compose.yml by /home/pi/wazigate/docker-compose.yml.ttn"
+sudo cp /home/pi/wazigate/docker-compose.yml.ttn /var/lib/wazigate/docker-compose.yml
+else
+echo "you are configuring for regular WaziGate, enabling Chirpstack containers"
+echo "restoring /var/lib/wazigate/docker-compose.yml with /home/pi/wazigate/docker-compose.yml.orig"
+sudo cp /home/pi/wazigate/docker-compose.yml.orig /var/lib/wazigate/docker-compose.yml
+fi
+
+echo "starting new container configuration"
+echo "issuing sudo docker-compose up --remove-orphans -d in /var/lib/wazigate"
+pushd /var/lib/wazigate
+sudo docker-compose up --remove-orphans -d
+popd
+
+echo "*****************************"
+echo "current frequency band is"
+./show_band.sh
+echo "*****************************"
+
 echo "copy single_chan_pkt_fwd/${1^^}/global_conf.json to waziup.wazigate-lora.forwarders:/root/conf/single_chan_pkt_fwd/"
 cp /home/pi/scripts/single_chan_pkt_fwd/${1^^}/global_conf.json /home/pi/scripts/single_chan_pkt_fwd/
 if [ $# -eq 3 ]
@@ -72,17 +94,37 @@ fi
 
 if [ $# -eq 3 ]
 then
-echo "you are configuring for TTN, disabling Chirpstack containers for lighter version of WaziGate"
-echo "replacing /var/lib/wazigate/docker-compose.yml by /home/pi/wazigate/docker-compose.yml.ttn"
-sudo cp /home/pi/wazigate/docker-compose.yml.ttn /var/lib/wazigate/docker-compose.yml
+	echo "** for TTN *******************************"
+	echo "*** restart                              *"
+	echo "***   - waziup.wazigate-lora             *"
+	echo "***   - waziup.wazigate-lora.forwarders  *"
+	echo "*** Y/N ?                                *"
+	echo "******************************************"
+	read yesno
+
+	if [ "$yesno" = "y" ] || [ "$yesno" = "Y" ]
+	then
+		docker restart waziup.wazigate-lora
+		docker restart waziup.wazigate-lora.forwarders
+	fi
 else
-echo "you are configuring for regular WaziGate, enabling Chirpstack containers"
-echo "restoring /var/lib/wazigate/docker-compose.yml with /home/pi/wazigate/docker-compose.yml.orig"
-sudo cp /home/pi/wazigate/docker-compose.yml.orig /var/lib/wazigate/docker-compose.yml
+	echo "** for WaziGate **************************"
+	echo "*** restart all waziup.wazigate-lora     *"
+	echo "*** Y/N ?                                *"
+	echo "******************************************"
+	read yesno
+	
+	if [ "$yesno" = "y" ] || [ "$yesno" = "Y" ]
+	then
+		docker restart waziup.wazigate-lora
+		docker restart waziup.wazigate-lora.forwarders
+		docker restart waziup.wazigate-lora.chirpstack-gateway-bridge			
+		docker restart waziup.wazigate-lora.chirpstack-application-server
+		docker restart waziup.wazigate-lora.chirpstack-network-server	
+	fi
 fi
 
-echo "starting new container configuration"
-echo "issuing sudo docker-compose up --remove-orphans -d in /var/lib/wazigate"
-pushd /var/lib/wazigate
-sudo docker-compose up --remove-orphans -d
-popd
+echo "you can see logs from container with "
+echo "docker logs -f --tail 100 --timestamps container_name"
+echo "e.g. docker logs -f --tail 100 --timestamps waziup.wazigate-lora.forwarders"
+	
