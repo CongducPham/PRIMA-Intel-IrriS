@@ -39,11 +39,18 @@ You can download the Gerber zipped archive and view them on an [online Gerber vi
 
 - Arduino ProMini IRD PCB v4.1 for RFM95W/RFM96W zipped Gerber archive, 2 layer board of 30.89x79.5mm [.zip](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_4_1/Gerber_PCB4_1_IISS_2023_09_27.zip)
 
-The raw PCB will of course not have the additional electronic components. While it is possible to add these component manually, in practice it is not recommended as the components are small and manually soldering them is prone to errors. Instead, the fully assembled PCB with solar circuit can be ordered fully assembled from PCB manufacturers.
+The raw PCB will of course not have the additional electronic components. While it is possible to add these component manually, in practice it is not recommended as the components are small and manually soldering them is prone to errors. 
 
-You can download the BOM file to order the fully assembled board from PCB manufacturers. You can look at our tutorial on how to order PCB that are fully assembled by the manufacturer: [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs, including PCBA](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB-update-PCBA.pdf). 
+PCBA IRD v4.1
+----
+
+Instead, the fully assembled PCB (PCBA) with solar circuit can be ordered fully assembled from PCB manufacturers.
+
+You can download the BOM & CPL files to order the fully assembled board from PCB manufacturers. You can look at our tutorial on how to order PCB that are fully assembled by the manufacturer: [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs, including PCBA](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB-update-PCBA.pdf). 
 
 - Bill of Materiels (BOM) file for the IRD PCB v4.1 RFM95W 868 [.xls](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_4_1/BOM_SMT_TB_RFM95_868_IISS_PCB4_1_wH2.xlsx)
+
+- CPL file for the IRD PCB v4.1 [.csv](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_4_1/CPL.csv)
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ird-pcb-4-1-3D-top.png" width="400">
 
