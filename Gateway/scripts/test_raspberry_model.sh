@@ -43,6 +43,10 @@ elif [ "$board" = "17" ]
 	then
 		echo "You have a Raspberry 4B"
 		echo ">RPI4"
+elif [ "$board" = "20" ]
+	then
+		echo "You have a Raspberry Compute Module 4, using Raspberry 4 definition"
+		echo ">RPI4"		
 else
 	echo "Don't know, sorry"
 	echo ">NA"
