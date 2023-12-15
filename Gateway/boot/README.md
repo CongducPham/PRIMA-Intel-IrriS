@@ -43,7 +43,7 @@ The default configuration is to have the `Gateway/boot/create-starter-kit-demo-c
 
 - LoRaWAN mode (single channel)
 - Cayenne LPP data format
-- EU433 band (for Algeria and Morocco)
+- EU868 band (suitable for Algeria. For Morocco, need to use 433MHz, see Example 1)
 - 2 pre-configured devices with address 26011DAA and 26011DB1
 - 26011DAA is a soil humidity device with the capacitive SEN0308 sensor
 	- Device name is `SOIL-AREA-1`
@@ -70,29 +70,18 @@ Then, simply eject the `boot` drive, remove the SD card, insert it in your Raspb
 Other available configuration examples
 ===
 
-Example 1: set INTEL-IRRIS WaziGate in 868MHz version
+Example 1: set INTEL-IRRIS WaziGate in 433MHz version
 -----------
 
 - flash the INTEL-IRRIS WaziGate SD card image
 - insert the SD card in any computer (Windows, Linux, MacOS)
 - open the `boot` drive that should appear on your computer
-- download from INTEL-IRRIS GitHub (`Gateway/boot`) `intel-irris-band-868.txt` to be copied into the `boot` drive **BUT RENAMED** as `intel-irris-band.txt`
+- download from INTEL-IRRIS GitHub (`Gateway/boot`) `intel-irris-band-433.txt` to be copied into the `boot` drive **BUT RENAMED** as `intel-irris-band.txt`
 - be sure that there is no `intel-irris-auto-config.done` file in the `boot` drive, otherwise delete the file
 - safely eject the `boot` drive
 - insert the SD card in the RPI and power the RPI
 
-Example 2: have the INTEL-IRRIS WaziGate working with a Watermark-based device
------------
-
-- flash the INTEL-IRRIS WaziGate SD card image
-- insert the SD card in any computer (Windows, Linux, MacOS)
-- open the `boot` drive that should appear on your computer
-- download from INTEL-IRRIS GitHub (`Gateway/boot`) `create-default-watermark/intel-irris-auto-config.sh` to be copied into the `boot` drive (keep same file name)
-- be sure that there is no `intel-irris-auto-config.done` file in the `boot` drive, otherwise delete the file
-- safely eject the `boot` drive
-- insert the SD card in the RPI and power the RPI
-
-Example 3: have the INTEL-IRRIS WaziGate working with 4 Watermark-based devices
+Example 2: have the INTEL-IRRIS WaziGate working with 4 Watermark-based devices
 -----------
 
 - flash the INTEL-IRRIS WaziGate SD card image
@@ -103,7 +92,7 @@ Example 3: have the INTEL-IRRIS WaziGate working with 4 Watermark-based devices
 - safely eject the `boot` drive
 - insert the SD card in the RPI and power the RPI
 
-Example 4: have the INTEL-IRRIS WaziGate working with a customized setting
+Example 3: have the INTEL-IRRIS WaziGate working with a customized setting
 -----------
 
 - flash the INTEL-IRRIS WaziGate SD card image
@@ -115,18 +104,6 @@ Example 4: have the INTEL-IRRIS WaziGate working with a customized setting
 - be sure that there is no `intel-irris-auto-config.done` file in the `boot` drive, otherwise delete the file
 - safely eject the `boot` drive
 - insert the SD card in the RPI and power the RPI
-
-Example 5: have the INTEL-IRRIS WaziGate working with a Watermark-based device + 1 soil temperature sensor
------------
-
-- flash the INTEL-IRRIS WaziGate SD card image
-- insert the SD card in any computer (Windows, Linux, MacOS)
-- open the `boot` drive that should appear on your computer
-- download from INTEL-IRRIS GitHub (`Gateway/boot`) `create-default-watermark-st/intel-irris-auto-config.sh` to be copied into the `boot` drive (keep same file name)
-- be sure that there is no `intel-irris-auto-config.done` file in the `boot` drive, otherwise delete the file
-- safely eject the `boot` drive
-- insert the SD card in the RPI and power the RPI
-
 
 Enjoy!
 C. Pham

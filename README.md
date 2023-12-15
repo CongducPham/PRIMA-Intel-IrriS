@@ -18,14 +18,14 @@ The INTEL-IRRIS gateway part is based on the [WaziGate](https://github.com/Waziu
 
 The WaziGate generic framework is enhanced with INTEL-IRRIS specific UI and irrigation data processing. These additional contributions are in the `Gateway` folder **but the SD card image has already everything installed**.
 
-The INTEL-IRRIS WaziGate SD card image is available on [http://intel-irris.eu/results](http://intel-irris.eu/results). It is configured by default for 433MHz frequency band. To use 868MHz frequency band, see the [868MHz auto-configuration mechanism](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway/boot#example-1-set-intel-irris-wazigate-in-868mhz-version).
+The INTEL-IRRIS WaziGate SD card image is available on [http://intel-irris.eu/results](http://intel-irris.eu/results). It is configured by default for 868MHz frequency band. To use 433MHz frequency band, see the [433MHz auto-configuration mechanism](https://github.com/CongducPham/PRIMA-Intel-IrriS/tree/main/Gateway/boot#example-1-set-intel-irris-wazigate-in-433mhz-version).
 
 Default configuration for the gateway
 ---
 
 - LoRaWAN mode (single channel)
 - Cayenne LPP data format
-- EU433 band (for Algeria and Morocco)
+- EU868 band (suitable for Algeria. For Morocco, need to use 433MHz)
 - 2 pre-configured devices with address 26011DAA and 26011DB1
 - 26011DAA is a soil humidity device with the capacitive SEN0308 sensor
 	- Device name is `SOIL-AREA-1`

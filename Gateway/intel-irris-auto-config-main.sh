@@ -64,7 +64,7 @@ else
 		cd /home/pi/scripts	
 		BAND=`cat /boot/intel-irris-band.txt`
 		echo "Configuring for $BAND" >> /boot/intel-irris-auto-config.log
-		./config_band.sh $BAND
+		./config_band.sh $BAND < ./test_input_no.txt
 		echo "auto-configuration for frequency band done" >> /boot/intel-irris-auto-config.done	
 		REBOOT="yes"
 	else
