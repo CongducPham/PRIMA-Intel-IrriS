@@ -6,7 +6,7 @@ After=network.target wazigate.service
 
 [Service]
 Type=oneshot
-ExecStartPre=-/bin/sleep 240
+ExecStartPre=-/bin/sleep 120
 ExecStart=python /home/pi/oled/oled-service.py
 Restart=on-failure
 

@@ -4,6 +4,10 @@ echo "--> Installing Python packages for OLED support"
 sudo pip3 install adafruit-circuitpython-ssd1306
 sudo apt-get --yes --force-yes install python3-pil
 
+#on RPI5
+#sudo apt install python3-libgpiod
+#sudo pip3 install --upgrade adafruit-blinka adafruit-platformdetect
+
 echo "--> Installing Python packages for QR code support"
 sudo pip3 install pyqrcode
 sudo pip3 install pypng

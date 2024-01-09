@@ -51,9 +51,14 @@ do
   echo "--> create_full_capacitive_device_with_dev_addr.sh $i ${capas[$i-1]}" >> /boot/intel-irris-auto-config.log
   ./create_full_capacitive_device_with_dev_addr.sh $i ${capas[$i-1]}
 
-  #add the voltage monitor sensor
   DEVICE=`cat /home/pi/scripts/LAST_CREATED_DEVICE.txt`
   echo "--> created device is $DEVICE" >> /boot/intel-irris-auto-config.log
+  
+	#add the temperature sensor
+	echo "--> calling create_only_temperature_sensor.sh $DEVICE"
+	./create_only_temperature_sensor.sh $DEVICE
+
+  #add the voltage monitor sensor
   echo "--> calling create_only_voltage_monitor_sensor.sh $DEVICE" >> /boot/intel-irris-auto-config.log 
   ./create_only_voltage_monitor_sensor.sh $DEVICE
 
