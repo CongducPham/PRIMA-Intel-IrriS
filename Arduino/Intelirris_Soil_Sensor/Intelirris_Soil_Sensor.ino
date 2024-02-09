@@ -52,10 +52,10 @@
 ////////////////////////////////////////////////////////////////////
 // Frequency band - do not change in SX12XX_RadioSettings.h anymore
 // if using a native LoRaWAN module such as RAK3172, also select band in RadioSettings.h
-//#define EU868
+#define EU868
 //#define AU915 
-#define EU433
-//#define AS923-2
+//#define EU433
+//#define AS923_2
 
 ////////////////////////////
 //uncomment to use a customized frequency.
@@ -1821,29 +1821,40 @@ void measure_and_send( void)
       for (int i=0; i<number_of_sensors; i++) {
         //there might be specific post-init operations for some sensors
         sensor_ptrs[i]->post_init();   
-      }      
-
-#if defined IRD_PCB && defined SOLAR_BAT && defined TRANSMIT_VOLTAGE
-#if defined USE_XLPP || defined USE_LPP
-      lpp.addAnalogInput(6, (float) last_v_bat / 1000.0);
-#ifdef NIMH
-      //lpp.addAnalogInput(7, (float) v_bat / 1000.0);   // volt
-#else
-      //lpp.addAnalogInput(7, (float) v_bat / 1000.0);   // volt pour test
-      //lpp.addAnalogInput(7, (float) bat_level(v_bat)); // percent for lithium
-#endif
-#endif
-#endif
+      }
 
 #ifdef MONITOR_BAT_VOLTAGE
 #if defined USE_XLPP || defined USE_LPP
-//here we transmit last_vcc, measured from last transmission cycle
-#if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE      
-        lpp.addAnalogInput(6, last_vcc);
+//here we transmit the last measured vcc, measured from last transmission cycle
+#if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE
+  #if (defined IRD_PCB && defined SOLAR_BAT)
+      PRINT_CSTSTR("Adding battery voltage (IRD_PCBA: ");
+      if (last_v_bat==0)
+        last_v_bat=v_bat;
+      PRINTLN_VALUE("%f", (float) last_v_bat / 1000.0);
+      lpp.addAnalogInput(6, (float) last_v_bat / 1000.0);
+      #ifdef NIMH
+      //lpp.addAnalogInput(7, (float) v_bat / 1000.0);   // volt
+      #else
+      //lpp.addAnalogInput(7, (float) v_bat / 1000.0);   // volt pour test
+      //lpp.addAnalogInput(7, (float) bat_level(v_bat)); // percent for lithium
+      #endif
+  #else     
+      lpp.addAnalogInput(6, last_vcc);
+      PRINTLN_VALUE("%f", last_vcc);
+  #endif      
 #elif defined TRANSMIT_VOLTAGE
+  #if (defined IRD_PCB && defined SOLAR_BAT)
+      if (last_v_bat==0)
+        last_v_bat=v_bat;
+      if (last_v_bat < VCC_LOW) {
+        lpp.addAnalogInput(6, last_v_bat);
+      }
+  #else
       if (last_vcc < VCC_LOW) {
         lpp.addAnalogInput(6, last_vcc);
       }
+  #endif    
 #endif      
 #endif
 #endif
