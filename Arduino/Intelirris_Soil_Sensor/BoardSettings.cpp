@@ -5,7 +5,7 @@
 
 #include "BoardSettings.h"
 
-#if defined IRD_PCB && defined SOLAR_BAT
+#if (defined IRD_PCB && defined SOLAR_BAT) || defined IRD_PCBA
 
 // increase soft start C4 R13 500 us
 //

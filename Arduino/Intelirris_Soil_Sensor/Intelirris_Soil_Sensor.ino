@@ -19,7 +19,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Oct. 10th, 2023 by C. Pham
+ * last update: Feb. 19th, 2024 by C. Pham
  * 
  * NEW: Support native LoRaWAN module RAK3172 with AT commands
  * 
@@ -1028,7 +1028,7 @@ void setup() {
 #ifdef WAZISENSE  
   //it is because the soil temp is attached to a mosfet sensor pin
   sensor_ptrs[sensor_index]->set_warmup_time(1500);
-#endif      
+#endif
   soil_temp_sensor_index=sensor_index;
   sensor_index++;
 #endif

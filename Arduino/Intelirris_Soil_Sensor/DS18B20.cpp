@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016-2023 Congduc Pham, University of Pau, France
+* Copyright (C) 2016-2024 Congduc Pham, University of Pau, France
 *
 * Congduc.Pham@univ-pau.fr
 */
@@ -20,7 +20,7 @@ DS18B20::DS18B20(const char* nomenclature, bool is_analog, bool is_connected, bo
 			if (get_is_low_power())
        	digitalWrite(get_pin_power(), PWR_LOW);
     	else
-#if defined IRD_PCB && defined SOLAR_BAT
+#if (defined IRD_PCB && defined SOLAR_BAT) || defined IRD_PCBA
         power_soft_start(get_pin_power());
 #else
 				digitalWrite(get_pin_power(), PWR_HIGH);
@@ -46,7 +46,7 @@ void DS18B20::update_data()
   	
     // if we use a digital pin to power the sensor...
     if (get_is_low_power())
-#if defined IRD_PCB && defined SOLAR_BAT
+#if (defined IRD_PCB && defined SOLAR_BAT) || defined IRD_PCBA
       power_soft_start(get_pin_power());
 #else
     	digitalWrite(get_pin_power(),HIGH);  	
