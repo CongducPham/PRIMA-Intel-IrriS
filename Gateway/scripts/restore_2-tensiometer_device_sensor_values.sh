@@ -210,8 +210,9 @@ NFILE=`ls -l $3.tensiometer.temperatureSensor_0.data_split* | wc -l`
 
 for (( i = 0; i < $NFILE; i++ ))
 do
-	echo "--> Get temperatureSensor_0 sensor's values from $3.tensiometer.temperatureSensor_0.data_split_${i}.json"
-	DATA=`cat $3.tensiometer.temperatureSensor_0.data_split_${i}.json`
+	sn=$(printf "%03d" $i)
+	echo "--> Get temperatureSensor_0 sensor's values from $3.tensiometer.temperatureSensor_0.data_split_${sn}.json"
+	DATA=`cat $3.tensiometer.temperatureSensor_0.data_split_${sn}.json`
 
 	echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_0"
 	curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_0/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
@@ -224,8 +225,9 @@ NFILE=`ls -l $3.tensiometer.temperatureSensor_1.data_split* | wc -l`
 
 for (( i = 0; i < $NFILE; i++ ))
 do
-	echo "--> Get temperatureSensor_1 sensor's values from $3.tensiometer.temperatureSensor_1.data_split_${i}.json"
-	DATA=`cat $3.tensiometer.temperatureSensor_1.data_split_${i}.json`
+	sn=$(printf "%03d" $i)
+	echo "--> Get temperatureSensor_1 sensor's values from $3.tensiometer.temperatureSensor_1.data_split_${sn}.json"
+	DATA=`cat $3.tensiometer.temperatureSensor_1.data_split_${sn}.json`
 
 	echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_1"
 	curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_1/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
@@ -237,8 +239,9 @@ NFILE=`ls -l $3.tensiometer.temperatureSensor_2.data_split* | wc -l`
 
 for (( i = 0; i < $NFILE; i++ ))
 do
-  echo "--> Get temperatureSensor_2 sensor's values from $3.tensiometer.temperatureSensor_2.data_split_${i}.json"
-  DATA=`cat $3.tensiometer.temperatureSensor_2.data_split_${i}.json`
+  sn=$(printf "%03d" $i)
+  echo "--> Get temperatureSensor_2 sensor's values from $3.tensiometer.temperatureSensor_2.data_split_${sn}.json"
+  DATA=`cat $3.tensiometer.temperatureSensor_2.data_split_${sn}.json`
 
   echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_2"
   curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_2/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"  
@@ -251,8 +254,9 @@ NFILE=`ls -l $3.tensiometer.temperatureSensor_3.data_split* | wc -l`
 
 for (( i = 0; i < $NFILE; i++ ))
 do
-  echo "--> Get temperatureSensor_3 sensor's values from $3.tensiometer.temperatureSensor_3.data_split_${i}.json"
-  DATA=`cat $3.tensiometer.temperatureSensor_3.data_split_${i}.json`
+  sn=$(printf "%03d" $i)
+  echo "--> Get temperatureSensor_3 sensor's values from $3.tensiometer.temperatureSensor_3.data_split_${sn}.json"
+  DATA=`cat $3.tensiometer.temperatureSensor_3.data_split_${sn}.json`
 
   echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_3"
   curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_3/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"  
@@ -292,8 +296,9 @@ if [ -f "$3.tensiometer.temperatureSensor_5.data.json" ]; then
 
 	for (( i = 0; i < $NFILE; i++ ))
 	do
-		echo "--> Get temperatureSensor_5 sensor's values from $3.tensiometer.temperatureSensor_5.data_split_${i}.json"
-		DATA=`cat $3.tensiometer.temperatureSensor_5.data_split_${i}.json`
+		sn=$(printf "%03d" $i)
+		echo "--> Get temperatureSensor_5 sensor's values from $3.tensiometer.temperatureSensor_5.data_split_${sn}.json"
+		DATA=`cat $3.tensiometer.temperatureSensor_5.data_split_${sn}.json`
 
 		echo "--> Set sensor's values to device $DEVICE sensor temperatureSensor_5"
 		curl -X POST "http://localhost/devices/${DEVICE}/sensors/temperatureSensor_5/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
@@ -335,8 +340,9 @@ if [ -f "$3.tensiometer.analogInput_6.data.json" ]; then
 
 	for (( i = 0; i < $NFILE; i++ ))
 	do
-		echo "--> Get analogInput_6 sensor's values from $3.tensiometer.analogInput_6.data_split_${i}.json"
-		DATA=`cat $3.tensiometer.analogInput_6.data_split_${i}.json`
+		sn=$(printf "%03d" $i)
+		echo "--> Get analogInput_6 sensor's values from $3.tensiometer.analogInput_6.data_split_${sn}.json"
+		DATA=`cat $3.tensiometer.analogInput_6.data_split_${sn}.json`
 
 		echo "--> Set sensor's values to device $DEVICE sensor analogInput_6"
 		curl -X POST "http://localhost/devices/${DEVICE}/sensors/analogInput_6/values" -H  "accept: application/json" -H "Authorization: Bearer $TOK" -d "$DATA"	
