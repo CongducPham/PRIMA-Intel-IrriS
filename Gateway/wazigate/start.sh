@@ -99,6 +99,11 @@ log 4 "Starting docker containers: "
 # Start containers
 docker-compose up -d
 
+#for IIIWA and HA
+cd /var/lib/wazigate/apps/intel-irris-waziapp/
+docker-compose up -d
+cd /opt
+docker-compose up -d
 ################################################################################
 
 log 5 "Set time: "
