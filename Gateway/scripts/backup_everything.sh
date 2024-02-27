@@ -3,7 +3,7 @@
 # Ex: backup_everything.sh
 # this script backups all devices to sensor-backup folder, including their IIWA configuration
 # if an argument is provided, the scripts will try to copy backup files to USB drive
-# normally USB drive is /dev/sda1
+# normally USB drive is /dev/sda1, but the script looks for any unmounted mount point
 # Ex: backup_everything.sh tousbdrive
 
 cd /home/pi/sensor-backup
@@ -55,8 +55,9 @@ done
 #Ex: backup_everything.sh tousbdrive
 if [ $# -eq 1 ]
 then
+	MOUNTPOINT=`sudo blkid -o list | grep "not mounted" | awk -F'[ ]' '{print $1}'`
 	echo "mounting USB drive to /media for pi user" >> sensor-backup.log
-	sudo mount -o uid=1000,gid=1000 /dev/sda1 /media
+	sudo mount -o uid=1000,gid=1000 $MOUNTPOINT /media
 	MOUNT_RET_CODE=$?
 	echo "mount return code is $MOUNT_RET_CODE" >> sensor-backup.log
 	if [ $MOUNT_RET_CODE -eq 0 ]
@@ -79,7 +80,7 @@ then
 		done
 		echo "unmounting USB drive at /media" >> sensor-backup.log
 	else
-		echo "could not mount /dev/sda1 to /media" >> sensor-backup.log
+		echo "could not mount $MOUNTPOINT to /media" >> sensor-backup.log
 		echo "trying to umount" >> sensor-backup.log
 	fi
 	cp sensor-backup.log /media/
