@@ -567,7 +567,9 @@ uint8_t low_voltage_indication = 0;
 uint8_t low_bat_counter = 0;             
 float last_vcc = 0.0;
 float current_vcc = 0.0;
-#endif
+uint16_t v_bat_tx = 0; // updated during TX, in mV
+float tx_vcc = 0.0; // float in V
+#endif // MONITOR_BAT_VOLTAGE
 
 #include "TempInternal.h"
 
@@ -602,7 +604,7 @@ float current_vcc = 0.0;
 
 uint16_t v_pv = 0;
 uint16_t v_bat = 0;
-uint16_t last_v_bat = 0;
+uint16_t last_v_bat = 0; // will also be updated during TX, instead of updating v_bat_tx
 uint16_t recovery_charging = 0;
 #endif // SOLAR_BAT
 
@@ -1462,6 +1464,15 @@ uint16_t solar_analogRead( void)
   return v;
 }
 
+uint16_t internal_read_volt( void)
+{
+  uint16_t v;
+  // v = ((uint16_t)(vcc.Read_Volts()*100))/100.0;
+  v = (uint16_t) (vcc.Read_Volts()*1000);
+  return v;
+}
+
+
 void manage_battery( uint8_t force_on)
 {
   static uint8_t v_state = STATE_MOSFETS_OFF;
@@ -1828,6 +1839,7 @@ void measure_and_send( void)
 //here we transmit the last measured vcc, measured from last transmission cycle
 #if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE
   #if (defined IRD_PCB && defined SOLAR_BAT)
+      // if SOLAR_BAT, the min battery voltage is transmitted
       PRINT_CSTSTR("Adding battery voltage (IRD_PCBA: ");
       if (last_v_bat==0)
         last_v_bat=v_bat;
@@ -1840,6 +1852,7 @@ void measure_and_send( void)
       //lpp.addAnalogInput(7, (float) bat_level(v_bat)); // percent for lithium
       #endif
   #else     
+      //here we transmit the voltage measured right after TX, not the voltage measured during TX
       lpp.addAnalogInput(6, last_vcc);
       PRINTLN_VALUE("%f", last_vcc);
   #endif      
@@ -1847,8 +1860,8 @@ void measure_and_send( void)
   #if (defined IRD_PCB && defined SOLAR_BAT)
       if (last_v_bat==0)
         last_v_bat=v_bat;
-      if (last_v_bat < VCC_LOW) {
-        lpp.addAnalogInput(6, last_v_bat);
+      if ((float) last_v_bat / 1000.0 < VCC_LOW) {
+        lpp.addAnalogInput(6, (float) last_v_bat / 1000.0);
       }
   #else
       if (last_vcc < VCC_LOW) {
@@ -1972,18 +1985,24 @@ void measure_and_send( void)
 #if defined USE_XLPP
 #if defined IRD_PCB && defined SOLAR_BAT
       if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
+#elif defined MONITOR_BAT_VOLTAGE
+      if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &v_bat_tx))
 #else
       if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX))
 #endif      
 #elif defined USE_LPP 
 #if defined IRD_PCB && defined SOLAR_BAT
       if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
+#elif defined MONITOR_BAT_VOLTAGE
+      if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &v_bat_tx))
 #else
       if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX))
 #endif      
 #else
 #if defined IRD_PCB && defined SOLAR_BAT
       if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
+#elif defined MONITOR_BAT_VOLTAGE
+      if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &v_bat_tx))
 #else      
       if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX))
 #endif      
@@ -2066,7 +2085,7 @@ void measure_and_send( void)
 #endif      
 
 #if defined IRD_PCB && defined SOLAR_BAT
-      manage_battery( PANEL_ON); // last_v_bat is read in LT.transmit if modified in library
+      manage_battery( PANEL_ON); // last_v_bat is updated in LT.transmit if modified in library
 #endif        
       }
 
@@ -2390,20 +2409,27 @@ void loop(void)
 #elif defined MONITOR_BAT_VOLTAGE        
 
       current_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.0;
+      tx_vcc = (double)(v_bat_tx)/1000.0;
 
       PRINT_CSTSTR("BATTERY-->");
-      PRINT_VALUE("%f", current_vcc);
+      PRINT_VALUE("%f", current_vcc); //now, right after sleep
       PRINT_CSTSTR(" | ");
-      PRINTLN_VALUE("%f", last_vcc);      
+      PRINTLN_VALUE("%f", last_vcc); //right after last transmit
+
+      PRINT_CSTSTR("BATT_TX-->");
+      PRINTLN_VALUE("%f", tx_vcc); //updated during last transmit
+
 
 #ifdef BYPASS_LOW_BAT
       measure_and_send();
 #else      
-      if (current_vcc < VCC_LOW || last_vcc < VCC_LOW) {
+      if (current_vcc < VCC_LOW || last_vcc < VCC_LOW || tx_vcc < VCC_LOW) {
         PRINT_CSTSTR("!LOW BATTERY-->");
         PRINT_VALUE("%f", current_vcc);
         PRINT_CSTSTR(" | ");
-        PRINTLN_VALUE("%f", last_vcc);
+        PRINT_VALUE("%f", last_vcc);
+        PRINT_CSTSTR(" | ");
+        PRINTLN_VALUE("%f", tx_vcc);
         
         PRINT_CSTSTR("low_voltage_indication=");
         PRINTLN_VALUE("%d", low_voltage_indication);
