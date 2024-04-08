@@ -567,7 +567,7 @@ uint8_t low_voltage_indication = 0;
 uint8_t low_bat_counter = 0;             
 float last_vcc = 0.0;
 float current_vcc = 0.0;
-uint16_t tx_v_bat = 0; // updated during TX, in mV
+uint16_t tx_v_bat = 8000; // updated during TX, in mV. Default 8000 for the first cycle
 float tx_vcc = 0.0; // float in V
 #endif // MONITOR_BAT_VOLTAGE
 
@@ -1415,7 +1415,7 @@ void setup() {
   idlePeriodInMin=1;
 #endif
 
-  // check batterie first time
+  // check batteries first time
   current_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.00;
   //initialized last_vcc on boot
   last_vcc = current_vcc;
@@ -1445,6 +1445,17 @@ void setup() {
 #endif  
 }
 
+#ifdef MONITOR_BAT_VOLTAGE
+uint16_t internal_read_volt( void)
+{
+  uint16_t v;
+  // v = ((uint16_t)(vcc.Read_Volts()*100))/100.0;
+  v = (uint16_t) (vcc.Read_Volts()*1000);
+  return v;
+}
+#endif  
+
+
 #if defined IRD_PCB && defined SOLAR_BAT
 // read micro controler temperature
 #define TEMP_INTERNAL  
@@ -1463,15 +1474,6 @@ uint16_t solar_analogRead( void)
 
   return v;
 }
-
-uint16_t internal_read_volt( void)
-{
-  uint16_t v;
-  // v = ((uint16_t)(vcc.Read_Volts()*100))/100.0;
-  v = (uint16_t) (vcc.Read_Volts()*1000);
-  return v;
-}
-
 
 void manage_battery( uint8_t force_on)
 {
@@ -2447,24 +2449,28 @@ void loop(void)
         else {
           //we already got the 3 transmissions at normal time interval, so now we increase transmission interval
           //increase transmission time to 4 hours when low voltage, if it is smaller than 4 hours            
-          if (idlePeriodInMin < 240)
-            PRINTLN_CSTSTR("Set nextTransmissionTime to 4h");             
+          if (idlePeriodInMin < 240) {
 #ifdef TEST_LOW_BAT
+            PRINTLN_CSTSTR("Set/keep nextTransmissionTime to 4min approx");
           //for testing, we use idlePeriodInMin=1min so new transmission time interval is 4mins
           //if the board reboots righ after transmission, then it will actually be 3mins
           //as the initial idlePeriodInMin would be missing                          
           nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR - (unsigned long)idlePeriodInMin) * 60 * 1000;
 #else
+            PRINTLN_CSTSTR("Set/keep nextTransmissionTime to 4h");
           //otherwise, it is increased to 4 hours
           //however, if the board reboots righ after transmission, then it will actually be 3h
           //as the initial idlePeriodInMin would be missing
           nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR * 60 - (unsigned long)idlePeriodInMin) * 60 * 1000;
 #endif            
+          }
         }
       }
 
-      if (last_vcc > VCC_LOW || low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {        
+      // if battery is OK, or if transmission time interval has already been increased   
+      if (last_vcc > VCC_LOW || low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {   
       
+        //if battery is OK (e.g. after a while) => reset
         if (low_voltage_indication && last_vcc > VCC_LOW) {
           low_voltage_indication = 0;
 #ifdef WITH_EEPROM
@@ -2475,11 +2481,11 @@ void loop(void)
         }
         measure_and_send();
       }
-#endif
+#endif //BYPASS_LOW_BAT
 #else
       measure_and_send();
-#endif
-#endif
+#endif //MONITOR_BAT_VOLTAGE
+#endif //LOW_POWER
 
 ///////////////////////////////////////////////////////////////////
 // LOW-POWER BLOCK - DO NOT EDIT
