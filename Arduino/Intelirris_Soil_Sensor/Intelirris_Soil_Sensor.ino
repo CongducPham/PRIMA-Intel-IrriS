@@ -19,7 +19,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Feb. 19th, 2024 by C. Pham
+ * last update: Apr. 8th, 2024 by C. Pham & Guillaume Gaillard
  * 
  * NEW: Support native LoRaWAN module RAK3172 with AT commands
  * 
@@ -567,7 +567,7 @@ uint8_t low_voltage_indication = 0;
 uint8_t low_bat_counter = 0;             
 float last_vcc = 0.0;
 float current_vcc = 0.0;
-uint16_t v_bat_tx = 0; // updated during TX, in mV
+uint16_t tx_v_bat = 0; // updated during TX, in mV
 float tx_vcc = 0.0; // float in V
 #endif // MONITOR_BAT_VOLTAGE
 
@@ -604,7 +604,7 @@ float tx_vcc = 0.0; // float in V
 
 uint16_t v_pv = 0;
 uint16_t v_bat = 0;
-uint16_t last_v_bat = 0; // will also be updated during TX, instead of updating v_bat_tx
+uint16_t last_v_bat = 0; // will also be updated during TX, instead of updating tx_v_bat
 uint16_t recovery_charging = 0;
 #endif // SOLAR_BAT
 
@@ -1308,7 +1308,7 @@ void setup() {
 #endif
     //when low voltage is detected, the device will still measure and transmit to indicate the low voltage
     //it will do so MAX_LOW_VOLTAGE_INDICATION times and this will be indicated in the low_voltage_indication
-    //variable saved in EEPROM
+    //variable saved in EEPROM, in order to try (not perfect solution) to handle the case where the microcontroller reboots
     low_voltage_indication=my_nodeConfig.low_voltage_indication;     
 
 #ifdef FORCE_DEFAULT_VALUE
@@ -1986,7 +1986,7 @@ void measure_and_send( void)
 #if defined IRD_PCB && defined SOLAR_BAT
       if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
 #elif defined MONITOR_BAT_VOLTAGE
-      if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &v_bat_tx))
+      if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &tx_v_bat))
 #else
       if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX))
 #endif      
@@ -1994,7 +1994,7 @@ void measure_and_send( void)
 #if defined IRD_PCB && defined SOLAR_BAT
       if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
 #elif defined MONITOR_BAT_VOLTAGE
-      if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &v_bat_tx))
+      if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &tx_v_bat))
 #else
       if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX))
 #endif      
@@ -2002,7 +2002,7 @@ void measure_and_send( void)
 #if defined IRD_PCB && defined SOLAR_BAT
       if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
 #elif defined MONITOR_BAT_VOLTAGE
-      if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &v_bat_tx))
+      if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &tx_v_bat))
 #else      
       if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX))
 #endif      
@@ -2409,7 +2409,7 @@ void loop(void)
 #elif defined MONITOR_BAT_VOLTAGE        
 
       current_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.0;
-      tx_vcc = (double)(v_bat_tx)/1000.0;
+      tx_vcc = (double)(tx_v_bat)/1000.0;
 
       PRINT_CSTSTR("BATTERY-->");
       PRINT_VALUE("%f", current_vcc); //now, right after sleep
@@ -2435,8 +2435,8 @@ void loop(void)
         PRINTLN_VALUE("%d", low_voltage_indication);
     
         if (low_voltage_indication < MAX_LOW_VOLTAGE_INDICATION) {
-          //we will still measure and transmit 3 times to warn end-user as soon as possible
-          //and overcome possible packet transmission losses
+          //we will still measure and transmit 3 times at normal time interval to warn end-user
+          // as soon as possible and overcome possible packet transmission losses
           low_voltage_indication++;
 #ifdef WITH_EEPROM
           // save new low_voltage_indication
@@ -2445,49 +2445,32 @@ void loop(void)
 #endif          
         }
         else {
-
-          if (low_bat_counter++==0) { 
-            //increase transmission time to 4 hours when low voltage, if it is smaller than 4 hours            
-            if (idlePeriodInMin < 240)
-              PRINTLN_CSTSTR("Set nextTransmissionTime to 4h");             
+          //we already got the 3 transmissions at normal time interval, so now we increase transmission interval
+          //increase transmission time to 4 hours when low voltage, if it is smaller than 4 hours            
+          if (idlePeriodInMin < 240)
+            PRINTLN_CSTSTR("Set nextTransmissionTime to 4h");             
 #ifdef TEST_LOW_BAT
-              //for testing, we use idlePeriodInMin=1min so new transmission time interval is 4mins
-              //if the board reboots righ after transmission, then it will actually be 3mins
-              //as the initial idlePeriodInMin would be missing                          
-              nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR - (unsigned long)idlePeriodInMin) * 60 * 1000;
+          //for testing, we use idlePeriodInMin=1min so new transmission time interval is 4mins
+          //if the board reboots righ after transmission, then it will actually be 3mins
+          //as the initial idlePeriodInMin would be missing                          
+          nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR - (unsigned long)idlePeriodInMin) * 60 * 1000;
 #else
-              //otherwise, it is increased to 4 hours
-              //if the board reboots righ after transmission, then it will actually be 3h
-              //as the initial idlePeriodInMin would be missing
-              nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR * 60 - (unsigned long)idlePeriodInMin) * 60 * 1000;
-#endif
-            PRINT_CSTSTR("low_bat_counter=");
-            PRINTLN_VALUE("%d", low_bat_counter);   
-          }       
+          //otherwise, it is increased to 4 hours
+          //however, if the board reboots righ after transmission, then it will actually be 3h
+          //as the initial idlePeriodInMin would be missing
+          nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR * 60 - (unsigned long)idlePeriodInMin) * 60 * 1000;
+#endif            
         }
       }
 
-      if (last_vcc > VCC_LOW || low_bat_counter==2 || low_voltage_indication <= MAX_LOW_VOLTAGE_INDICATION) {
-        if (low_bat_counter==2) {
-          PRINTLN_CSTSTR("Force measure and transmission");
-          low_bat_counter=0;
-        }
-
-        //disable low_voltage_indication
-        if (low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {
-          low_voltage_indication = MAX_LOW_VOLTAGE_INDICATION+1;
-#ifdef WITH_EEPROM
-          // set new low_voltage_indication
-          my_nodeConfig.low_voltage_indication=low_voltage_indication;
-          EEPROM.put(0, my_nodeConfig);
-#endif          
-        }          
-        
+      if (last_vcc > VCC_LOW || low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {        
+      
         if (low_voltage_indication && last_vcc > VCC_LOW) {
+          low_voltage_indication = 0;
 #ifdef WITH_EEPROM
           // reset low_voltage_indication
-          my_nodeConfig.low_voltage_indication=0;
-          EEPROM.put(0, my_nodeConfig);
+          my_nodeConfig.low_voltage_indication = low_voltage_indication;
+          EEPROM.put(0, my_nodeConfig); 
 #endif                 
         }
         measure_and_send();
