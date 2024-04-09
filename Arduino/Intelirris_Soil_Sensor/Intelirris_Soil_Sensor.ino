@@ -1856,6 +1856,10 @@ void measure_and_send( void)
   #else     
       //here we transmit the voltage measured right after TX, not the voltage measured during TX
       lpp.addAnalogInput(6, last_vcc);
+    #ifdef TEST_LOW_BAT
+      lpp.addAnalogInput(10, tx_vcc);
+      lpp.addAnalogInput(11, current_vcc);
+    #endif
       PRINTLN_VALUE("%f", last_vcc);
   #endif      
 #elif defined TRANSMIT_VOLTAGE
