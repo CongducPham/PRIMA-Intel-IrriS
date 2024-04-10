@@ -1471,7 +1471,8 @@ uint16_t solar_analogRead( void)
 
 void manage_battery( uint8_t force_on)
 {
-  static uint8_t v_state = STATE_MOSFETS_OFF; // TODO: move this declaration outside manage_battery, otherwise v_state will always be OFF (0)
+  static uint8_t v_state = STATE_MOSFETS_OFF; // static declaration allow further update inside manage_battery
+  
   #ifdef TEMP_INTERNAL
   int8_t tempInternal;
 
