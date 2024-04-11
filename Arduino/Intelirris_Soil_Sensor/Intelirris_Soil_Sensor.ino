@@ -519,7 +519,7 @@ uint32_t TXPacketCount=0;
 //
 // low voltage mode is applied when the battary voltage falls below VCC_LOW
 // once detected, the device will keep MAX_LOW_VOLTAGE_INDICATION=3 normal operation cycle
-// then, it will increase the measure & transmission time interval to LOW_VOLTAGE_IDLE_PERIOD_HOUR=4 hours
+// then, it will increase the measure & transmission time interval to LOW_VOLTAGE_IDLE_PERIOD_FACTOR=4 hours
 // the mechanism prevents the ATMega328P microcontroller to reboot constantly
 // the battery voltage is transmitted to the gateway and appears on the dashboard so that
 // end-user can be warned of low voltage on the deployed device
@@ -556,8 +556,8 @@ Vcc vcc(VccCorrection);
   // how many times we keep normal measure & transmission interval before switching in low voltage mode
   #define MAX_LOW_VOLTAGE_INDICATION 3
 
-  // the new measure & transmission time interval for low voltage mode
-  #define LOW_VOLTAGE_IDLE_PERIOD_HOUR 4
+  // the factor for new measure & transmission time interval for low voltage mode
+  #define LOW_VOLTAGE_IDLE_PERIOD_FACTOR 4
 
   #ifndef VCC_LOW
     #ifdef WITH_WATERMARK
@@ -2433,7 +2433,9 @@ void loop(void)
     #ifdef BYPASS_LOW_BAT
     measure_and_send();
     #else
-    if (current_vcc < VCC_LOW || last_vcc < VCC_LOW || tx_vcc < VCC_LOW) {
+
+    bool battery_low = (current_vcc < VCC_LOW || last_vcc < VCC_LOW || tx_vcc < VCC_LOW);
+    if (battery_low) {
       PRINT_CSTSTR("!LOW BATTERY-->");
       PRINT_VALUE("%f", current_vcc);
       PRINT_CSTSTR(" | ");
@@ -2445,7 +2447,7 @@ void loop(void)
       PRINTLN_VALUE("%d", low_voltage_indication);
 
       if (low_voltage_indication < MAX_LOW_VOLTAGE_INDICATION) {
-        // we will still measure and transmit 3 times at normal time interval to warn end-user
+        // we will still measure and transmit a given number of times (MAX_LOW_VOLTAGE_INDICATION) at normal time interval to warn end-user
         // as soon as possible and overcome possible packet transmission losses
         low_voltage_indication++;
       #ifdef WITH_EEPROM
@@ -2454,41 +2456,27 @@ void loop(void)
         EEPROM.put(0, my_nodeConfig);
       #endif
       }
-      else {
-        // we already got the 3 transmissions at normal time interval, so now we increase transmission interval
-        // time to 4 hours when low voltage, unless it was already chosen greater than 4 hours
+      // we already got enough transmissions at normal time interval, so now we increase transmission interval
+      // time given number of times (LOW_VOLTAGE_IDLE_PERIOD_FACTOR), no more and unless it was already chosen greater than 4 hours
+      if (low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {
         if (idlePeriodInMin < 240) {
-      #ifdef TEST_LOW_BAT
-          PRINTLN_CSTSTR("Set/keep nextTransmissionTime to 4min approx");
-          // for testing, we use idlePeriodInMin=1min so new transmission time interval is 4mins
-          // if the board reboots righ after transmission, then it will actually be 3mins
-          // as the initial idlePeriodInMin would be missing
-          nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR - (unsigned long)idlePeriodInMin) * 60 * 1000;
-      #else
-          PRINTLN_CSTSTR("Set/keep nextTransmissionTime to 4h");
-          // otherwise, it is increased to 4 hours
-          // however, if the board reboots righ after transmission, then it will actually be 3h
-          // as the initial idlePeriodInMin would be missing
-          nextTransmissionTime = millis() + (LOW_VOLTAGE_IDLE_PERIOD_HOUR * 60 - (unsigned long)idlePeriodInMin) * 60 * 1000;
-      #endif
+          nextTransmissionTime = min( (unsigned long) 240, (LOW_VOLTAGE_IDLE_PERIOD_FACTOR * (unsigned long)idlePeriodInMin)) * 60 * 1000;
+
+          PRINTLN_CSTSTR("Set/keep nextTransmissionTime to 4 times normal (max 4h)");
         }
       }
     } // end low voltage detected
 
-    // if battery is OK, or if transmission time interval has already been increased
-    if (last_vcc > VCC_LOW || low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {
-
-      // if battery is OK (e.g. after a while) => reset
-      if (low_voltage_indication && last_vcc > VCC_LOW) {
-        low_voltage_indication = 0;
+    // if battery is OK (e.g. after a while) => reset
+    if (low_voltage_indication && !battery_low) {
+      low_voltage_indication = 0;
       #ifdef WITH_EEPROM
-        // reset low_voltage_indication
-        my_nodeConfig.low_voltage_indication = low_voltage_indication;
-        EEPROM.put(0, my_nodeConfig);
+      // reset low_voltage_indication
+      my_nodeConfig.low_voltage_indication = low_voltage_indication;
+      EEPROM.put(0, my_nodeConfig);
       #endif
-      }
-      measure_and_send();
     }
+    measure_and_send();
     #endif // without BYPASS_LOW_BAT
   #else // no MONITOR_BAT_VOLTAGE
     measure_and_send();
