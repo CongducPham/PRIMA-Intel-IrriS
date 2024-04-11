@@ -572,7 +572,7 @@ uint8_t low_voltage_indication = 0;
 uint8_t low_bat_counter = 0;             
 float last_vcc = 0.0;
 float current_vcc = 0.0;
-uint16_t tx_v_bat = 8000; // updated during TX, in mV. Default 8000 for the first cycle
+uint16_t tx_vcc_read = 8000; // updated during TX, in mV. Default 8000 for the first cycle
 float tx_vcc = 0.0; // float in V
 #endif // end ifdef MONITOR_BAT_VOLTAGE
 
@@ -605,8 +605,8 @@ float tx_vcc = 0.0; // float in V
   #define STATE_MOSFETS_ON  1
 
 uint16_t v_pv = 0;
-uint16_t v_bat = 0;
-uint16_t last_v_bat = 0; // will also be updated during TX, instead of updating tx_v_bat
+uint16_t v_bat = 0; // battery voltage as measured outside TX
+uint16_t last_v_bat = 0; // (min) will be updated/measured during TX, instead of updating tx_vcc_read
 uint16_t recovery_charging = 0;
 #endif // end ifdef SOLAR_BAT
 
@@ -1847,11 +1847,15 @@ void measure_and_send( void)
   if (last_v_bat==0) last_v_bat=v_bat;
   PRINTLN_VALUE("%f", (float) last_v_bat / 1000.0);
   lpp.addAnalogInput(6, (float) last_v_bat / 1000.0);
-        #ifdef NIMH
-  // lpp.addAnalogInput(7, (float) v_bat / 1000.0);   // volt
-        #else
-  // lpp.addAnalogInput(7, (float) v_bat / 1000.0);   // volt pour test
-  // lpp.addAnalogInput(7, (float) bat_level(v_bat)); // percent for lithium
+        #ifdef TEST_LOW_BAT
+          #ifdef NIMH
+  lpp.addAnalogInput(10, (float) v_bat / 1000.0);   // in debug (TEST_LOW_BAT), also send v_bat outside tx
+          #else
+  // lpp.addAnalogInput(7, (float) v_bat / 1000.0);   // volt for testing
+  lpp.addAnalogInput(10, (float) bat_level(v_bat)); // percent for lithium
+          #endif
+  lpp.addAnalogInput(11, current_vcc); // VCC
+  lpp.addAnalogInput(12, low_voltage_indication); // and the low_voltage_indication
         #endif
 
       #else // without solar
@@ -1861,6 +1865,7 @@ void measure_and_send( void)
   // here we transmit the voltage measured during TX, and before
   lpp.addAnalogInput(10, tx_vcc);
   lpp.addAnalogInput(11, current_vcc);
+  lpp.addAnalogInput(12, low_voltage_indication); // and the low_voltage_indication
         #endif
   PRINTLN_VALUE("%f", last_vcc);
       #endif
@@ -2000,7 +2005,7 @@ void measure_and_send( void)
     #if defined IRD_PCB && defined SOLAR_BAT
   if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
     #elif defined MONITOR_BAT_VOLTAGE
-  if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &tx_v_bat))
+  if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &tx_vcc_read))
     #else
   if (LT.transmit(lpp.buf, pl, 10000, MAX_DBM, WAIT_TX))
     #endif
@@ -2008,7 +2013,7 @@ void measure_and_send( void)
     #if defined IRD_PCB && defined SOLAR_BAT
   if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
     #elif defined MONITOR_BAT_VOLTAGE
-  if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &tx_v_bat))
+  if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &tx_vcc_read))
     #else
   if (LT.transmit(lpp.getBuffer(), pl, 10000, MAX_DBM, WAIT_TX))
     #endif
@@ -2016,7 +2021,7 @@ void measure_and_send( void)
     #if defined IRD_PCB && defined SOLAR_BAT
   if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX, &solar_analogRead, &last_v_bat))
     #elif defined MONITOR_BAT_VOLTAGE
-  if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &tx_v_bat))
+  if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX, &internal_read_volt, &tx_vcc_read))
     #else
   if (LT.transmit(message, pl, 10000, MAX_DBM, WAIT_TX))
     #endif
@@ -2419,7 +2424,7 @@ void loop(void)
   #elif defined MONITOR_BAT_VOLTAGE
 
     current_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.0;
-    tx_vcc = (double)(tx_v_bat)/1000.0;
+    tx_vcc = (double)(tx_vcc_read)/1000.0;
 
     PRINT_CSTSTR("BATTERY-->");
     PRINT_VALUE("%f", current_vcc); // now, right after sleep
