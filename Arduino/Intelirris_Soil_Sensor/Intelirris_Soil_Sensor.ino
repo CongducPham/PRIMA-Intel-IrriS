@@ -2465,7 +2465,7 @@ void loop(void)
       // time given number of times (LOW_VOLTAGE_IDLE_PERIOD_FACTOR), no more and unless it was already chosen greater than 4 hours
       if (low_voltage_indication == MAX_LOW_VOLTAGE_INDICATION) {
         if (idlePeriodInMin < 240) {
-          nextTransmissionTime = min( (unsigned long) 240, (LOW_VOLTAGE_IDLE_PERIOD_FACTOR * (unsigned long)idlePeriodInMin)) * 60 * 1000;
+          nextTransmissionTime = millis() + min( (unsigned long) 240, (LOW_VOLTAGE_IDLE_PERIOD_FACTOR * (unsigned long)idlePeriodInMin)) * 60 * 1000;
 
           PRINTLN_CSTSTR("Set/keep nextTransmissionTime to 4 times normal (max 4h)");
         }
@@ -2505,7 +2505,11 @@ void loop(void)
     // PRINTLN_VALUE("%ld",nextTransmissionTime);
 
     if (millis() > nextTransmissionTime)
-      nextTransmissionTime=millis()+1000;
+    {
+      // nextTransmissionTime=millis()+1000;
+      PRINT_CSTSTR("Something wrong with sleep time, back to default\n");
+      nextTransmissionTime=millis()+((idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
+    }
 
     unsigned long waiting_t = nextTransmissionTime-now_millis;
 
