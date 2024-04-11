@@ -1584,6 +1584,7 @@ void measure_and_send( void)
 #ifdef OLED
   // at startup and only every 20 transmitted packets
   #ifdef LOW_POWER
+  // if (TXPacketCount == 0 || (TXPacketCount % 20) == 19)
   if (TXPacketCount % 20 == 0)
   #endif
   {
@@ -1813,6 +1814,7 @@ void measure_and_send( void)
 
   #ifdef OLED
     #ifdef LOW_POWER
+      // if (TXPacketCount == 0 || (TXPacketCount % 20) == 19)
       if (TXPacketCount % 20 == 0)
     #endif
       {
@@ -1880,6 +1882,7 @@ void measure_and_send( void)
 
 #ifdef OLED
   #ifdef LOW_POWER
+  // if (TXPacketCount == 0 || (TXPacketCount % 20) == 19)
   if (TXPacketCount % 20 == 0) {
     delay(2000);
     digitalWrite(OLED_PWR_PIN, LOW);
