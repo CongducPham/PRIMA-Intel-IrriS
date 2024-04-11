@@ -35,7 +35,7 @@
     #define PWR_LOW     HIGH  // mosfet P
     #define PWR_HIGH    LOW   // mosfet P
 
-    void power_soft_start( uint8_t pin);
+void power_soft_start( uint8_t pin);
 
   #else
 
