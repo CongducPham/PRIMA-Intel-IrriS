@@ -19,7 +19,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Apr. 8th, 2024 by C. Pham & Guillaume Gaillard
+ * last update: Apr. 12th, 2024 by C. Pham & Guillaume Gaillard
  * 
  * NEW: Support native LoRaWAN module RAK3172 with AT commands
  * 
@@ -723,6 +723,7 @@ unsigned long nextTransmissionTime=0L;
 Sensor* sensor_ptrs[max_number_of_sensors];
 
 #ifdef WITH_EEPROM
+  #define MAX_SUCCESSIVE_REBOOTS 3
 struct nodeConfig {
 
   uint8_t flag1;
@@ -735,6 +736,7 @@ struct nodeConfig {
   uint8_t low_voltage_indication;
   uint8_t overwrite;
   // can add other fields such as LoRa mode,...
+  uint8_t hasRebooted;
 };
 
 nodeConfig my_nodeConfig;
@@ -1303,6 +1305,14 @@ void setup() {
     // variable saved in EEPROM, in order to try (not perfect solution) to handle the case where the microcontroller reboots
     low_voltage_indication=my_nodeConfig.low_voltage_indication;
 
+    PRINT_VALUE("%d", my_nodeConfig.hasRebooted);
+    PRINTLN_CSTSTR(" reboots have been detected and stored in EEPROM");
+    PRINTLN;
+
+    if (my_nodeConfig.hasRebooted > MAX_SUCCESSIVE_REBOOTS) {
+      my_nodeConfig.hasRebooted = 0;
+    }
+
   #ifdef FORCE_DEFAULT_VALUE
     PRINT_CSTSTR("Forced to use default parameters\n");
     my_nodeConfig.flag1=0x12;
@@ -1368,6 +1378,7 @@ void setup() {
   #endif
     my_nodeConfig.idle_period=idlePeriodInMin;
     my_nodeConfig.low_voltage_indication=0;
+    my_nodeConfig.hasRebooted = 0;
     my_nodeConfig.overwrite=0;
   }
 #endif // endif ifdef WITH_EEPROM
@@ -2481,7 +2492,27 @@ void loop(void)
       EEPROM.put(0, my_nodeConfig);
       #endif
     }
+      #ifdef WITH_EEPROM
+    if (my_nodeConfig.hasRebooted < MAX_SUCCESSIVE_REBOOTS)
+    {
+      my_nodeConfig.hasRebooted ++;
+      EEPROM.put(0, my_nodeConfig);
+      measure_and_send();
+
+      // enforce fake (soft) reboots to test
+      // if (TXPacketCount>2 || my_nodeConfig.hasRebooted>0) asm("jmp 0");
+      // if (TXPacketCount>2 && TXPacketCount<6) asm("jmp 0");
+
+    } else {
+      PRINT_CSTSTR("Prevented from measure_and_send() due to experiencing ");
+      PRINT_VALUE("%d", MAX_SUCCESSIVE_REBOOTS);
+      PRINTLN_CSTSTR(" consecutive reboots");
+    }
+    my_nodeConfig.hasRebooted = 0;
+    EEPROM.put(0, my_nodeConfig);
+      #else
     measure_and_send();
+      #endif
     #endif // without BYPASS_LOW_BAT
   #else // no MONITOR_BAT_VOLTAGE
     measure_and_send();
