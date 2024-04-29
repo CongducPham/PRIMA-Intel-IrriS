@@ -1420,8 +1420,10 @@ void setup() {
 
   // check batteries first time
   current_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.00;
-  // initialized last_vcc on boot
+  // initialized last_vcc and tx_vcc on boot for their first value
   last_vcc = current_vcc;
+  tx_vcc = current_vcc;
+
   PRINT_CSTSTR("Battery voltage on startup is ");
   PRINTLN_VALUE("%f", current_vcc);
 
@@ -1870,13 +1872,17 @@ void measure_and_send( void)
         #endif
 
       #else // without solar
-  // here we transmit the voltage measured right after TX
-  lpp.addAnalogInput(6, last_vcc);
         #ifdef TEST_LOW_BAT
-  // here we transmit the voltage measured during TX, and before
+  // in that case (debug) we transmit the voltage measured right after TX (last_vcc)
+  lpp.addAnalogInput(6, last_vcc);
+  // we also transmit the voltage measured during TX
   lpp.addAnalogInput(10, tx_vcc);
+  // we also transmit the voltage measured before TX
   lpp.addAnalogInput(11, current_vcc);
   lpp.addAnalogInput(12, low_voltage_indication); // and the low_voltage_indication
+        #else
+  // in that case we transmit the minimum measured voltage
+  lpp.addAnalogInput(6, min(last_vcc, min(current_vcc, tx_vcc)));
         #endif
   PRINTLN_VALUE("%f", last_vcc);
       #endif
@@ -1888,8 +1894,9 @@ void measure_and_send( void)
     lpp.addAnalogInput(6, (float) last_v_bat / 1000.0);
   }
       #else
-  if (last_vcc < VCC_LOW) {
-    lpp.addAnalogInput(6, last_vcc);
+  float min_meas_voltage = min(last_vcc, min(current_vcc, tx_vcc));
+  if (min_meas_voltage < VCC_LOW) {
+    lpp.addAnalogInput(6, min_meas_voltage);
   }
       #endif
     #endif
@@ -2435,7 +2442,9 @@ void loop(void)
   #elif defined MONITOR_BAT_VOLTAGE
 
     current_vcc = (double)((uint16_t)(vcc.Read_Volts()*100))/100.0;
-    tx_vcc = (double)(tx_vcc_read)/1000.0;
+    if (tx_vcc_read!=8000){ // voltage has been measured during tx
+      tx_vcc = (double)(tx_vcc_read)/1000.0;
+    }
 
     PRINT_CSTSTR("BATTERY-->");
     PRINT_VALUE("%f", current_vcc); // now, right after sleep
