@@ -19,7 +19,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Apr. 12th, 2024 by C. Pham & Guillaume Gaillard
+ * last update: Apr. 29th, 2024 by C. Pham & Guillaume Gaillard
  * 
  * NEW: Support native LoRaWAN module RAK3172 with AT commands
  * 
