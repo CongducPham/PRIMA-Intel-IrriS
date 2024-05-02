@@ -74,7 +74,11 @@ INTEL-IRRIS specific tutorials
 
 - [Building the INTEL-IRRIS IoT platform. Part 3: the INTEL-IRRIS starter-kit (WaziGate)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-starter-kit-advanced-guide.pdf). Slides. Related videos: Video n°5.
 
+- [The INTEL-IRRIS starter-kit. Maker Guide.](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-starter-kit-maker-guide.pdf). Slides.
+
 - [The INTEL-IRRIS starter-kit. User Guide.](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-starter-kit-user-guide.pdf). Slides.
+
+- [The INTEL-IRRIS starter-kit. Installation Guide.](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-starter-kit-installation-guide.pdf). Slides.
 
 - Video n°1: [Build the LoRa IoT microcontroller platform for the PRIMA INTEL-IRRIS project](https://youtu.be/3jdQ0Uo0phQ). **YouTube video**.
 
