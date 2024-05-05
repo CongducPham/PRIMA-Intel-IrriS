@@ -1,7 +1,7 @@
 Low-cost LoRa IoT platform for the PRIMA INTEL-IRRIS project
 ============================================================
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/intel-irris-logo.png" width="300">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/intel-irris-logo.png" width="700">
 
 Latest news
 -----------
