@@ -3,10 +3,12 @@ Low-cost LoRa IoT platform for the PRIMA INTEL-IRRIS project
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/intel-irris-logo.png" width="700">
 
-Latest news
------------
+History
+-------
 
-- **NEW-Nov-21** We created the GitHub repository for the PRIMA/EU INTEL-IRRIS project. Check project [web site](http://intel-irris.eu/), the dedicated [News section](https://intel-irris.eu/news) and follow us on [Twitter](https://twitter.com/Intel_IrriS).
+- **May-24** [Final events](https://intel-irris.eu/final-intel-irris-events) in Oran (Algeria) and Rabat (Morocco) to present the results of 3 years of collaborative research and innovation.
+
+- **Nov-21** We created the GitHub repository for the PRIMA/EU INTEL-IRRIS project. Check project [web site](http://intel-irris.eu/), the dedicated [News section](https://intel-irris.eu/news) and follow us on [Twitter](https://twitter.com/Intel_IrriS).
 
 
 Quick start
