@@ -42,7 +42,7 @@
 
 // indicate in this file the radio module: SX126X, SX127X, SX128X or RAK3172
 #include "RadioSettings.h"
-// indicate in this file the board: simple PCB v2, IRD PCB or WaziSense v2
+// indicate in this file the board: IRD PCB v4.1 or IRD PCBA v4.1 or WaziSense v2
 #include "BoardSettings.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@
 // #define MY_FREQUENCY 916800000
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – Oct 10th, 2023\n"
+#define BOOT_START_MSG  "\nINTEL-IRRIS soil humidity sensor – Apr 29th, 2024\n"
 
 ////////////////////////////////////////////////////////////////////
 // uncomment to have a soil tensiometer watermark sensor

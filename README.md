@@ -68,7 +68,7 @@ INTEL-IRRIS specific tutorials
 
 - [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (all versions)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-all-version.pdf). Slides. Related videos: Video n°1, Video n°2 and Video n°3.
 
-- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (IRD PCB v4.1)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-PCBv4-PCBA.pdf). Slides. Related videos: Video n°1, Video n°2 and Video n°3.
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (IRD PCB and IRD PCBA v4.1)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-PCBv4-PCBA.pdf). Slides. Related videos: Video n°1, Video n°2 and Video n°3.
 
 - [Building the INTEL-IRRIS IoT platform. Part 2: edge-enabled gateway (WaziGate)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-edge-gateway.pdf). Slides. Related videos: Video n°4.
 

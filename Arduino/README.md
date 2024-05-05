@@ -14,11 +14,15 @@ or
  
 An additional soil temperature sensor (Dallas DS18B20) can be added.
 
-It supports DIY Arduino ProMini, WaziSense and WaziDev development lines. For WaziSense and WaziDev, the embedded I2C SI7021 sensor can be activated to measure conditions in the device casing, as well as the solar charging circuit (WaziSense).
+It supports DIY Arduino ProMini, WaziSense v2 and IRD PCBA v4.1 (with or without solar) development lines. 
 
-It is configured by default as single-channel LoRaWAN 1.0 device for both uplink and downlink transmissions.
+It is configured by default for DIY Arduino ProMini as single-channel LoRaWAN 1.0 device for both uplink and downlink transmissions. Uncomment `#define WAZISENSE` in `BoardSettings.h` for WaziSense v2. Uncomment `#define IRD_PCB` in `BoardSettings.h` if you are using the raw IRD PCB v4.1 (just the raw PCB). Uncomment both `#define IRD_PCB` and `#define IRD_PCB` in `BoardSettings.h` if you are using the fully assembled IRD PCBA v4.1 (assembled from PCB manufacturer with all components including solar circuit). If you are using solar panel with the IRD PCBA v4.1 then you also need to uncomment `#define SOLAR_BAT` in `BoardSettings.h`.
 
 See the related tutorial slides and videos.
+
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (all versions)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-all-version.pdf).
+
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (IRD PCB and IRD PCBA v4.1)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-PCBv4-PCBA.pdf). Slides. 
 
 Default configuration for INTEL-IRRIS project (works out-of-the box with the INTEL-IRRIS WaziGate SD card image)
 ===
@@ -26,7 +30,7 @@ Default configuration for INTEL-IRRIS project (works out-of-the box with the INT
 - Capacitive sensor SEN0308 connected to A0 (signal) and A1 (power)
 - LoRaWAN mode to WaziGate (single channel)
 - Cayenne LPP data format
-- EU433 band (for Algeria and Morocco)
+- EU868 band (suitable for Algeria. For Morocco, need to use 433MHz)
 - Device address is 26011DAA
 - 1 measure and transmission every 1 hour
 - Battery voltage is included in transmitted messages
@@ -86,7 +90,7 @@ In the code, `#define OLED_GND235` should be decommented instead of `#define OLE
 The default configuration of the field tester device is:
 
 - LoRaWAN mode to WaziGate (single channel)
-- EU433 band (for Algeria and Morocco)
+- EU868 band (suitable for Algeria. For Morocco, need to use 433MHz)
 - Cayenne LPP data format
 - Device address is 26011DAA (same than the capacitive device)
 - 1 transmission every 120s
