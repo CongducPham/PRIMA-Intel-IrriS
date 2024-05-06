@@ -23,7 +23,9 @@ do
   if [ $sizeDEVICE -gt 16 ]
   then
     echo "Delete device ${DEVICE}"
+    #delete on IIWA
     curl -X DELETE "http://localhost:5000/devices/${DEVICE}" -H  "accept: application/json"
+    #delete on WaziGate
     curl -X DELETE "http://localhost/devices/${DEVICE}" -H "accept: application/json" -H "Authorization: Bearer $TOK" -H  "Content-Type: application/json"   
   else
     echo "Probably a gateway, skipping"  
