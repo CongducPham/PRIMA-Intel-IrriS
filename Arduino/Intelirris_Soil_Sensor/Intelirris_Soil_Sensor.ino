@@ -4,6 +4,8 @@
  *  support RAK3172 for native LoRaWAN
  *  
  *  Copyright (C) 2016-2023 Congduc Pham, University of Pau, France
+ *  
+ *  Contributors: Guillaume Gaillard & Jean-François Printanier
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,8 +21,9 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: Apr. 29th, 2024 by C. Pham & Guillaume Gaillard
+ * last update: July 10th, 2024
  * 
+ * NEW: Support IRD PCB RAK3172 version with debug serial using pin 2 (TX only)
  * NEW: Support native LoRaWAN module RAK3172 with AT commands
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
@@ -43,7 +46,14 @@
 // indicate in this file the radio module: SX126X, SX127X, SX128X or RAK3172
 #include "RadioSettings.h"
 // indicate in this file the board: IRD PCB v4.1 or IRD PCBA v4.1 or WaziSense v2
+// indicate in this file if SOFT_SERIAL_DEBUG is used (e.g. when a radio module already connects to hardware serial)
 #include "BoardSettings.h"
+
+#ifdef SOFT_SERIAL_DEBUG
+#include <TXOnlySerial.h>
+//debug serial using pin 2 (TX only)
+TXOnlySerial debug_serial(2);
+#endif
 
 ////////////////////////////////////////////////////////////////////
 // sends data to INTEL-IRRIS WaziGate edge-gateway
@@ -631,6 +641,17 @@ uint16_t recovery_charging = 0;
   #define PRINT_HEX(fmt,param)      SerialUSB.print(param,HEX)
   #define PRINTLN_HEX(fmt,param)    SerialUSB.println(param,HEX)
   #define FLUSHOUTPUT               SerialUSB.flush()
+#elif defined SOFT_SERIAL_DEBUG
+  #define PRINTLN                   debug_serial.println("")
+  #define PRINT_CSTSTR(param)       debug_serial.print(F(param))
+  #define PRINTLN_CSTSTR(param)     debug_serial.println(F(param))
+  #define PRINT_STR(fmt,param)      debug_serial.print(param)
+  #define PRINTLN_STR(fmt,param)    debug_serial.println(param)
+  #define PRINT_VALUE(fmt,param)    debug_serial.print(param)
+  #define PRINTLN_VALUE(fmt,param)  debug_serial.println(param)
+  #define PRINT_HEX(fmt,param)      debug_serial.print(param,HEX)
+  #define PRINTLN_HEX(fmt,param)    debug_serial.println(param,HEX)
+  #define FLUSHOUTPUT               debug_serial.flush()  
 #else
   #define PRINTLN                   Serial.println("")
   #define PRINT_CSTSTR(param)       Serial.print(F(param))
@@ -968,7 +989,14 @@ void setup() {
   // Open serial communications and wait for port to open:
 #if defined __SAMD21G18A__ && not defined ARDUINO_SAMD_FEATHER_M0 
   SerialUSB.begin(38400);
+#elif defined SOFT_SERIAL_DEBUG
+  //debug software serial using pin 2 (TX only)
+  debug_serial.begin(38400);
+  //hardware serial to drive the lorawan module
+  //we set it initially to 115200 as it is the default baudrate for recent RAK3172
+  Serial.begin(115200); 
 #else
+  //the regular hardware serial for serial monitor
   Serial.begin(38400);
 #endif
 
@@ -1986,7 +2014,7 @@ void measure_and_send( void)
 #endif
 
 #if defined IRD_PCB && defined SOLAR_BAT
-  manage_battery( PANEL_ON); // use solar to reduce battery current
+  manage_battery(PANEL_ON); // use solar to reduce battery current
   last_v_bat = v_bat;        // reset minimum battery value
 #endif
 

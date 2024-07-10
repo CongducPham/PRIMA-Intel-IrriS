@@ -8,21 +8,25 @@
   #endif
 
   ////////////////////////////////////////////////////////////////////
+  // uncomment for IRD PCB RAK version where the serial monitor is using software serial with pin 2 for TX
+  //#define SOFT_SERIAL_DEBUG
+  
+  ////////////////////////////////////////////////////////////////////
   // uncomment for WAZISENSE v2 board
   // #define WAZISENSE
 
   ////////////////////////////////////////////////////////////////////
   // uncomment for IRD PCB board
-  // #define IRD_PCB
+  //#define IRD_PCB
   // also uncomment for IRD PCB board fully assembled by manufacturer
   // with all components, including solar circuit
-  // #define IRD_PCBA
+  //#define IRD_PCBA
 
   ////////////////////////////////////////////////////////////////////
   // uncomment only if the IRD PCB or PCBA is running on solar panel
   // MUST be commented if running on alkaline battery
   // code for SOLAR_BAT has been written by Jean-François Printanier from IRD
-  // #define SOLAR_BAT
+  //#define SOLAR_BAT
   // do not change if you are not knowing what you are doing
   #define NIMH
 

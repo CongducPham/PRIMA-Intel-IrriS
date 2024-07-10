@@ -86,6 +86,7 @@ unsigned char Direction = 0x00;
 void local_lorawan_init() {
   //avoid having exactely the same message in case of reboot when testing devices
   Frame_Counter_Up=analogRead(0) % 10;
+  PRINT_CSTSTR("LoRaWAN: generating random frame counter up: ");
   PRINT_VALUE("%d", Frame_Counter_Up);
   PRINTLN;
 }

@@ -26,11 +26,22 @@
  #include "WProgram.h"
 #endif
 
+#include "BoardSettings.h"
+
 //#define ENABLE_OTAA
 
 #define BOARD_BUILTIN_LED 13
 
+#ifdef SOFT_SERIAL_DEBUG
+//since debug is using software serial, driving the UART LoRaWAN module 
+//is using the hardware serial - do not use 57600 because it is the IDE upload rate
+#define LORAWAN_MODULE_BAUD_RATE 38400
+#else
+//here, hardware serial is used for serial monitor so SoftwareSerial is used to drive
+//the UART LoRaWAN module and baud rate is therefore limited
 #define LORAWAN_MODULE_BAUD_RATE 9600
+#endif
+
 #define MLENGTH 100
 
 extern char serial_buff[MLENGTH];
@@ -41,7 +52,7 @@ long getAnswerValue(char* strBuff=NULL);
 void write_lorawan_module(char* lcmd);
 bool read_lorawan_module(bool saveAnswer=true, uint16_t timeout=5000, bool return_on_ok_error=true);
 void lorawan_display_config();
-bool lorawan_module_setup(int speed);
+bool lorawan_module_setup(uint16_t br);
 bool lorawan_transmit(char* buf);
 void lorawan_sleep(unsigned long ms);
 void lorawan_wake();

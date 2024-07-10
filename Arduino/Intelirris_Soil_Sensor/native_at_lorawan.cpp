@@ -1,7 +1,7 @@
 /*
  *  simple AT lorawan lib to drive a lorawan module
  *  
- *  Copyright (C) 2023 Congduc Pham, University of Pau, France
+ *  Copyright (C) 2024 Congduc Pham, University of Pau, France
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,15 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************/
- 
+
+#include "BoardSettings.h"
 #include "native_at_lorawan.h"
 #include "RadioSettings.h"
+
+#ifdef SOFT_SERIAL_DEBUG
+#include <TXOnlySerial.h>
+extern TXOnlySerial debug_serial;
+#endif
 
 // we wrapped Serial.println to support the Arduino Zero or M0
 #if defined __SAMD21G18A__ && not defined ARDUINO_SAMD_FEATHER_M0
@@ -32,6 +38,17 @@
 #define PRINT_HEX(fmt,param)      SerialUSB.print(param,HEX)
 #define PRINTLN_HEX(fmt,param)    SerialUSB.println(param,HEX)
 #define FLUSHOUTPUT               SerialUSB.flush()
+#elif defined SOFT_SERIAL_DEBUG
+#define PRINTLN                   debug_serial.println("")
+#define PRINT_CSTSTR(param)       debug_serial.print(F(param))
+#define PRINTLN_CSTSTR(param)     debug_serial.println(F(param))
+#define PRINT_STR(fmt,param)      debug_serial.print(param)
+#define PRINTLN_STR(fmt,param)    debug_serial.println(param)
+#define PRINT_VALUE(fmt,param)    debug_serial.print(param)
+#define PRINTLN_VALUE(fmt,param)  debug_serial.println(param)
+#define PRINT_HEX(fmt,param)      debug_serial.print(param,HEX)
+#define PRINTLN_HEX(fmt,param)    debug_serial.println(param,HEX)
+#define FLUSHOUTPUT               debug_serial.flush()
 #else
 #define PRINTLN                   Serial.println("")
 #define PRINT_CSTSTR(param)       Serial.print(F(param))
@@ -70,15 +87,22 @@ char* AppSkeyStr="23158D3BBC31E6AF670D195B5AED5525";
 char* NwkSkeyStr="23158D3BBC31E6AF670D195B5AED5525";
 //char* NwkSkeyStr="23158D3BBC31E6AF670D195B5AEDABCD";
 
-//to drive an UART LoRaWAN module such as RAK3172
+#ifdef SOFT_SERIAL_DEBUG
+//debug is using software serial so the UART LoRaWAN module uses the hardware serial
+#define lorawan_module_serial Serial
+#else
+//otherwise software serial is used for the UART LoRaWAN module
 #include <SoftwareSerial.h>
 #define rxPin 3
 #define txPin 2
 // connect MODULE_TX <> 3 and MODULE_RX <> 2
 SoftwareSerial lorawan_module_serial(rxPin,txPin); //rx,tx for Arduino side
+#endif
 
 char serial_buff[MLENGTH];
 bool otaa=false;
+
+void(*resetFunc)(void) = 0;
 
 void dumpHEXtoStr(char* toB, uint8_t* fromB, uint8_t sizeB) {
 
@@ -154,12 +178,12 @@ bool read_lorawan_module(bool saveAnswer=true, uint16_t timeout=5000, bool retur
         if (lorawan_module_serial.available() > 0) {
 
             if (saveAnswer) {
-                if (_index < MLENGTH - 1){
+                if (_index < MLENGTH - 1) {
                     serial_buff[_index++] = (char)lorawan_module_serial.read();
                     serial_buff[_index] = '\0';
                 }
                 
-                if (strstr(serial_buff, "OK") != NULL || strstr(serial_buff, "ERROR") != NULL){
+                if (strstr(serial_buff, "OK") != NULL || strstr(serial_buff, "ERROR") != NULL) {
                     PRINT_CSTSTR("got answer\n");
                     PRINT_STR("%s", serial_buff);
                     PRINTLN;
@@ -188,7 +212,7 @@ bool read_lorawan_module(bool saveAnswer=true, uint16_t timeout=5000, bool retur
                         return true;
                       } 
                     }                    
-                }       
+                }
             }
             else {
                 PRINT_STR("%c", (char)lorawan_module_serial.read());     
@@ -205,7 +229,7 @@ bool read_lorawan_module(bool saveAnswer=true, uint16_t timeout=5000, bool retur
 void lorawan_display_config() {
  
   // Print current configuration
-  //
+  // Currently only AT command for RAK3172 are implemented
 #ifdef RAK3172  
   write_lorawan_module("AT+LPM=?\r\n\0");
   read_lorawan_module();
@@ -249,19 +273,37 @@ void lorawan_display_config() {
 #endif
 }
 
-bool lorawan_module_setup(int speed) {
+bool lorawan_module_setup(uint16_t br) {
     
   PRINTLN_CSTSTR("Opening serial port");
 #ifdef FAKE_AT_LORAWAN
   PRINTLN_CSTSTR("FAKE_AT_COMMAND");
 #else  
+#if defined SOFT_SERIAL_DEBUG && defined RAK3172
+  //new RAK3172 modules are shipped by default to 115200 baud
+  //we want to dynamically set baud rate to LORAWAN_MODULE_BAUD_RATE (38400)
+  //because the ATmega328P cannot reliably use 115200 
+  PRINTLN_CSTSTR("Trying at 115200");
+  write_lorawan_module("AT\r\n\0");
+  delay(1);
+  PRINTLN_CSTSTR("Configuring for 38400");
+  write_lorawan_module("AT+BAUD=38400\r\n\0");
+  delay(10);  
+  //if 115200 is not working, it means that it is probably already at 38400
+#else
   pinMode(rxPin, INPUT);
   pinMode(txPin, OUTPUT);
-   
+#endif   
+
   lorawan_module_serial.end();
-  lorawan_module_serial.begin(speed);
-  delay(500);
+  //delay(1);  
+
+  lorawan_module_serial.begin(br);
+  delay(10);
 #endif
+  // todo reset the RAK? by D4
+
+  write_lorawan_module("\r");
   //the first message can generate an error, so we just send an AT command
   write_lorawan_module("AT\r\n\0");
   read_lorawan_module();
@@ -275,7 +317,8 @@ bool lorawan_module_setup(int speed) {
   // AT+LPM=0 cannot be issued if the RAK3172 is in Stop 2 mode
   write_lorawan_module("AT+LPMLVL=1\r\n\0");
   read_lorawan_module();
-
+  
+  delay(10);
   // disable low power mode for the initialisation process
   // otherwise it will take much more time as the module will go in sleep
   // mode after every AT command
@@ -428,7 +471,7 @@ void lorawan_wake() {
 #ifdef RAK3172
   write_lorawan_module("AT\r\n\0");
 #else
-    PRINTLN_CSTSTR("LoRaWAN radio module not supported");
+  PRINTLN_CSTSTR("LoRaWAN radio module not supported");
 #endif
 }
 
@@ -439,8 +482,8 @@ bool lorawan_receive() {
   //TODO
   return true;
 #else
-    PRINTLN_CSTSTR("LoRaWAN radio module not supported");
-    return false;
+  PRINTLN_CSTSTR("LoRaWAN radio module not supported");
+  return false;
 #endif  
 }
 
