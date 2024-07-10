@@ -1455,15 +1455,16 @@ void setup() {
   PRINT_CSTSTR("Battery voltage on startup is ");
   PRINTLN_VALUE("%f", current_vcc);
 
-  // TODO: 0.15 guard value has not been really tested
-  if (low_voltage_indication && current_vcc > VCC_LOW+0.15) {
-  #ifdef WITH_EEPROM
-    // reset low_voltage_indication
-    low_voltage_indication=0;
-    my_nodeConfig.low_voltage_indication=0;
-    EEPROM.put(0, my_nodeConfig);
-  #endif
-  }
+  // Block has been commented on june 26th: no need to reset here at startup (or reboot) because in case batteries get back OK, reset is done in loop(), generally with richer information (voltage measurement during transmit)
+  // // TODO: 0.15 guard value has not been really tested
+  // if (low_voltage_indication && current_vcc > VCC_LOW+0.15) {
+  // #ifdef WITH_EEPROM
+  //   // reset low_voltage_indication
+  //   low_voltage_indication=0;
+  //   my_nodeConfig.low_voltage_indication=0;
+  //   EEPROM.put(0, my_nodeConfig);
+  // #endif
+  // }
    
   PRINT_CSTSTR("low_voltage_indication=");
   PRINTLN_VALUE("%d", low_voltage_indication);
@@ -2487,7 +2488,8 @@ void loop(void)
     measure_and_send();
     #else
 
-    bool battery_low = (current_vcc < VCC_LOW || last_vcc < VCC_LOW || tx_vcc < VCC_LOW);
+    bool battery_low = (current_vcc < VCC_LOW || last_vcc < VCC_LOW || tx_vcc < VCC_LOW || my_nodeConfig.hasRebooted != 0);
+    // battery is measured low, or device has just rebooted
     if (battery_low) {
       PRINT_CSTSTR("!LOW BATTERY-->");
       PRINT_VALUE("%f", current_vcc);
