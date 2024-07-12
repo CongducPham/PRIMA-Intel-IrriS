@@ -75,7 +75,7 @@ You can download the Gerber zipped archive and view them on an [online Gerber vi
 
 - Arduino ProMini IRD PCB v5 for RAK3172 zipped Gerber archive, 2 layer board of 30.89x79.5mm [.zip](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_5/Gerber_PCB5_RAK3172_IISS_2024-06-01.zip)
 
-Because the RAK3172 module is connected to the Arduino's serial port (UART), there is a specific procedure to debug the board in order to see the text output normally printed to the serial monitor window of the Arduino IDE. See the [tutorial on using this IRD PCB v5](https://docs.google.com/viewer?url=https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/Tutorials/Intel-Irris-IOT-platform-PCBv5-PCBA.pdf).
+Because the RAK3172 module is connected to the Arduino's serial port (UART), there is a specific procedure to debug the board in order to see the text output normally printed to the serial monitor window of the Arduino IDE. See the [tutorial on using this IRD PCB v5](https://docs.google.com/viewer?url=https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/Tutorials/Intel-Irris-IOT-platform-PCBv5-PCBA.pdf). A correct output would be similar to [this output example](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_5/dump-serial-debug.txt)
 
 PCBA IRD v5
 ----
