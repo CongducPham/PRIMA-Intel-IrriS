@@ -27,7 +27,7 @@ You can easily make them produced on many online PCB manufacturers. Usually, you
 PCB IRD v4.1
 ----
 
-This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototyping and even integration purpose. it allows much simpler wiring of the soil humidity sensor, the watermark sensors and the soil temperature sensor (placeholder for associated resistors are already there).
+This PCB for the Arduino ProMini (3.3v, 8MHz version) can be used for prototyping and even integration purpose. It allows much simpler wiring of the soil humidity sensor, the watermark sensors and the soil temperature sensor (placeholder for associated resistors are already there).
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ird-pcb-4-1-raw-top.png" width="400">
 
@@ -62,10 +62,41 @@ You can download the BOM & CPL files to order the fully assembled board from PCB
 
 Read [INTEL-IRRIS Newsletter #4](https://intel-irris.eu/intel-irris-newsletter-4) for a brief description and additional images.
 
+PCB IRD v5
+----
+
+This PCB is the RAK3172 version of the IRD PCB v4.1.
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ird-pcb-5-raw-top.png" width="400">
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ird-pcb-5-raw-bottom.png" width="400">
+
+You can download the Gerber zipped archive and view them on an [online Gerber viewer](https://www.pcbgogo.com/GerberViewer.html).
+
+- Arduino ProMini IRD PCB v5 for RAK3172 zipped Gerber archive, 2 layer board of 30.89x79.5mm [.zip](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_5/Gerber_PCB5_RAK3172_IISS_2024-06-01.zip)
+
+Because the RAK3172 module is connected to the Arduino's serial port (UART), there is a specific procedure to debug the board in order to see the text output normally printed to the serial monitor window of the Arduino IDE. See the [tutorial on using this IRD PCB v5](https://docs.google.com/viewer?url=https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/Tutorials/Intel-Irris-IOT-platform-PCBv5-PCBA.pdf).
+
+PCBA IRD v5
+----
+
+The fully assembled PCB (PCBA) with solar circuit can be ordered fully assembled from PCB manufacturers.
+
+You can download the BOM & CPL files to order the fully assembled board from PCB manufacturers. You can look at our tutorial on how to order PCB that are fully assembled by the manufacturer: [Building the INTEL-IRRIS IoT platform. Annex 1: ordering the PCBs, including PCBA](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-PCB-update-PCBA.pdf). 
+
+- Bill of Materiels (BOM) file for the IRD PCB v5 RAK3172 [.xls](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_5/BOM_SMT_TB_RAK3172_868_IISS_PCB5)
+
+- CPL file for the IRD PCB v5 [.csv](https://github.com/CongducPham/PRIMA-Intel-IrriS/raw/main/PCBs/IRD_PCB_5/CPL_PCB5_RAK3172.csv)
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/PCBA_v5_top.png" width="400">
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/PCBA_v5_bottom.png" width="400">
+
+
 PCB RAK3172 v1
 -----
 
-We have designed a PCB which integrates the LoRaWAN RAK3172 radio chip to provide full LoRaWAN connectivity. It also provides simpler wiring of sensors, similarly to the IRD’s PCB. There is no solar circuit however, as the main objective is to support full LoRaWAN connectivity for large-scale and worldwide deployment scenarios.
+We have designed a very generic PCB which integrates the LoRaWAN RAK3172 radio chip to provide full LoRaWAN connectivity. It also provides simpler wiring of sensors, similarly to the IRD’s PCB. There is no solar circuit however, as the main objective is to support full LoRaWAN connectivity for large-scale and worldwide deployment scenarios.
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/ProMini-RAK3172-top.png" width="400">
 
