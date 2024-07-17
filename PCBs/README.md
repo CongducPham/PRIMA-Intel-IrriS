@@ -93,7 +93,7 @@ You can download the BOM & CPL files to order the fully assembled board from PCB
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/PCBA_v5_bottom.png" width="400">
 
 
-PCB RAK3172 v1
+PCB RAK3172 v1 (obsolete - it is better to use the PCBv5)
 -----
 
 We have designed a very generic PCB which integrates the LoRaWAN RAK3172 radio chip to provide full LoRaWAN connectivity. It also provides simpler wiring of sensors, similarly to the IRD’s PCB. There is no solar circuit however, as the main objective is to support full LoRaWAN connectivity for large-scale and worldwide deployment scenarios.
