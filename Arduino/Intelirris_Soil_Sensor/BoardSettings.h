@@ -17,7 +17,7 @@
 
   ////////////////////////////////////////////////////////////////////
   // uncomment for IRD PCB board
-  //#define IRD_PCB
+  #define IRD_PCB
   // also uncomment for IRD PCB board fully assembled by manufacturer
   // with all components, including solar circuit
   //#define IRD_PCBA

@@ -21,10 +21,10 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: July 10th, 2024
+ * last update: July 19th, 2024
  * 
- * NEW: Support IRD PCB RAK3172 version with debug serial using pin 2 (TX only)
- * NEW: Support native LoRaWAN module RAK3172 with AT commands
+ * NEW: Support IRD PCB RAK3172 with debug serial using pin 2 (TX only)
+ * NEW: Support native LoRaWAN module RAK3172 (ABP, OTAA) with AT commands
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -1455,16 +1455,15 @@ void setup() {
   PRINT_CSTSTR("Battery voltage on startup is ");
   PRINTLN_VALUE("%f", current_vcc);
 
-  // Block has been commented on june 26th: no need to reset here at startup (or reboot) because in case batteries get back OK, reset is done in loop(), generally with richer information (voltage measurement during transmit)
-  // // TODO: 0.15 guard value has not been really tested
-  // if (low_voltage_indication && current_vcc > VCC_LOW+0.15) {
-  // #ifdef WITH_EEPROM
-  //   // reset low_voltage_indication
-  //   low_voltage_indication=0;
-  //   my_nodeConfig.low_voltage_indication=0;
-  //   EEPROM.put(0, my_nodeConfig);
-  // #endif
-  // }
+  // TODO: 0.15 guard value has not been really tested
+  if (low_voltage_indication && current_vcc > VCC_LOW+0.15) {
+  #ifdef WITH_EEPROM
+    // reset low_voltage_indication
+    low_voltage_indication=0;
+    my_nodeConfig.low_voltage_indication=0;
+    EEPROM.put(0, my_nodeConfig);
+  #endif
+  }
    
   PRINT_CSTSTR("low_voltage_indication=");
   PRINTLN_VALUE("%d", low_voltage_indication);
@@ -2488,8 +2487,7 @@ void loop(void)
     measure_and_send();
     #else
 
-    bool battery_low = (current_vcc < VCC_LOW || last_vcc < VCC_LOW || tx_vcc < VCC_LOW || my_nodeConfig.hasRebooted != 0);
-    // battery is measured low, or device has just rebooted
+    bool battery_low = (current_vcc < VCC_LOW || last_vcc < VCC_LOW || tx_vcc < VCC_LOW);
     if (battery_low) {
       PRINT_CSTSTR("!LOW BATTERY-->");
       PRINT_VALUE("%f", current_vcc);

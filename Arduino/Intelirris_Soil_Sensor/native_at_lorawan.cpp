@@ -71,6 +71,10 @@ extern TXOnlySerial debug_serial;
 // go into fake at command to test energy consumption
 //#define FAKE_AT_LORAWAN
 
+/////////////
+//ABP mode 
+/////////////
+
 ///////////////////////////////////////////////////////////////////
 //ENTER HERE your App Session Key from the TTN device info (same order, i.e. msb)
 ///////////////////////////////////////////////////////////////////
@@ -86,6 +90,26 @@ char* AppSkeyStr="23158D3BBC31E6AF670D195B5AED5525";
 //WaziGate default
 char* NwkSkeyStr="23158D3BBC31E6AF670D195B5AED5525";
 //char* NwkSkeyStr="23158D3BBC31E6AF670D195B5AEDABCD";
+
+/////////////
+//OTAA mode 
+/////////////
+
+///////////////////////////////////////////////////////////////////
+//ENTER HERE your device info (same order, i.e. msb)
+///////////////////////////////////////////////////////////////////
+//#define OVERWRITE_OTAA_EUI
+
+#ifdef OVERWRITE_OTAA_EUI
+//DevEui is normally indicated on the radio module
+char* DevEuiStr="AC1F09FFFE12DA3F";
+//char* DevEuiStr="AC1F09FFFE12DA01";
+//here is the default used by RAK
+char* AppEuiStr="AC1F09FFF8683172";
+//here is the default used by RAK: DEVEUI+APPEUI
+char* AppKeyStr="AC1F09FFFE12DA3FAC1F09FFF8683172";
+//char* AppKeyStr="23158D3BBC31E6AF670D195B5AED5525";
+#endif
 
 #ifdef SOFT_SERIAL_DEBUG
 //debug is using software serial so the UART LoRaWAN module uses the hardware serial
@@ -103,6 +127,9 @@ char serial_buff[MLENGTH];
 bool otaa=false;
 
 void(*resetFunc)(void) = 0;
+
+char* okStr="OK";
+char* errorStr="ERROR";
 
 void dumpHEXtoStr(char* toB, uint8_t* fromB, uint8_t sizeB) {
 
@@ -161,9 +188,10 @@ void write_lorawan_module(char* lcmd) {
 
 /**
  * Reads the answer obtained from the lorawan module
+ * For RAK3172: answer is in the form OK<0D><0A> which is CRLF=\r\n
  */
 
-bool read_lorawan_module(bool saveAnswer=true, uint16_t timeout=5000, bool return_on_ok_error=true){
+bool read_lorawan_module(char* matchStr, uint16_t timeout=2000, bool saveAnswer=true, bool return_on_match=true){
   int _index=0;
 
   uint32_t startT=millis();
@@ -183,7 +211,7 @@ bool read_lorawan_module(bool saveAnswer=true, uint16_t timeout=5000, bool retur
                     serial_buff[_index] = '\0';
                 }
                 
-                if (strstr(serial_buff, "OK") != NULL || strstr(serial_buff, "ERROR") != NULL) {
+                if (strstr(serial_buff, matchStr) != NULL || strstr(serial_buff, "ERROR") != NULL) {
                     PRINT_CSTSTR("got answer\n");
                     PRINT_STR("%s", serial_buff);
                     PRINTLN;
@@ -194,7 +222,7 @@ bool read_lorawan_module(bool saveAnswer=true, uint16_t timeout=5000, bool retur
                     if (strstr(serial_buff, "ERROR") != NULL) {
                       PRINT_CSTSTR("ans.ERROR\n");
                       FLUSHOUTPUT;
-                      if (return_on_ok_error) {
+                      if (return_on_match) {
                         //flush serial buffer
                         while (lorawan_module_serial.available())
                           lorawan_module_serial.read();        
@@ -202,16 +230,17 @@ bool read_lorawan_module(bool saveAnswer=true, uint16_t timeout=5000, bool retur
                       }
                     }
 
-                    if (strstr(serial_buff, "OK") != NULL) {
-                      PRINT_CSTSTR("ans.OK\n");
+                    if (strstr(serial_buff, matchStr) != NULL) {
+                      PRINT_CSTSTR("ans.");
+                      PRINTLN_STR("%s", matchStr);
                       FLUSHOUTPUT;
-                      if (return_on_ok_error)  {
+                      if (return_on_match)  {
                         //flush serial buffer
                         while (lorawan_module_serial.available())
                           lorawan_module_serial.read();        
                         return true;
-                      } 
-                    }                    
+                      }
+                    }
                 }
             }
             else {
@@ -232,42 +261,41 @@ void lorawan_display_config() {
   // Currently only AT command for RAK3172 are implemented
 #ifdef RAK3172  
   write_lorawan_module("AT+LPM=?\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
   
   write_lorawan_module("AT+VER=?\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
 
   write_lorawan_module("AT+CLASS=?\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
 
   write_lorawan_module("AT+BAND=?\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
 
   write_lorawan_module("AT+ADR=?\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
 
   write_lorawan_module("AT+NJM=?\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
 
 #ifdef ENABLE_OTAA  
-  if (getAnswerValue()==1) {
+  if (getAnswerValue()==1)
     PRINTLN_CSTSTR("Device set in otaa mode");
-    otaa=true;
-  }
   else
     PRINTLN_CSTSTR("Device is not in otaa mode");
+  otaa=true;
 #else
   PRINTLN_CSTSTR("OTAA not enabled");
 #endif
 
   write_lorawan_module("AT+DEVADDR=?\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
 
   write_lorawan_module("AT+NWKSKEY=?\r\n\0");
-  read_lorawan_module();  
+  read_lorawan_module(okStr);  
 
   write_lorawan_module("AT+APPSKEY=?\r\n\0");
-  read_lorawan_module();  
+  read_lorawan_module(okStr);  
 #else
   PRINTLN_CSTSTR("LoRaWAN radio module not supported");
 #endif
@@ -301,67 +329,154 @@ bool lorawan_module_setup(uint16_t br) {
   lorawan_module_serial.begin(br);
   delay(10);
 #endif
-  // todo reset the RAK? by D4
 
   write_lorawan_module("\r");
   //the first message can generate an error, so we just send an AT command
   write_lorawan_module("AT\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
   
   write_lorawan_module("AT\r\n\0");  
-  if (!read_lorawan_module())
+  if (!read_lorawan_module(okStr))
     return false;
 
 #ifdef RAK3172
   // we set low power mode to Stop 1 mode as it appears that
   // AT+LPM=0 cannot be issued if the RAK3172 is in Stop 2 mode
   write_lorawan_module("AT+LPMLVL=1\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
   
   delay(10);
   // disable low power mode for the initialisation process
   // otherwise it will take much more time as the module will go in sleep
   // mode after every AT command
   write_lorawan_module("AT+LPM=0\r\n\0");
-  read_lorawan_module();
+  read_lorawan_module(okStr);
 #endif
   
   lorawan_display_config();
 
+#ifdef RAK3172
+  //Set LoRa parameters
+  write_lorawan_module("AT+CLASS=A\r\n\0");
+  read_lorawan_module(okStr);
+
+  //for RAK3172
+  // 0 = EU433, 1 = CN470, 2 = RU864, 3 = IN865, 4 = EU868, 5 = US915,
+  // 6 = AU915, 7 = KR920, 8 = AS923-1, 9 = AS923-2, 10 = AS923-3, 11 = AS923-4
+#if defined EU868  
+  write_lorawan_module("AT+BAND=4\r\n\0");
+#elif defined AU915
+  write_lorawan_module("AT+BAND=6\r\n\0");
+  read_lorawan_module(okStr);
+  // select only channel 8-15: 916.8 917.0 917.2 917.4 917.6 917.8 918.0 918.2
+  write_lorawan_module("AT+CHE=2\r\n\0");
+#elif defined EU433
+  write_lorawan_module("AT+BAND=0\r\n\0");
+#elif defined AS923-2
+  write_lorawan_module("AT+BAND=9\r\n\0");
+#endif    
+  read_lorawan_module(okStr);
+  
+  write_lorawan_module("AT+ADR=0\r\n\0");
+  read_lorawan_module(okStr);
+    
   if (otaa) {
-    PRINTLN_CSTSTR("Device should be configured by OTAA");
+
+    uint8_t join_retry=3;
+    bool join_event=false;
+    
+    PRINTLN_CSTSTR("Device will be configured by OTAA");
+    //Set OTAA mode
+    //Set device parameters
+    write_lorawan_module("AT+NJM=1\r\n\0");
+    read_lorawan_module(okStr);    
+
+#ifdef OVERWRITE_OTAA_EUI
+    PRINTLN_CSTSTR("Overwriting DEVEUI, APPEUI and APPKEY");
+    
+    sprintf(serial_buff, "AT+DEVEUI=%s\r\n\0", DevEuiStr);
+  
+    write_lorawan_module(serial_buff);
+    read_lorawan_module(okStr);    
+
+    sprintf(serial_buff, "AT+APPEUI=%s\r\n\0", AppEuiStr);
+  
+    write_lorawan_module(serial_buff);
+    read_lorawan_module(okStr);    
+
+    sprintf(serial_buff, "AT+APPKEY=%s\r\n\0", AppKeyStr);
+  
+    write_lorawan_module(serial_buff);
+    read_lorawan_module(okStr);
+#else
+    PRINTLN_CSTSTR("Using pre-provisioned DEVEUI, APPEUI and APPKEY");
+    write_lorawan_module("AT+DEVEUI=?\r\n\0");
+    read_lorawan_module(okStr);
+
+    write_lorawan_module("AT+APPEUI=?\r\n\0");
+    read_lorawan_module(okStr);
+
+    write_lorawan_module("AT+APPKEY=?\r\n\0");
+    read_lorawan_module(okStr);        
+#endif
+
+    while (join_retry) {
+      
+      PRINTLN_CSTSTR("Joining...");  
+      join_retry--;
+      
+      write_lorawan_module("AT+JOIN=1:0:10:3\r\n\0");
+      //for RAK3172, the first answer is OK<0D><0A>
+      read_lorawan_module(okStr);
+
+      //then, if join is successfull: +EVT:JOINED<0D><0A>
+      if (read_lorawan_module("EVT:JOINED", 10000))
+        join_event=true;
+
+      write_lorawan_module("AT+NJS=?\r\n\0");
+      read_lorawan_module(okStr);
+  
+      if (getAnswerValue()==1) {
+        
+        PRINTLN_CSTSTR("Joined!");
+        join_retry=0;
+        
+        write_lorawan_module("AT+DEVADDR=?\r\n\0");
+        read_lorawan_module(okStr);
+
+        write_lorawan_module("AT+NWKSKEY=?\r\n\0");
+        read_lorawan_module(okStr);  
+
+        write_lorawan_module("AT+APPSKEY=?\r\n\0");
+        read_lorawan_module(okStr);      
+      }
+      else {
+        PRINTLN_CSTSTR("Error when joining!");
+
+        if (join_retry==0) {
+          PRINTLN_CSTSTR("Retry joining after 30s");
+          delay(30000);
+          join_retry=3;
+        }
+      }
+    }
+    
+    // now, set the module to low power mode Stop 2 mode
+    write_lorawan_module("AT+LPMLVL=2\r\n\0");
+    read_lorawan_module(okStr);
+
+    // and finally turn on automatic low power mode
+    write_lorawan_module("AT+LPM=1\r\n\0");
+    read_lorawan_module(okStr);    
+    
+    return true;
   }
   else {
-    PRINTLN_CSTSTR("Set device parameter for ABP mode");
-
-#ifdef RAK3172    
+    PRINTLN_CSTSTR("Set device parameter for ABP mode");   
     //Set ABP mode
-    //Set node & LoRa parameter
+    //Set device parameters
     write_lorawan_module("AT+NJM=0\r\n\0");
-    read_lorawan_module();
-    
-    write_lorawan_module("AT+CLASS=A\r\n\0");
-    read_lorawan_module();
-
-    //for RAK3172
-    // 0 = EU433, 1 = CN470, 2 = RU864, 3 = IN865, 4 = EU868, 5 = US915,
-    // 6 = AU915, 7 = KR920, 8 = AS923-1, 9 = AS923-2, 10 = AS923-3, 11 = AS923-4
-#if defined EU868  
-    write_lorawan_module("AT+BAND=4\r\n\0");
-#elif defined AU915
-    write_lorawan_module("AT+BAND=6\r\n\0");
-    read_lorawan_module();
-    // select only channel 8-15: 916.8 917.0 917.2 917.4 917.6 917.8 918.0 918.2
-    write_lorawan_module("AT+CHE=2\r\n\0");
-#elif defined EU433
-    write_lorawan_module("AT+BAND=0\r\n\0");
-#elif defined AS923-2
-    write_lorawan_module("AT+BAND=9\r\n\0");
-#endif    
-    read_lorawan_module();
-  
-    write_lorawan_module("AT+ADR=0\r\n\0");
-    read_lorawan_module();
+    read_lorawan_module(okStr);
 
     char DevAddrStr[10];
     
@@ -370,32 +485,32 @@ bool lorawan_module_setup(uint16_t br) {
     sprintf(serial_buff, "AT+DEVADDR=%s\r\n\0", DevAddrStr);
      
     write_lorawan_module(serial_buff);
-    read_lorawan_module();
+    read_lorawan_module(okStr);
 
     sprintf(serial_buff, "AT+NWKSKEY=%s\r\n\0", NwkSkeyStr);
       
     write_lorawan_module(serial_buff);
-    read_lorawan_module();  
+    read_lorawan_module(okStr);  
 
     sprintf(serial_buff, "AT+APPSKEY=%s\r\n\0", AppSkeyStr);
   
     write_lorawan_module(serial_buff);
-    read_lorawan_module();
+    read_lorawan_module(okStr);
 
     // now, set the module to low power mode Stop 2 mode
     write_lorawan_module("AT+LPMLVL=2\r\n\0");
-    read_lorawan_module();
+    read_lorawan_module(okStr);
 
     // and finally turn on automatic low power mode
     write_lorawan_module("AT+LPM=1\r\n\0");
-    read_lorawan_module();    
+    read_lorawan_module(okStr);    
     
-    return true; 
-#else
-    PRINTLN_CSTSTR("LoRaWAN radio module not supported");
-    return false;
-#endif    
+    return true;    
   }
+#else
+  PRINTLN_CSTSTR("LoRaWAN radio module not supported");
+  return false;
+#endif  
 }
 
 bool lorawan_transmit(char* buf) {
@@ -421,7 +536,7 @@ bool lorawan_transmit(char* buf) {
   delay(1000);
 #else
   lorawan_module_serial.print(m);  
-  if (!read_lorawan_module(true, 10000, true)) {
+  if (!read_lorawan_module(okStr, 10000)) {
     //error
     delay(200);
     digitalWrite(BOARD_BUILTIN_LED, HIGH);

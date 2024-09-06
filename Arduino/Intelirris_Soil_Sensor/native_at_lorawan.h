@@ -28,7 +28,7 @@
 
 #include "BoardSettings.h"
 
-//#define ENABLE_OTAA
+#define ENABLE_OTAA
 
 #define BOARD_BUILTIN_LED 13
 
@@ -50,7 +50,7 @@ extern unsigned char DevAddr[4];
 void dumpHEXtoStr(char* toB, uint8_t* fromB, uint8_t sizeB);
 long getAnswerValue(char* strBuff=NULL);
 void write_lorawan_module(char* lcmd);
-bool read_lorawan_module(bool saveAnswer=true, uint16_t timeout=5000, bool return_on_ok_error=true);
+bool read_lorawan_module(char* matchStr, uint16_t timeout=2000, bool saveAnswer=true, bool return_on_match=true);
 void lorawan_display_config();
 bool lorawan_module_setup(uint16_t br);
 bool lorawan_transmit(char* buf);
