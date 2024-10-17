@@ -1,7 +1,7 @@
 Intelirris_Soil_Sensor Arduino code
 ===================================
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/github-intel-irris-device.png" width="300">
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/github-intel-irris-device.png" width="450">
 
 
 This is the source code of the INTEL-IRRIS soil humidity sensor device. It can handle either
@@ -14,15 +14,17 @@ or
  
 An additional soil temperature sensor (Dallas DS18B20) can be added.
 
-It supports DIY Arduino ProMini, WaziSense v2 and IRD PCBA v4.1 (with or without solar) development lines. 
+It supports DIY Arduino ProMini, WaziSense v2 and IRD PCBA v4.1/v5 (with or without solar) development lines. 
 
-It is configured by default for DIY Arduino ProMini as single-channel LoRaWAN 1.0 device for both uplink and downlink transmissions. Uncomment `#define WAZISENSE` in `BoardSettings.h` for WaziSense v2. Uncomment `#define IRD_PCB` in `BoardSettings.h` if you are using the raw IRD PCB v4.1 (just the raw PCB). Uncomment both `#define IRD_PCB` and `#define IRD_PCB` in `BoardSettings.h` if you are using the fully assembled IRD PCBA v4.1 (assembled from PCB manufacturer with all components including solar circuit). If you are using solar panel with the IRD PCBA v4.1 then you also need to uncomment `#define SOLAR_BAT` in `BoardSettings.h`.
+It is configured by default for DIY Arduino ProMini as single-channel LoRaWAN 1.0 device for both uplink and downlink transmissions. Uncomment `#define WAZISENSE` in `BoardSettings.h` for WaziSense v2. Uncomment `#define IRD_PCB` in `BoardSettings.h` if you are using the raw IRD PCB v4.1 (just the raw PCB). Uncomment both `#define IRD_PCB` and `#define IRD_PCBA` in `BoardSettings.h` if you are using the fully assembled IRD PCBA v4.1/v5 (assembled from PCB manufacturer with all components including solar circuit). If you are using solar panel with the IRD PCBA v4.1/v5 then you also need to uncomment `#define SOLAR_BAT` in `BoardSettings.h`. For IRD PCBA v5 which is based in the RAK3172 LoRaWAN radio module, you need to also uncomment `SOFT_SERIAL_DEBUG` in `BoardSettings.h` and select `RAK3172` in `RadioSettings.h`
 
 See the related tutorial slides and videos.
 
 - [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (all versions)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-all-version.pdf).
 
 - [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (IRD PCB and IRD PCBA v4.1)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-PCBv4-PCBA.pdf). Slides. 
+
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (annex for IRD PCB v5 - RAK3172)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-PCBv5-PCBA.pdf). Slides. 
 
 Default configuration for INTEL-IRRIS project (works out-of-the box with the INTEL-IRRIS WaziGate SD card image)
 ===
@@ -45,9 +47,9 @@ Arduino_LoRa_SX12XX_Ping_OLED Arduino code
 
 The `Arduino_LoRa_SX12XX_Ping_OLED.ino` code is a simple Field Tester tool that can be flashed on a dedicated device to perform field coverage tests. This dedicated device can be built very similarly to an INTEL-IRRIS sensor device. 
 
-The Field Tester device will send every 120s a `Confirmed Data Up` LoRaWAN packet to the INTEL-IRRIS WaziGate gateway to request a downlink acknowledgment packet. If the device receives such acknowledgement it would indicate that the uplink packet has been successfully received by the INTEL-IRRIS WaziGate. When deploying INTEL-IRRIS soil humidity sensor devices, the Field Tester device is useful to determine whether the device can reach the gateway, without having to check on the gateway itself.
+The Field Tester device will send every 30s a `Confirmed Data Up` LoRaWAN packet to the INTEL-IRRIS WaziGate gateway to request a downlink acknowledgment packet. The WaziGate gateway does not need to be connected to Internet as the embedded ChirpStack Network Server will manage the downlink transmission. If the device receives such acknowledgement it would indicate that the uplink packet has been successfully received by the INTEL-IRRIS WaziGate. When deploying INTEL-IRRIS soil humidity sensor devices, the Field Tester device is useful to determine whether the device can reach the gateway, without having to check on the gateway itself.
 
-The Field Tester device supports a small OLED screen that will indicate if the downlink acknowledgment packet has been received by the field tester device or not. 
+The Field Tester device supports a small OLED screen that will indicate if the downlink acknowledgment packet has been received by the Field Tester device or not. 
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled.JPG" width="400">
 
@@ -55,27 +57,21 @@ By default in the code, the OLED can be connected as follows:
 
 ```
        Arduino        OLED 
-           9----------GND   (Arduino 9 will serve as GND)
-           8----------VCC   (Arduino 8 will provide 3.3V)
-           7----------SCL   (Arduino 7 will act as SCL)
-           6----------SDA   (Arduino 6 will act as SDA)
+           D9----------GND   (Arduino D9 will serve as GND)
+           D8----------VCC   (Arduino D8 will provide 3.3V)
+           D7----------SCL   (Arduino D7 will act as SCL)
+           D6----------SDA   (Arduino D6 will act as SDA)
 ``` 
 
-Although having a **dedicated Field Tester device is recommended**, if you do not have such spare device available, the Field Tester can be flashed temporarily on an INTEL-IRRIS device. In this case, it is easier to connect the OLED to an INTEL-IRRIS device with a capacitive device sensor where pin 9, 8, 7 and 6 are available. 
+Although having a **dedicated Field Tester device is recommended**, if you do not have such spare device available, the Field Tester can be flashed temporarily on an INTEL-IRRIS device. 
+
+If you are using the PCB v2, it is easier to connect the OLED to an INTEL-IRRIS device with a capacitive device sensor where pin D9, D8, D7 and D6 are available. 
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-capacitive-1.JPG" width="400">
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-capacitive-2.JPG" width="400">
 
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case.JPG" width="400">
-
-**You can make a dedicated spare case cover with a small hole to pass the OLED wire through. Once field test is over, put back the original cover of the INTEL-IRRIS device if needed.**
-
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case-1.JPG" width="400">
-
-<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case-2.JPG" width="400">
-
-If an INTEL-IRRIS device with a tensiometer & temperature sensor was to be used, then it is easier to connect as follows:
+However, if an INTEL-IRRIS device with a tensiometer & temperature sensor was to be used, then it is easier to connect as follows:
 
 ```
        Arduino        OLED 
@@ -87,13 +83,44 @@ If an INTEL-IRRIS device with a tensiometer & temperature sensor was to be used,
 
 In the code, `#define OLED_GND235` should be decommented instead of `#define OLED_9GND876`
 
+If you are using IRD PCB/PCBA v4.1/v5, you can connect the OLED with the HUM and VMs connectors that have the following wiring (H is actually wired to A0):
+
+```
+       HUM          WM1    WM2
+       GND GND + H  D8 D9  D7 D9
+```
+
+Connect the OLED as follows and uncomment `#define OLED_GNDA078` instead of `#define OLED_9GND876`:
+
+```
+       PCBv4.1/v5     OLED 
+         GND----------GND   (Arduino GND will serve as GND)
+           H----------VCC   (Arduino A0 will provide 3.3V)
+          D7----------SCL   (Arduino D7 will act as SCL)
+          D8----------SDA   (Arduino D8 will act as SDA)
+``` 
+
+With IRD PCB/PCBA v4.1/v5, it is necessary to look at the following tutorial in order to correctly place jumpers to select between alkaline battery without solar, or NiMh battery with solar.
+
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (IRD PCB and IRD PCBA v4.1)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-PCBv4-PCBA.pdf). Slides. 
+
+- [Building the INTEL-IRRIS IoT platform. Part 1: soil sensor device (annex for IRD PCB v5 - RAK3172)](https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/Tutorials/Intel-Irris-IOT-platform-PCBv5-PCBA.pdf). Slides. 
+
+**You can make a dedicated spare case cover with a small hole to pass the OLED wire through. Once field test is over, put back the original cover of the INTEL-IRRIS device if needed.**
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case.JPG" width="400">
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case-1.JPG" width="400">
+
+<img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-oled-case-2.JPG" width="400">
+
 The default configuration of the field tester device is:
 
 - LoRaWAN mode to WaziGate (single channel)
 - EU868 band (suitable for Algeria. For Morocco, need to use 433MHz)
 - Cayenne LPP data format
 - Device address is 26011DAA (same than the capacitive device)
-- 1 transmission every 120s
+- 1 transmission every 30s
 - LPP channel 10 is used for the packet sequence number (starting at 1) resulting in `digitalOutput_10` as the internal default logical sensor on the WaziGate to receive the packet sequence number on the WaziGate dashboard. The WaziGate dashboard will display in the default capacitive device UI card the newly discovered `digitaloutput` sensor which will hold the packet sequence.
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/field-tester-dashboard.png" width="400">
@@ -127,4 +154,4 @@ For those who would like a more elaborated LoRaWAN Field Tester, they can look a
 
 Enjoy!
 C. Pham
-Coordinator of PRIMA Intel-IrriS
+Coordinator of PRIMA INTEL-IRRIS

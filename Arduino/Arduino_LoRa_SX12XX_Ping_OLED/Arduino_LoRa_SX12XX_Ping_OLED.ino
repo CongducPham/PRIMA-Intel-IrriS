@@ -2,7 +2,7 @@
  *  simple ping for field test by requesting an ACK from the gateway
  *  version with an OLED display using the U8g2 library
  *  
- *  Copyright (C) 2023 Congduc Pham, University of Pau, France
+ *  Copyright (C) 2024 Congduc Pham, University of Pau, France
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  *
  *****************************************************************************
  *
- * last update: Oct. 13th, 2023 by C. Pham
+ * last update: Oct. 17th, 2024 by C. Pham and Jean-François Printanier
  * 
  * NEW: LoRa communicain library moved from Libelium's lib to StuartProject's lib
  * https://github.com/StuartsProjects/SX12XX-LoRa
@@ -45,6 +45,15 @@
 //uncomment if you have an OLED attached
 #define OLED
 
+// monitor battery voltage without additional hardware: // https://github.com/Yveaux/arduino_vcc
+#define MONITOR_BAT_VOLTAGE
+
+////////////////////////////////////////////////////////////////////
+// uncomment only if the IRD PCB or PCBA is running on solar panel
+// MUST be commented if running on alkaline battery
+// code for SOLAR_BAT has been written by Jean-François Printanier from IRD
+//#define SOLAR_BAT
+  
 ////////////////////////////////////////////////////////////////////
 // define a dedicated ping device with address 0x26011DA0
 // need to create a dedicated device on the WaziGate
@@ -58,7 +67,8 @@
 //#define AS923-2
 
 ////////////////////////////////////////////////////////////////////
-#define BOOT_START_MSG  "\nField tester for LoRa/LoRaWAN coverage\n"
+#define BOOT_START_MSG  "\nField tester for LoRa/LoRaWAN coverage 2024/02/27\n"
+#define TITLE_LINE_0    "--FIELD TESTER--"
 
 //uncomment to use LPP format to send to WAZIGATE for instance
 //so uncomment LPP only with LORAWAN to WAZIGATE
@@ -105,7 +115,7 @@ uint8_t node_addr=8;
 ///////////////////////////////////////////////////////////////////
 // CHANGE HERE THE TIME IN MINUTES BETWEEN 2 READING & TRANSMISSION
 unsigned int idlePeriodInMin = 0;
-unsigned int idlePeriodInSec = 120;
+unsigned int idlePeriodInSec = 30;  //120;
 ///////////////////////////////////////////////////////////////////
 
 /********************************************************************
@@ -142,15 +152,34 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 
 //various predefined connection setups for OLED
 // GND, VCC, SCL, SDA
+
 //Suitable for WaziSense v2
 //#define OLED_GND5A5A4 //5 as VCC
+
 //for other boards – pin 4 is not available when LoRa RST is on pin 4
+//to be used with simple PCB v2 on replicated connectors from the Arduino Pro Mini
 //#define OLED_GND235 //suitable even with 1 capacitive or 1 tensiometer+temp sensor attached
 #define OLED_9GND876 //9 as GND
-//to be used with IRD PCB on the WMs and DS18B20 connectors
-// WM1    WM2      TEMP
-// D8 D9  D6 D7 GND A1 A3 
-//#define OLED_GNDA186 
+
+//to be used with IRD PCB v3 on Vcc and the HUM, WMs and DS18B20 connectors
+// HUM              WM1    WM2      TEMP
+// GND GND + H(A0)  D8 D9  D6 D7    GND A1 A3 
+// OLED
+// GND PWR(Vcc)  SCL(D6) SDA(D8) // wire OLED Vcc to the Vcc pin of the Arduino
+//#define OLED_GNDVCC68
+// GND PWR(A0) SCL(D6) SDA(D8)
+//#define OLED_GNDA068
+
+//to be used with IRD PCB v4.1/v5 on A2 and the HUM, WMs and DS18B20 connectors
+// HUM              WM1    WM2      TEMP
+// GND GND + H(A0)  D8 D9  D7 D9    GND A1 D6 
+// OLED
+// GND PWR(Vcc) SCL(D7) SDA(D8) // wire OLED Vcc to the Vcc pin of the Arduino 
+//#define OLED_GNDVCC78
+// GND PWR(A0) SCL(D7) SDA(D8)
+//#define OLED_GNDA078
+
+
 
 /********************************************************************
   ___            _           _           
@@ -185,6 +214,26 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
 #include <xlpp.h>
 #endif  
 
+#if defined MONITOR_BAT_VOLTAGE && not defined SOLAR_BAT
+// https://github.com/Yveaux/arduino_vcc
+#include <Vcc.h>
+
+// VccCorrection is hardware specific. One should compare the values obtained for and from each specific Arduino board with Volt-meter measurements, in order to modify this correction value.
+// First, set VccCorrection to 1.0 for calibration;
+// then get the reported Vcc, but only when the device is powered without USB
+// finally set VccCorrection to the ratio of "measured Vcc by multimeter" divided by "reported Vcc"
+
+// On typical INTEL-IRRIS soil devices (default):
+const float VccCorrection = 3.0/2.9;
+//other measures on real INTEL-IRRIS soil devices
+//const float VccCorrection = 3.64/3.54; //with 3.6 lithium battery
+//const float VccCorrection = 3.24/3.18; //with 2 AA alkaline batteries  
+///////////////////////////////////////////////////////////////////
+
+// Initialize the voltage monitor
+Vcc vcc(VccCorrection);
+#endif
+  
 ///////////////////////////////////////////////////////////////////
 // ENCRYPTION CONFIGURATION AND KEYS FOR LORAWAN
 #ifdef LORAWAN
@@ -262,7 +311,7 @@ uint32_t TXPacketSuccess=0;
 #include <EEPROM.h>
 #endif
 
-#define HELTEC_LORA
+//#define HELTEC_LORA
 
 #ifdef OLED
 #include <U8x8lib.h>
@@ -280,7 +329,7 @@ U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 12, /* data=*/ 14, /* reset=*
     #undef OLED_PWR_PIN
     #define OLED_PWR_PIN 2
   #endif
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 3, /* data=*/ 4, /* reset=*/ U8X8_PIN_NONE);
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 3, /* data=*/ 5, /* reset=*/ U8X8_PIN_NONE);
 #elif defined OLED_9GND876
   #ifdef OLED_PWR_PIN
     #undef OLED_PWR_PIN
@@ -293,12 +342,18 @@ U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 12, /* data=*/ 14, /* reset=*
     #define OLED_PWR_PIN 5
   #endif  
   U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A5, /* data=*/ A4, /* reset=*/ U8X8_PIN_NONE);
-#elif defined OLED_GNDA186   
+#elif defined OLED_GNDA068
   #ifdef OLED_PWR_PIN
     #undef OLED_PWR_PIN
-    #define OLED_PWR_PIN A1
+    #define OLED_PWR_PIN A0
   #endif  
-  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 8, /* data=*/ 6, /* reset=*/ U8X8_PIN_NONE);    
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 6, /* data=*/ 8, /* reset=*/ U8X8_PIN_NONE);     
+#elif defined OLED_GNDA078
+  #ifdef OLED_PWR_PIN
+    #undef OLED_PWR_PIN
+    #define OLED_PWR_PIN A0
+  #endif  
+  U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 7, /* data=*/ 8, /* reset=*/ U8X8_PIN_NONE);           
 #else
   U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ A5, /* data=*/ A4, /* reset=*/ U8X8_PIN_NONE);
 #endif
@@ -326,6 +381,57 @@ sx1272config my_sx1272config;
 #define DELAY_BEFORE_RCVW 1000
 #endif
 
+#ifdef MONITOR_BAT_VOLTAGE
+#ifdef SOLAR_BAT
+
+//////////////////////////////////////////////////////////////
+#define SOLAR_PANEL_ANA   A7  // analog input
+#define SOLAR_PANEL_PIN   5   // mosfet command Q4
+#define TIME_C3           1   // wait  1 ms for C3 330 pF
+
+//////////////////////////////////////////////////////////////
+//
+uint16_t solar_analogRead( void)
+{
+  uint16_t v;
+  
+  v = analogRead( SOLAR_PANEL_ANA);
+  v = (uint16_t) ((uint32_t) v * 3300 / 1023); // 10 bits
+  v = (uint16_t) ((uint32_t) v * 5300 / 1000); // R5 430k R4 100k /5.3 15.3 V maxi
+
+  return v;
+}
+
+//////////////////////////////////////////////////////////////
+//
+void display_bat( void)
+{
+  uint16_t v_bat;
+
+  // connect battery for measure : pannel can consume 0.5 mA at night
+  pinMode( SOLAR_PANEL_PIN, OUTPUT);
+  digitalWrite( SOLAR_PANEL_PIN, HIGH);      
+  delay( TIME_C3);  
+  v_bat = solar_analogRead();
+  digitalWrite( SOLAR_PANEL_PIN, LOW);
+  sprintf((char*)message,"%d.%02dV", v_bat/1000, (v_bat % 1000)/10);
+  u8x8.drawString(5, 2, (char*)message);      
+}
+#else
+
+void display_bat( void)
+{
+  uint16_t v_bat;
+  
+  v_bat = (uint16_t)(vcc.Read_Volts()*1000); 
+  sprintf((char*)message,"%d.%02dV", v_bat/1000, (v_bat % 1000)/10);
+  u8x8.drawString(5, 2, (char*)message);       
+}
+
+#endif
+#endif
+
+
 /*****************************
  _____      _               
 /  ___|    | |              
@@ -347,6 +453,9 @@ void setup() {
   Serial.begin(38400);  
 #endif
 
+  // Print a start message
+  PRINT_CSTSTR(BOOT_START_MSG);
+
 #ifdef OLED
 #ifdef OLED_PWR_PIN
   pinMode(OLED_PWR_PIN, OUTPUT);
@@ -367,7 +476,10 @@ void setup() {
   u8x8.begin();
   u8x8.setFont(u8x8_font_chroma48medium8_r);
   //u8x8.setFont(u8x8_font_pxplustandynewtv_r);
-  u8x8.drawString(0, 0, "FIELD TESTER");
+  u8x8.drawString(0, 0, TITLE_LINE_0);
+  display_bat();
+  u8x8.drawString(2, 4, "INTEL-IRRIS");
+  u8x8.drawString(4, 5, "UPPA/IRD");
 
   delay(2000);
 #ifdef LOW_POWER  
@@ -375,9 +487,6 @@ void setup() {
 #endif  
 #endif  
   
-  // Print a start message
-  PRINT_CSTSTR(BOOT_START_MSG);
-
 #ifdef ARDUINO_AVR_PRO
   PRINT_CSTSTR("Arduino Pro Mini detected\n");  
 #endif
@@ -635,12 +744,13 @@ void setup() {
   u8x8.begin();
   u8x8.setFont(u8x8_font_chroma48medium8_r);
   //u8x8.setFont(u8x8_font_pxplustandynewtv_r);
-  u8x8.drawString(0, 0, "FIELD TESTER");
+  u8x8.drawString(0, 0, TITLE_LINE_0);
   sprintf(oled_msg,"SF%dBW%d", LT.getLoRaSF(), LT.returnBandwidth()/1000);
-  u8x8.drawString(0, 1, oled_msg); 
+  u8x8.drawString(4, 1, oled_msg); 
 #endif  
   delay(500);
 }
+
 
 /*****************************
  _                       
@@ -661,6 +771,9 @@ void loop(void)
   uint8_t r_size;
       
   while (1) {
+#if defined MONITOR_BAT_VOLTAGE && defined OLED
+    display_bat();
+ #endif
 
 #if defined USE_XLPP || defined USE_LPP
     // Create lpp payload.
@@ -690,7 +803,7 @@ void loop(void)
       
 #ifdef OLED
     u8x8.clearLine(3);
-    u8x8.drawString(0, 3, "Sending Ping....");
+    u8x8.drawString(3, 3, "Send Ping!");
     u8x8.clearLine(4);
     u8x8.clearLine(5);
     u8x8.clearLine(6);
@@ -732,6 +845,9 @@ void loop(void)
 #endif
     {
       endSend=millis();                                         
+#if defined MONITOR_BAT_VOLTAGE && defined OLED
+    display_bat();
+#endif
       uint16_t localCRC = LT.CRCCCITT(message, r_size, 0xFFFF);
       PRINT_CSTSTR("CRC,");
       PRINTLN_HEX("%d", localCRC);
@@ -740,16 +856,16 @@ void loop(void)
       if (LT.readAckStatus()) {
         PRINT_CSTSTR("\nReceived ACK from gateway!\n");
         TXPacketSuccess++;
-        sprintf((char*)message,"SNR at gw=%d   ", LT.readPacketSNRinACK());
+        sprintf((char*)message,"SNR at gw=%d ", LT.readPacketSNRinACK());
         PRINTLN;
         PRINT_STR("%s", (char*)message);   
 
 #ifdef OLED
         u8x8.clearLine(3);             
-        u8x8.drawString(0, 3, "Get ACK from gw");
+        u8x8.drawString(0, 3, "Got ACK");
         u8x8.drawString(0, 4, (char*)message);
 #endif
-        sprintf((char*)message,"gw->SNR=%d:%d", LT.readPacketSNR(), LT.readPacketRSSI());
+        sprintf((char*)message,"gwSNR=%d:%d", LT.readPacketSNR(), LT.readPacketRSSI());
         PRINTLN;
         PRINT_STR("%s", (char*)message);
 
@@ -763,7 +879,7 @@ void loop(void)
         PRINT_CSTSTR("No ACK from gw!");
 #ifdef OLED
         u8x8.clearLine(3);          
-        u8x8.drawString(0, 3, "No ACK from gw!");      
+        u8x8.drawString(4, 3, "No ACK!");      
 #endif         
       }
 #endif      
@@ -771,6 +887,9 @@ void loop(void)
     else
     {
       endSend=millis();
+#if defined MONITOR_BAT_VOLTAGE && defined OLED
+    display_bat();
+ #endif
       //if there was an error transmitting packet
       uint16_t IRQStatus;
       IRQStatus = LT.readIrqStatus();
@@ -781,7 +900,7 @@ void loop(void)
       LT.printIrqStatus();
 #ifdef OLED          
       u8x8.clearLine(3);
-      u8x8.drawString(0, 3, "Error sending");  
+      u8x8.drawString(3, 3, "Send Error");  
 #endif          
     }
 
@@ -894,42 +1013,42 @@ void loop(void)
 
         TXPacketSuccess++;
         
-        sprintf((char*)message,"gw->SNR=%d:%d", LT.readPacketSNR(), LT.readPacketRSSI());
+        sprintf((char*)message,"gwSNR=%d:%d", LT.readPacketSNR(), LT.readPacketRSSI());
         PRINTLN;
         PRINT_STR("%s", (char*)message);
 
 #ifdef OLED
         u8x8.clearLine(3);             
-        u8x8.drawString(0, 3, "Get ACK from gw");
+        u8x8.drawString(5, 3, "Got ACK");
         u8x8.clearLine(5);             
-        u8x8.drawString(0, 5, (char*)message);        
+        u8x8.drawString(2, 5, (char*)message);        
 #endif    
       }
       else {
         PRINT_CSTSTR("\nNo ACK from gw!\n");
 #ifdef OLED
         u8x8.clearLine(3);          
-        u8x8.drawString(0, 3, "No ACK from gw!");      
+        u8x8.drawString(4, 3, "No ACK!");      
 #endif
       }
 #endif               
 
-    sprintf((char*)message,"PingNum=%d", TXPacketCount);
+    sprintf((char*)message,"#Ping=%d", TXPacketCount);
     PRINTLN;
     PRINT_STR("%s", (char*)message);
     
 #ifdef OLED
-    u8x8.clearLine(6);
-    u8x8.drawString(0, 6, (char*)message);
+    //u8x8.clearLine(6);
+    u8x8.drawString(4, 6, (char*)message);
 #endif
 
-    sprintf((char*)message,"Success=%d", TXPacketSuccess);
+    sprintf((char*)message,"#ack=%d", TXPacketSuccess);
     PRINTLN;
     PRINT_STR("%s", (char*)message);
 
 #ifdef OLED
     u8x8.clearLine(7);
-    u8x8.drawString(0, 7, (char*)message);        
+    u8x8.drawString(3, 7, (char*)message);        
 #endif
 
     TXPacketCount++;
@@ -948,7 +1067,19 @@ void loop(void)
     
     PRINT_CSTSTR("\nLoRa Sent in ");
     PRINT_VALUE("%ld", endSend-startSend);
-          
-    delay(idlePeriodInMin*60*1000+idlePeriodInSec*1000);   
+
+    for (r_size = idlePeriodInSec; r_size > 0; r_size --)
+    {      
+      sprintf((char*)message," %3d", r_size);
+      PRINT_STR("%s", (char*)message);
+#ifdef OLED
+      u8x8.drawString(9, 7, (char*)message);        
+#endif
+      delay((idlePeriodInMin*60*1000+idlePeriodInSec*1000)/idlePeriodInSec);
+    }
+#ifdef OLED
+    sprintf((char*)message," %3d", r_size);
+    u8x8.drawString(9, 7, (char*)message);        
+#endif
   }          
 }
