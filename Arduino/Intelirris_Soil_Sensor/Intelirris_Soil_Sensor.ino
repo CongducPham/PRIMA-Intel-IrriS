@@ -3,7 +3,7 @@
  *  support limited LoRaWAN with raw LoRa SX12XX (such as RFM9X, NiveRF, ...)
  *  support RAK3172 for native LoRaWAN
  *  
- *  Copyright (C) 2016-2023 Congduc Pham, University of Pau, France
+ *  Copyright (C) 2016-2024 Congduc Pham, University of Pau, France
  *  
  *  Contributors: Guillaume Gaillard & Jean-François Printanier
  *
@@ -21,7 +21,7 @@
  *  along with the program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************
- * last update: July 19th, 2024
+ * last update: Nov. 19th, 2024
  * 
  * NEW: Support IRD PCB RAK3172 with debug serial using pin 2 (TX only)
  * NEW: Support native LoRaWAN module RAK3172 (ABP, OTAA) with AT commands
@@ -307,6 +307,11 @@ unsigned char DevAddr[4] = { 0x00, 0x00, 0x00, node_addr };
   #define TEMP_DIGITAL_PIN 5
   #define TEMP_PWR_PIN 6 //one of the sensor power pin
 #elif defined IRD_PCB
+  // IRD PCB v4.1/v5 pin-out, + is wired to A1
+  // [CN1]                [CN3]           [CN2]           [CN5]
+  // HUM                  WM1    WM2      TEMP            C02
+  // GND GND +(A1) H(A0)  D8 D9  D7 D9    GND +(A1) T(D6) +(A1) GND SCL SDA
+  //
   // this is how you need to connect the analog soil humidity sensor
   #define SH1_ANALOG_PIN A0
   #define SH1_PWR_PIN A1
@@ -522,6 +527,14 @@ uint32_t TXPacketCount=0;
 // THEN USE THE DEFAULT CONFIGURATION UNTIL NEXT CONFIGURATION.
 
 #define FORCE_DEFAULT_VALUE
+///////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////
+// NO TRANSMISSION TO EASILY MEASURE CONSUMPTION IN LOW-POWER WITH
+// NO REBOOT OF THE BOARD WHEN POWERED BY BATTERIES
+// EVERY STEPS ARE EXECUTED, EXCEPT THE FINAL TRANSMISSION
+
+//#define TEST_LOW_POWER_NO_TRANSMIT
 ///////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////
@@ -885,8 +898,9 @@ void lowPower(unsigned long time_ms) {
       waiting_t = 0;
     }
 
+      //TODO: should we keep this in the while loop?
       #if defined IRD_PCB && defined SOLAR_BAT
-    manage_battery(PANEL_AUTO);
+    //manage_battery(PANEL_AUTO);
       #endif
 
       #ifdef SHOW_LOW_POWER_CYCLE
@@ -943,14 +957,6 @@ void lowPower(unsigned long time_ms) {
 
 void setup() {
 
-#if defined IRD_PCB && defined SOLAR_BAT
-  manage_battery(PANEL_AUTO);
-  if (v_bat < BAT_LOW)
-  {
-    recovery_charging = 1;
-  }
-#endif
-
 #ifdef LOW_POWER
   bool low_power_status = IS_LOWPOWER;
   #ifdef __SAMD21G18A__
@@ -958,7 +964,6 @@ void setup() {
   #endif
 #else
   bool low_power_status = IS_NOT_LOWPOWER;
-  //digitalWrite(PIN_POWER,HIGH);
 #endif
 
 #ifdef WAZISENSE
@@ -1002,6 +1007,16 @@ void setup() {
 
 #if defined IRD_PCB && defined SOLAR_BAT
   manage_battery(PANEL_AUTO);
+  PRINT_CSTSTR("WITH SOLAR_BAT: v_bat on startup is (mV) ");
+  PRINTLN_VALUE("%f", v_bat);
+
+  if (v_bat < BAT_LOW)
+    recovery_charging = 1;
+  else
+    recovery_charging = 0;
+    
+  if (recovery_charging)
+      PRINT_CSTSTR("Recovery charging\n");
 #endif
 
 #ifdef OLED_PWR_PIN
@@ -1185,6 +1200,11 @@ void setup() {
 
 #if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
   if (lorawan_module_setup(LORAWAN_MODULE_BAUD_RATE))
+#ifdef TEST_LOW_POWER_NO_TRANSMIT  
+    if (lorawan_config_device(false))
+#else
+    if (lorawan_config_device(true))
+#endif    
 #endif
   {
     PRINT_CSTSTR("LoRa chipset found\n");
@@ -1192,9 +1212,20 @@ void setup() {
   }
   else
   {
+#if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
+    PRINT_CSTSTR("Could not join or error with LoRaWAN module\n");
+#else
     PRINT_CSTSTR("No LoRa chipset responding\n");
+#endif    
+    #if defined LOW_POWER && not defined ARDUINO_SAM_DUE
+    PRINT_CSTSTR("GO SLEEP MODE\n");
+    nextTransmissionTime=((idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
+    lowPower(nextTransmissionTime);
+    #else
+    PRINT_CSTSTR("STOP PROGRAM\n");
     while (1)
       ;
+    #endif  
   }
 
 #if defined RAW_LORA && defined WITH_SPI_COMMANDS
@@ -1452,6 +1483,7 @@ void setup() {
   last_vcc = current_vcc;
   tx_vcc = current_vcc;
 
+#if not defined SOLAR_BAT
   PRINT_CSTSTR("Battery voltage on startup is ");
   PRINTLN_VALUE("%f", current_vcc);
 
@@ -1464,14 +1496,11 @@ void setup() {
     EEPROM.put(0, my_nodeConfig);
   #endif
   }
+#endif
    
   PRINT_CSTSTR("low_voltage_indication=");
   PRINTLN_VALUE("%d", low_voltage_indication);
 #endif // endif ifdef MONITOR_BAT_VOLTAGE
-
-#if defined IRD_PCB && defined SOLAR_BAT
-  manage_battery(PANEL_AUTO);
-#endif
 
 #ifdef WITH_AES
   local_lorawan_init();
@@ -1496,7 +1525,9 @@ uint16_t internal_read_volt( void)
   #define TEMP_INTERNAL         // comment if you want to work without the internal temperature
   #define SOLAR_PANEL_ANA   A7  // analog input
   #define SOLAR_PANEL_PIN   5   // mosfet command Q4
-
+  // will further be divided by 1000 (--> 1.145). WARNING: may need calibration
+  #define SOLAR_PANEL_ANA_CORRECTION  1145 
+  
 //////////////////////////////////////////////////////////////
 // Function returning instantaneous voltage as read on analog input of solar panel, in mV
 uint16_t solar_analogRead( void)
@@ -1506,7 +1537,7 @@ uint16_t solar_analogRead( void)
   v = analogRead( SOLAR_PANEL_ANA);
   v = (uint16_t) ((uint32_t) v * 3300 / 1023); // 10 bits
   v = (uint16_t) ((uint32_t) v * 5300 / 1000); // R5 430k R4 100k /5.3 15.3 V maxi
-
+  v = (uint16_t) ((uint32_t) v * SOLAR_PANEL_ANA_CORRECTION / 100);
   return v;
 }
 
@@ -1870,7 +1901,9 @@ void measure_and_send( void)
   ///////////////////////////////////////////////////////////////////////
 
 #if defined IRD_PCB && defined SOLAR_BAT
-  manage_battery( PANEL_AUTO);
+  manage_battery(PANEL_AUTO);
+  PRINT_CSTSTR("WITH SOLAR_BAT: v_bat after sensor loop is (mV) ");
+  PRINTLN_VALUE("%f", v_bat);
 #endif
 
   for (int i=0; i<number_of_sensors; i++) {
@@ -1884,7 +1917,7 @@ void measure_and_send( void)
     #if defined TRANSMIT_VOLTAGE && defined ALWAYS_TRANSMIT_VOLTAGE
       #if (defined IRD_PCB && defined SOLAR_BAT)
       // if SOLAR_BAT, the min battery voltage, measured on analog pin during radio transmission, is sent
-  PRINT_CSTSTR("Adding battery voltage (IRD_PCB solar: ");
+  PRINT_CSTSTR("Adding battery voltage (IRD_PCB solar): ");
   if (last_v_bat==0) last_v_bat=v_bat;
   PRINTLN_VALUE("%f", (float) last_v_bat / 1000.0);
   lpp.addAnalogInput(6, (float) last_v_bat / 1000.0);
@@ -1900,6 +1933,7 @@ void measure_and_send( void)
         #endif
 
       #else // without solar
+  PRINT_CSTSTR("Adding battery voltage: ");
         #ifdef TEST_LOW_BAT
   // in that case (debug) we transmit the voltage measured right after TX (last_vcc)
   lpp.addAnalogInput(6, last_vcc);
@@ -2043,7 +2077,10 @@ void measure_and_send( void)
   digitalWrite(WAZISENSE_BUILTIN_LED1, LOW);
 #endif
 
-
+#ifdef TEST_LOW_POWER_NO_TRANSMIT
+  PRINTLN_CSTSTR("TEST_LOW_POWER_NO_TRANSMIT MODE");
+  if (1)
+#else  
 #ifdef CUSTOM_LORAWAN
   // will return sent packet length if OK, otherwise 0 if transmission error
   // we use raw format for LoRaWAN
@@ -2078,6 +2115,7 @@ void measure_and_send( void)
   // will return packet length sent if OK, otherwise 0 if transmit error
   if (LT.transmitAddressed(message, pl, p_type, DEFAULT_DEST_ADDR, node_addr, 10000, MAX_DBM, WAIT_TX))
 #endif
+#endif //TEST_LOW_POWER_NO_TRANSMIT
   {
 #ifdef MONITOR_BAT_VOLTAGE
     // not 100% reliable because the board can reboot right after transmission because of
@@ -2108,7 +2146,12 @@ void measure_and_send( void)
     }
 #endif
 #if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
-    // nothing particular right now
+    // we cannot measure battery voltage during transmission with LoRaWAN module
+  #if defined IRD_PCB && defined SOLAR_BAT
+    last_v_bat = v_bat;
+  #elif defined MONITOR_BAT_VOLTAGE   
+    tx_vcc_read = last_vcc;
+  #endif
 #endif
   }
   else // transmission error
@@ -2146,11 +2189,11 @@ void measure_and_send( void)
     LT.printIrqStatus();
 #endif
 #if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
-    // nothing particular right now
+    PRINTLN_CSTSTR("SendError with LoRaWAN module");
 #endif
 
 #if defined IRD_PCB && defined SOLAR_BAT
-    manage_battery( PANEL_ON); // last_v_bat is updated in the modified LT.transmit
+    manage_battery(PANEL_ON); // last_v_bat is updated in the modified LT.transmit
 #endif
   } // end else (tx error)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2420,7 +2463,7 @@ void measure_and_send( void)
 
 #if defined NATIVE_LORAWAN && defined WITH_AT_COMMANDS
   PRINT_CSTSTR("LoRa pkt seq ");
-  PRINT_VALUE("%d", TXPacketCount?0:TXPacketCount-1);
+  PRINT_VALUE("%d", TXPacketCount==0?0:TXPacketCount-1);
   PRINTLN;
 #else
   PRINT_CSTSTR("LoRa pkt seq ");
@@ -2455,6 +2498,8 @@ void loop(void)
     // PRINTLN_VALUE("%ld",nextTransmissionTime);
     // PRINTLN_VALUE("%ld",(idlePeriodInSec==0)?(unsigned long)idlePeriodInMin*60*1000:(unsigned long)idlePeriodInSec*1000);
 
+    //we assume that when running on solar panel, we do not need to have the same behavior
+    //than running on alkalines (i.e. dynamically extend the measure interval) 
   #if defined IRD_PCB && defined SOLAR_BAT
     if (recovery_charging  &&  v_bat > BAT_OK) {
       recovery_charging = 0;
@@ -2481,7 +2526,6 @@ void loop(void)
 
     PRINT_CSTSTR("BATT_TX-->");
     PRINTLN_VALUE("%f", tx_vcc); // updated during last transmit
-
 
     #ifdef BYPASS_LOW_BAT
     measure_and_send();

@@ -9,7 +9,7 @@
 
   ////////////////////////////////////////////////////////////////////
   // uncomment for IRD PCB RAK version where the serial monitor is using software serial with pin 2 for TX
-  //#define SOFT_SERIAL_DEBUG
+  #define SOFT_SERIAL_DEBUG
   
   ////////////////////////////////////////////////////////////////////
   // uncomment for WAZISENSE v2 board
@@ -17,7 +17,7 @@
 
   ////////////////////////////////////////////////////////////////////
   // uncomment for IRD PCB board
-  #define IRD_PCB
+  //#define IRD_PCB
   // also uncomment for IRD PCB board fully assembled by manufacturer
   // with all components, including solar circuit
   //#define IRD_PCBA
