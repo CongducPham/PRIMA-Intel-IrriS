@@ -1537,7 +1537,7 @@ uint16_t solar_analogRead( void)
   v = analogRead( SOLAR_PANEL_ANA);
   v = (uint16_t) ((uint32_t) v * 3300 / 1023); // 10 bits
   v = (uint16_t) ((uint32_t) v * 5300 / 1000); // R5 430k R4 100k /5.3 15.3 V maxi
-  v = (uint16_t) ((uint32_t) v * SOLAR_PANEL_ANA_CORRECTION / 100);
+  v = (uint16_t) ((uint32_t) v * SOLAR_PANEL_ANA_CORRECTION / 1000);
   return v;
 }
 
