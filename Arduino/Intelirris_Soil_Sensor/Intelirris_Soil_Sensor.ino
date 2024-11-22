@@ -898,9 +898,8 @@ void lowPower(unsigned long time_ms) {
       waiting_t = 0;
     }
 
-      //TODO: should we keep this in the while loop?
       #if defined IRD_PCB && defined SOLAR_BAT
-    //manage_battery(PANEL_AUTO);
+    manage_battery(PANEL_AUTO);
       #endif
 
       #ifdef SHOW_LOW_POWER_CYCLE
