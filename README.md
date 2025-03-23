@@ -3,6 +3,11 @@ Low-cost LoRa IoT platform for the PRIMA INTEL-IRRIS project
 
 <img src="https://github.com/CongducPham/PRIMA-Intel-IrriS/blob/main/images/intel-irris-logo.png" width="700">
 
+We are not maintaining this repo anymore
+----------------------------------------
+
+In 2021, we started the [PRIMA INTEL-IRRIS project](https://intel-irris.eu) and this repo. Then, in 2025, as our works in INTEL-IRRIS are continuing in the [PEPR AgriFutur project](https://iotsensingsystem.live-website.com/pepr-agroeconum-agrifutur), at time of writing, the latest edge-enabled gateway we are building on top of the general WaziGate framework provided by WAZIUP e.V is available from the dedicated [PEPR AgriFutur GitHub](https://github.com/CongducPham/PEPR_AgriFutur). Check our latest development on this PEPR AgriFutur GitHub repo. 
+
 History
 -------
 
